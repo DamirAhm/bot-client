@@ -2,14 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="af8addfd-8bb2-4cba-8e1e-99384b21efe4" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.graphqlconfig" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/client/src/components/Content/Classes/ClassPreview/ClassCreator.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/schema.graphql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/Content/Classes/ClassPreview/ClassPreview.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/Content/Classes/ClassPreview/ClassPreview.module.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/Content/Classes/ClassPreview/ClassPreview.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/Content/Classes/ClassPreview/ClassPreview.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/Content/Classes/ClassPreview/ClassCreator.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/Content/Classes/ClassPreview/ClassCreator.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/components/Content/Classes/Classes.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/Content/Classes/Classes.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/Content/Students/Students.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/Content/Students/Students.tsx" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -22,7 +17,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/src/App.tsx">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="299">
@@ -35,43 +30,12 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/client/src/components/Content/Classes/Classes.tsx">
+        <entry file="file://$PROJECT_DIR$/client/src/components/Content/Students/Students.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="414">
-              <caret line="18" column="21" selection-start-line="18" selection-start-column="21" selection-end-line="18" selection-end-column="21" />
+            <state relative-caret-position="115">
+              <caret line="5" column="49" selection-start-line="5" selection-start-column="49" selection-end-line="5" selection-end-column="49" />
               <folding>
                 <element signature="e#0#26#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/client/src/components/Content/Classes/Classes.module.css">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="46">
-              <caret line="2" column="35" selection-start-line="2" selection-start-column="35" selection-end-line="2" selection-end-column="35" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/client/src/index.css">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="483">
-              <caret line="21" column="19" selection-start-line="21" selection-start-column="19" selection-end-line="21" selection-end-column="19" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/client/src/components/Content/Classes/ClassPreview/ClassCreator.tsx">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="345">
-              <caret line="24" column="23" selection-start-line="24" selection-start-column="23" selection-end-line="24" selection-end-column="23" />
-              <folding>
-                <element signature="e#0#38#0" expanded="true" />
-                <element signature="e#215#231#0" />
               </folding>
             </state>
           </provider>
@@ -135,7 +99,6 @@
         <option value="$PROJECT_DIR$/client/src/Queries.ts" />
         <option value="$PROJECT_DIR$/client/src/components/Sidebar/Sidebar.tsx" />
         <option value="$PROJECT_DIR$/client/src/components/Content/Students/Classes.tsx" />
-        <option value="$PROJECT_DIR$/client/src/components/Content/Students/Students.tsx" />
         <option value="$PROJECT_DIR$/client/src/components/Sidebar/Sidebar.module.css" />
         <option value="$PROJECT_DIR$/client/src/App.module.css" />
         <option value="$PROJECT_DIR$/server/schema.js" />
@@ -147,8 +110,9 @@
         <option value="$PROJECT_DIR$/client/src/index.css" />
         <option value="$PROJECT_DIR$/client/src/components/Content/Classes/Classes.module.css" />
         <option value="$PROJECT_DIR$/client/src/components/Content/Classes/ClassPreview/ClassPreview.tsx" />
-        <option value="$PROJECT_DIR$/client/src/components/Content/Classes/Classes.tsx" />
         <option value="$PROJECT_DIR$/client/src/components/Content/Classes/ClassPreview/ClassCreator.tsx" />
+        <option value="$PROJECT_DIR$/client/src/components/Content/Students/Students.tsx" />
+        <option value="$PROJECT_DIR$/client/src/components/Content/Classes/Classes.tsx" />
       </list>
     </option>
   </component>
@@ -247,6 +211,15 @@
             <path>
               <item name="bot-client" type="b2602c69:ProjectViewProjectNode" />
               <item name="bot-client" type="462c0819:PsiDirectoryNode" />
+              <item name="client" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="components" type="462c0819:PsiDirectoryNode" />
+              <item name="Content" type="462c0819:PsiDirectoryNode" />
+              <item name="Students" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="bot-client" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bot-client" type="462c0819:PsiDirectoryNode" />
               <item name="server" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
@@ -306,23 +279,30 @@
       <option name="project" value="LOCAL" />
       <updated>1585233539129</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Закончил страницу классов ( добавление, удаление, отображение (кэп) )">
+      <created>1585242888278</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1585242888278</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="23462000" />
+    <option name="totallyTimeSpent" value="23687000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Favorites" order="0" side_tool="true" />
-      <window_info content_ui="combo" id="Project" order="1" visible="true" weight="0.24960506" />
+      <window_info active="true" content_ui="combo" id="Project" order="1" visible="true" weight="0.24960506" />
       <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Docker" order="0" show_stripe_button="false" />
       <window_info anchor="bottom" id="GraphQL" order="1" weight="0.32962137" />
       <window_info anchor="bottom" id="TagMyCode" order="2" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="3" visible="true" weight="0.2806236" />
+      <window_info anchor="bottom" id="Terminal" order="3" visible="true" weight="0.2806236" />
       <window_info anchor="bottom" id="Version Control" order="4" weight="0.32962137" />
       <window_info anchor="bottom" id="Event Log" order="5" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="6" />
@@ -369,7 +349,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Сделаль основу страницки классов, надо еще добавит добваление и доработать удаление" />
-    <option name="LAST_COMMIT_MESSAGE" value="Сделаль основу страницки классов, надо еще добавит добваление и доработать удаление" />
+    <MESSAGE value="Закончил страницу классов ( добавление, удаление, отображение (кэп) )" />
+    <option name="LAST_COMMIT_MESSAGE" value="Закончил страницу классов ( добавление, удаление, отображение (кэп) )" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/server/DataBase.js">
@@ -659,16 +640,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/src/components/Content/Students/Students.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="184">
-          <caret line="8" column="2" selection-start-line="8" selection-start-column="2" selection-end-line="8" selection-end-column="2" />
-          <folding>
-            <element signature="e#0#26#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/client/node_modules/react-scripts/lib/react-app.d.ts">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="188">
@@ -687,16 +658,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="23">
           <caret line="3" column="24" selection-start-line="3" selection-start-column="24" selection-end-line="3" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/src/App.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="299">
-          <caret line="14" column="56" selection-start-line="14" selection-start-column="56" selection-end-line="14" selection-end-column="56" />
-          <folding>
-            <element signature="e#0#44#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -803,13 +764,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/src/index.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="483">
-          <caret line="21" column="19" selection-start-line="21" selection-start-column="19" selection-end-line="21" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/client/src/components/Content/Classes/ClassPreview/ClassPreview.tsx">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="219">
@@ -817,6 +771,34 @@
           <folding>
             <element signature="e#0#34#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/src/components/Content/Students/Students.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="115">
+          <caret line="5" column="49" selection-start-line="5" selection-start-column="49" selection-end-line="5" selection-end-column="49" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/src/components/Content/Classes/ClassPreview/ClassCreator.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-92">
+          <caret line="23" column="22" selection-start-line="23" selection-start-column="22" selection-end-line="23" selection-end-column="22" />
+          <folding>
+            <element signature="e#0#38#0" expanded="true" />
+            <element signature="e#215#231#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/src/index.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="483">
+          <caret line="21" column="19" selection-start-line="21" selection-start-column="19" selection-end-line="21" selection-end-column="19" />
         </state>
       </provider>
     </entry>
@@ -829,21 +811,20 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/client/src/components/Content/Classes/Classes.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="414">
-          <caret line="18" column="21" selection-start-line="18" selection-start-column="21" selection-end-line="18" selection-end-column="21" />
+        <state relative-caret-position="299">
+          <caret line="25" column="37" selection-start-line="25" selection-start-column="37" selection-end-line="25" selection-end-column="37" />
           <folding>
             <element signature="e#0#26#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/src/components/Content/Classes/ClassPreview/ClassCreator.tsx">
+    <entry file="file://$PROJECT_DIR$/client/src/App.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="24" column="23" selection-start-line="24" selection-start-column="23" selection-end-line="24" selection-end-column="23" />
+        <state relative-caret-position="299">
+          <caret line="14" column="56" selection-start-line="14" selection-start-column="56" selection-end-line="14" selection-end-column="56" />
           <folding>
-            <element signature="e#0#38#0" expanded="true" />
-            <element signature="e#215#231#0" />
+            <element signature="e#0#44#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -24,7 +24,6 @@ export type classesData = {
 const Classes: React.FC = () => {
     const {data, loading, error} = useQuery<classesData>(GET_CLASSES);
     const client = useApolloClient();
-    console.log(data && client.readQuery({query: GET_CLASSES}));
     if (loading) return <div> Loading... </div>;
     if (error) return <div> Error: {error} </div>;
 

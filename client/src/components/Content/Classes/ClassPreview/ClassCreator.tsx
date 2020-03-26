@@ -21,7 +21,7 @@ const ClassCreator: React.FC = () => {
     const [name, setName] = useState<string>("");
     const client = useApolloClient();
 
-    const [createClass, {error, data}] = useMutation<{ classCreateOne: { record: { name: string, studentsCount: number } } },
+    const [createClass] = useMutation<{ classCreateOne: { record: { name: string, studentsCount: number } } },
         { name: string }>(CREATE_CLASS, {
         variables: {
             name
