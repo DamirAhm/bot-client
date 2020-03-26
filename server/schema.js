@@ -24,6 +24,13 @@ ClassTC.addRelation('students', {
         },
         projection: { class: 1 }, // point fields in source object, which should be fetched from DB
     });
+ClassTC.addRelation("studentsCount",{
+    resolver: () => StudentTC.getResolver('count'),
+    prepareArgs: {
+        filter: (source) => ({class: source._id}),
+    },
+    projection: {_id: 1}
+});
 
 ClassTC.addResolver({
     name: "getHomework",
@@ -66,6 +73,14 @@ StudentTC.addResolver({
         return await DataBase.removeStudentFromClass(args.vkId);
     }
 });
+StudentTC.addResolver({
+    name: "changeClass",
+    type: "Boolean",
+    args: { vkId: "Int!", newClassName: "String!" },
+    resolve: async ({ source, args, context, info }) => {
+        return await DataBase.changeClass(args.vkId, args.newClassName);
+    }
+});
 
 schemaComposer.Query.addFields({
     studentById: StudentTC.getResolver('findById'),
@@ -83,7 +98,7 @@ schemaComposer.Query.addFields({
     classConnection: ClassTC.getResolver('connection'),
     classPagination: ClassTC.getResolver('pagination'),
     getHomework: ClassTC.getResolver('getHomework'),
-    getChanges: ClassTC.getResolver('getChanges')
+    getChanges: ClassTC.getResolver('getChanges'),
 });
 schemaComposer.Mutation.addFields({
     studentCreateOne: StudentTC.getResolver('createOne'),
@@ -104,25 +119,12 @@ schemaComposer.Mutation.addFields({
     classRemoveMany: ClassTC.getResolver('removeMany'),
     changeDay: ClassTC.getResolver('changeDay'),
     changeSettings: StudentTC.getResolver('changeSettings'),
-    removeStudentFromClass: StudentTC.getResolver('removeStudentFromClass')
+    removeStudentFromClass: StudentTC.getResolver('removeStudentFromClass'),
+    changeClass: StudentTC.getResolver('changeClass'),
 });
 
 const graphqlSchema = schemaComposer.buildSchema();
 
-const typeDefs = gql`
-    type Query {
-        hello: String
-    }
-`;
-
-const resolvers = {
-    Query: {
-        hello: () => 'Hello world!',
-    },
-};
-
 module.exports = {
-    typeDefs,
-    resolvers,
     graphqlSchema
 };

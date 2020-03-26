@@ -87,70 +87,6 @@ class DataBase {
             return null;
         }
     }; //Возвращает ученика по его _id (это чисто для разработки (так быстрее ищется))
-    static async getAllContributors() {
-        try {
-            const contributors = await _Student.find({role: Roles.contributor});
-            if (contributors) {
-                return contributors;
-            } else {
-                return [];
-            }
-        } catch (e) {
-            return [];
-        }
-    }; //Возвращает список всех редакторов
-
-    //Creators
-    static async createStudent(vkId, class_id) {
-        try {
-            if (vkId) {
-                if (typeof vkId === "number") {
-                    let newStudent;
-                    if (class_id) {
-                        const Class = await this.getClassBy_Id(class_id);
-                        newStudent = new _Student({vkId, class: Class ? class_id : undefined});
-                        if (Class) {
-                            await Class.updateOne({students: [...Class.students, newStudent._id]});
-                        }
-                    } else {
-                        newStudent = new _Student({vkId});
-                    }
-                    await newStudent.save();
-                    return await DataBase.getStudentBy_Id(newStudent._id);
-                } else {
-                    throw new TypeError("VkId must be number");
-                }
-            } else {
-                throw new TypeError("Vkid parameter is required")
-            }
-        } catch (e) {
-            if (e instanceof TypeError) throw e;
-            console.error(e);
-            return null;
-        }
-    }; //Создает и возвращает ученика
-    static async createClass(name) {
-        try {
-            if (name) {
-                if (typeof name === "string") {
-                    const newClass = new _Class({
-                        name
-                    });
-                    await newClass.save();
-                    return await DataBase.getClassBy_Id(newClass._id);
-                } else {
-                    throw new TypeError("name must be string");
-                }
-            } else {
-                throw new TypeError("name parameter is required")
-            }
-        } catch (e) {
-            console.log(e);
-            if (e instanceof TypeError) throw e;
-            console.error(e);
-            return null;
-        }
-    }; //Создает и возвращает класс
 
     //// Classes
 
@@ -177,46 +113,12 @@ class DataBase {
             return null
         }
     }; //
-    static async parseHomeworkToNotifications(currentDateForTest) {
-        const classes = await _Class.find({});
-        const notificationArray = []; //Массив массивов типа [[Массив вк айди учеников], [Массив дз]]
-        for (const cl of classes) {
-            if (cl.homework.length && cl.students.length) {
-                const date = currentDateForTest || Date();
-                date.setDate(date.getDate() + 1); // Берем дз на некст день
-                const notifiedStudentIds = findNotifiedStudents(cl.students, currentDateForTest || new Date(), config.get("REMIND_AFTER")).map(({vkId}) => vkId);
-                const homework = cl.homework.filter(({to}) => checkIsToday(to, date));
-                notificationArray.push([notifiedStudentIds, homework]);
-            }
-        }
-        return notificationArray;
-    }; //
 
     //Schedule
-    static async setSchedule(className, lessonsIndexesByDays, lessonList = Lessons) {
-        try {
-            if (className && typeof className === "string") {
-                const Class = await this.getClassByName(className);
-                if (Class) {
-                    const newSchedule = lessonsIndexesToLessonsNames(lessonList, lessonsIndexesByDays);
-                    await Class.updateOne({schedule: newSchedule});
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                throw new TypeError("ClassName must be string");
-            }
-        } catch (e) {
-            if (e instanceof TypeError) throw e;
-            console.log(e);
-            return false;
-        }
-    }; //Устонавливает расписание (1: список предметов, 2: имя класса, 3: массив массивов индексов уроков где индекс соответствует уроку в массиве(1) по дням недели)
     static async changeDay(className, dayIndex, newDay) {
         try {
             if (className && typeof className === "string") {
-                if(dayIndex !== undefined && typeof dayIndex === "number" && dayIndex < 6 && dayIndex >= 0) {
+                if (dayIndex !== undefined && typeof dayIndex === "number" && dayIndex < 6 && dayIndex >= 0) {
                     if (newDay && Array.isArray(newDay) && newDay.every(lesson => typeof lesson === "string" && Lessons.includes(lesson))) {
                         const Class = await this.getClassByName(className);
                         if (Class) {
@@ -244,45 +146,6 @@ class DataBase {
     }
 
     //Changes
-    static async addChanges(vkId, parsedAttachments, toDate = new Date(), toAll = false) {
-        try {
-            if (vkId && typeof vkId === 'number') {
-                if (parsedAttachments && Array.isArray(parsedAttachments) && parsedAttachments.every(at => typeof at === "string" && /[a-z]+\d+_\d+_.+/.test(at))) {
-                    if (toDate && toDate instanceof Date) {
-                        const Student = await this.getStudentByVkId(vkId);
-                        const newChanges = parsedAttachments.map(value => ({
-                            to: toDate,
-                            value,
-                            createdBy: vkId
-                        }));
-                        if (toAll) {
-                            const classes = await _Class.find({});
-                            for (const _class of classes) {
-                                await _class.updateOne({changes: [..._class.changes, ...newChanges]})
-                            }
-                            return true;
-                        } else {
-                            if (Student.class) {
-                                await Student.class.updateOne({changes: [...Student.class.changes, ...newChanges]});
-                                return true;
-                            } else {
-                                return false; //Не состоя в классе вы можете добавлять изменения только всем классам
-                            }
-                        }
-                    } else {
-                        throw new TypeError("toDate must be date");
-                    }
-                } else {
-                    throw new TypeError("Attachments must be array of attachments")
-                }
-            } else {
-                throw new TypeError("VkId must be number");
-            }
-        } catch (e) {
-            if (e instanceof TypeError) throw e;
-            return false;
-        }
-    }; //
     static async getChanges(className, date) {
         try {
             if (className && typeof className === "string") {
@@ -336,113 +199,7 @@ class DataBase {
             console.log(e);
             return false;
         }
-    };
-
-    //Roles utils
-    static async generateNewRoleUpCode(className) {
-        try {
-            if (className && typeof className === "string") {
-                const newCode = uuid4();
-                const Class = await DataBase.getClassByName(className);
-                if (Class) {
-                    Class.roleUpCodes.push(newCode);
-                    await Class.save();
-                    return newCode;
-                } else {
-                    return null;
-                }
-            } else {
-                throw new TypeError("className must be string")
-            }
-        } catch (e) {
-            if (e instanceof TypeError) throw e;
-            console.error(e);
-            return null
-        }
-    }; //Генерирует и возвращает код для того что бы стать радактором, если не получилось возвращает null
-    static async removeRoleUpCode(className, code) {
-        try {
-            if (uuid4.valid(code)) {
-                const Class = await DataBase.getClassByName(className);
-                if (Class && Class.roleUpCodes) {
-                    Class.roleUpCodes = Class.roleUpCodes.filter(code => code !== code);
-                    await Class.save();
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                throw new TypeError("Code to be removed must be valid uuid4 code");
-            }
-        } catch (e) {
-            if (e instanceof TypeError) throw e;
-            return false;
-        }
-    }; //Убирает код из списка кодов класса
-    static async activateCode(vkId, code) {
-        try {
-            if (uuid4.valid(code)) {
-                let Student = await this.getStudentByVkId(vkId);
-                if (Student) {
-                    if (Student.class) {
-                        const isValid = Student.class.roleUpCodes.includes(code);
-                        if (isValid) {
-                            const removed = await this.removeRoleUpCode(Student.class.name, code);
-                            if (removed) {
-                                await Student.updateOne({role: Roles.contributor});
-                                return true;
-                            } else {
-                                return false;
-                            }
-                        } else {
-                            return false;
-                        }
-                    } else {
-                        throw new TypeError("Student must have class property to activate code");
-                    }
-                } else {
-                    return false;
-                }
-            } else {
-                throw new TypeError("Code should be valid uuid4 code");
-            }
-        } catch (e) {
-            if (e instanceof TypeError) throw e;
-            return false;
-        }
-    }; //Активирует код - делает ученика редактором и убирает код и списка кодов класса
-    static async checkCodeValidity(className, code) {
-        if (uuid4.valid(code)) {
-            const Class = await this.getClassByName(className);
-            if (Class && Class.roleUpCodes) {
-                return Class.roleUpCodes.includes(code);
-            } else {
-                return false;
-            }
-        } else {
-            return false
-        }
-    }; //Проверяет валидность кода - Правильного ли он формата и есть ли он в списке кодов класса
-    static async backStudentToInitialRole(vkId) {
-        try {
-            if (vkId && typeof vkId === "number") {
-                const Student = await this.getStudentByVkId(vkId);
-                if (Student) {
-                    Student.role = Roles.student;
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                throw new TypeError("VkId must be a number")
-            }
-        } catch (e) {
-            if (e instanceof TypeError) throw e;
-            console.error(e);
-            return false;
-        }
-    }; //Возвращает редактора к роли ученика
-    //Status
+    };//
     static async banUser(vkId, isBan = true) {
         try {
             if (vkId && typeof vkId === "number") {
@@ -467,22 +224,6 @@ class DataBase {
     }; //
 
     //// Interactions
-    static async addStudentToClass(StudentVkId, className) {
-        try {
-            const Class = await this.getClassByName(className);
-            const Student = await this.getStudentByVkId(StudentVkId);
-            if (Class && Student) {
-                await Class.updateOne({students: [...Class.students, Student._id]});
-                await Student.updateOne({class: Class._id});
-                return true;
-            } else {
-                return false;
-            }
-        } catch (e) {
-            console.log(e);
-            return false;
-        }
-    }; //Добавляет ученика в класс
     static async removeStudentFromClass(StudentVkId) {
         try {
             const Student = await DataBase.getStudentByVkId(StudentVkId);
@@ -503,16 +244,23 @@ class DataBase {
     static async changeClass(StudentVkId, newClassName) {
         try {
             const Student = await this.getStudentByVkId(StudentVkId);
-            if (Student.class.name !== newClassName) {
-                const newClass = await this.getClassByName(newClassName);
-                if (newClass && Student) {
-                    const removed = await this.removeStudentFromClass(StudentVkId);
-                    if (removed) {
-                        await Student.updateOne({class: newClass._id});
-                        newClass.students.push(Student._id);
-                        await newClass.save();
-                        await Student.save();
-                        return true;
+            const newClass = await this.getClassByName(newClassName);
+            if (Student.class) {
+                const Class = await this.getClassBy_Id(Student.class);
+                if (newClass) {
+                    if (Class.name !== newClassName) {
+                        if (newClass && Student) {
+                            const removed = await this.removeStudentFromClass(StudentVkId);
+                            if (removed) {
+                                await Student.updateOne({class: newClass._id});
+                                await newClass.updateOne({students: [...newClass.students, Student._id]});
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        } else {
+                            return false;
+                        }
                     } else {
                         return false;
                     }
@@ -520,9 +268,14 @@ class DataBase {
                     return false;
                 }
             } else {
-                return false;
+                await Student.updateOne({class: newClass._id});
+                await newClass.updateOne({students: [...newClass.students, Student._id]});
+                return true;
             }
+
         } catch (e) {
+            if (e instanceof TypeError) throw e;
+            console.log(e);
             return false;
         }
     }; //Меняет класс ученика

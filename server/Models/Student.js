@@ -4,7 +4,7 @@ const {Roles, checkValidTime} = require("./utils");
 const studentSchema = mongoose.Schema({
     class: {
         type: mongoose.Schema.ObjectId,
-        ref: "Class"
+        ref: "Class",
     },
     role: {
         type: String,

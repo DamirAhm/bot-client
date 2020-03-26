@@ -100,5 +100,6 @@ const classSchema = mongoose.Schema({
     }
 });
 
+
 module.exports.ClassModel = mongoose.model("Class", classSchema);
 module.exports.ClassSchema = classSchema;

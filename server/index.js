@@ -1,7 +1,7 @@
 const app = require('express')();
 const { ApolloServer, gql } = require('apollo-server-express');
 const mongoose = require('mongoose');
-const { typeDefs, resolvers, graphqlSchema } = require('./schema');
+const { graphqlSchema } = require('./schema');
 
 mongoose.connect("mongodb+srv://Damir:CLv4QEJJrfZp4BC0@botdata-sp9px.mongodb.net/prod?retryWrites=true&w=majority", {
     useNewUrlParser: true,

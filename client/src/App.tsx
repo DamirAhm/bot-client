@@ -1,26 +1,28 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {lazy, Suspense} from 'react';
+import styles from "./App.module.css";
+import Sidebar from "./components/Sidebar/Sidebar";
+import {Redirect, Route, Switch} from "react-router";
+
+const Classes = lazy(() => import("./components/Content/Classes/Classes"));
+const Students = lazy(() => import("./components/Content/Students/Students"));
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    return (
+        <div className={styles.wrapper}>
+            <div className={styles.app}>
+                <Sidebar/>
+                <div className={styles.content}>
+                    <Suspense fallback={<div> Loading... </div>}>
+                        <Switch>
+                            <Route path="/classes" component={Classes}/>
+                            <Route path="/students" component={Students}/>
+                            <Route paht="*" render={() => <Redirect to="/classes"/>}/>
+                        </Switch>
+                    </Suspense>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 export default App;
