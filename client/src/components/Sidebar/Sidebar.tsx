@@ -1,10 +1,9 @@
-import React, {useState} from "react";
+import React from "react";
 import styles from "./Sidebar.module.css";
 import {NavLink} from "react-router-dom";
 import {GiHamburgerMenu} from "react-icons/gi";
 import {FaChevronLeft} from "react-icons/fa";
 import {useQuery, useMutation} from "@apollo/react-hooks";
-import {gql} from "apollo-boost";
 import {SIDEBAR_OPENED} from "../../index";
 import {TOGGLE_SIDEBAR} from "../../App";
 
@@ -15,7 +14,7 @@ const Sidebar: React.FC = () => {
         toggleSidebar();
     };
     return (
-        <div onClick={e => e.stopPropagation()} className={`${styles.sidebar} ${data?.sidebarOpened && "opened"}`}>
+        <div onClick={e => e.stopPropagation()} className={`${styles.sidebar} ${data?.sidebarOpened ? styles.opened : ""}`}>
             <label onBlur={handleCheck} htmlFor={styles.check}>
                 {data?.sidebarOpened ?
                     <FaChevronLeft size={20}/> :

@@ -34,7 +34,7 @@
     background-color: var(--banned);
 }
 
-@media screen and (max-width: 650px) {
+@media screen and (max-width: 776px) {
     .preview {
         width: 100%;
         font-size: 1rem;

@@ -80,7 +80,7 @@
     color: var(--positive);
 }
 
-@media screen and (max-width: 650px) {
+@media screen and (max-width: 776px) {
     .creator {
         width: calc(80% - 20px); /* preview size */
         padding: 10px;

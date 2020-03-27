@@ -73,9 +73,9 @@ const resolvers = {
 
 const typeDefs = gql`
     extend type Mutation {
-        deleteClass(name: String): [Class]
-        createClass(name: String): Class
-        toggleSidebar(flag: Boolean): Boolean
+        deleteClass(name: String): [Class]!
+        createClass(name: String): Class!
+        toggleSidebar(flag: Boolean): Boolean!
     }
     extend type Query {
         sidebarOpened: Boolean
