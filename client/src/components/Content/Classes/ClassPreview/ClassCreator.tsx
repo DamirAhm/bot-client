@@ -33,8 +33,8 @@ const ClassCreator: React.FC = () => {
     };
 
     return (
-        <div className={styles.wrapper}>
-            <div className={`${styles.creator} ${styles.preview}`}>
+        <div className={styles.wrapper} >
+            <div className={`${styles.creator} ${styles.preview}`} onClick={() => setCreating(true)}>
                 {creating ?
                     <form onSubmit={confirm} className={styles.form}>
                         <FaRegTimesCircle size={20} className={`${styles.reject} ${styles.button}`} onClick={clear}/>
@@ -42,7 +42,7 @@ const ClassCreator: React.FC = () => {
                                className={styles.input}/>
                         <FaRegCheckCircle onClick={confirm} className={`${styles.confirm} ${styles.button}`} size={20}/>
                     </form> :
-                    <div onClick={() => setCreating(true)}>Create class</div>
+                    "Create class"
                 }
             </div>
         </div>

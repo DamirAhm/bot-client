@@ -43,7 +43,6 @@ const resolvers = {
                     __typename: "Class",
                     _id: Date.now().toString()
                 }];
-                console.log(newClasses);
                 cache.writeQuery({
                     query: GET_CLASSES,
                     data: {
