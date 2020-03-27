@@ -1,0 +1,45 @@
+.preview {
+    background-color: var(--main);
+    padding: 20px;
+    display: flex;
+    width: 60%;
+    margin: 20px 0;
+    font-size: 1.6rem;
+    border-radius: 18px;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.ban > * {
+    color: var(--negative)
+}
+
+.unban > * {
+    color: var(--positive)
+}
+
+.button {
+    cursor: pointer;
+}
+
+.button:hover > * {
+    color: var(--accent);
+}
+
+.banned .button:hover > * {
+    color: var(--main);
+}
+
+.banned {
+    background-color: var(--banned);
+}
+
+@media screen and (max-width: 650px) {
+    .preview {
+        width: 100%;
+        font-size: 1rem;
+        display: flex;
+        padding: 16px;
+        margin: 15px 0;
+    }
+}

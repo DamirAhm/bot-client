@@ -57,6 +57,14 @@ ClassTC.addResolver({
         return await DataBase.getChanges(args.className, args.date);
     }
 });
+ClassTC.addResolver({
+    name: "classCreateOne",
+    type: ClassTC.getType(),
+    args: { className: "String!" },
+    resolve: async ({ source, args, context, info }) => {
+        return await DataBase.createClass(args.className);
+    }
+});
 StudentTC.addResolver({
     name: "changeSettings",
     type: "Boolean",
@@ -81,6 +89,27 @@ StudentTC.addResolver({
         return await DataBase.changeClass(args.vkId, args.newClassName);
     }
 });
+StudentTC.addResolver({
+    name: "banStudent",
+    type: StudentTC.getType(),
+    args: { vkId: "Int!", isBan: "Boolean" },
+    resolve: async ({ source, args, context, info }) => {
+        const result = await DataBase.banUser(args.vkId, args.isBan !== undefined ? args.isBan : true);
+        if (result) {
+            return await DataBase.getStudentByVkId(args.vkId);
+        } else {
+            return null;
+        }
+    }
+});
+StudentTC.addResolver({
+    name: "studentCreateOne",
+    type: StudentTC.getType(),
+    args: { vkId: "Int!" },
+    resolve: async ({ source, args, context, info }) => {
+        return await DataBase.createStudent(args.vkId);
+    }
+});
 
 schemaComposer.Query.addFields({
     studentById: StudentTC.getResolver('findById'),
@@ -101,7 +130,7 @@ schemaComposer.Query.addFields({
     getChanges: ClassTC.getResolver('getChanges'),
 });
 schemaComposer.Mutation.addFields({
-    studentCreateOne: StudentTC.getResolver('createOne'),
+    studentCreateOne: StudentTC.getResolver('studentCreateOne'),
     studentCreateMany: StudentTC.getResolver('createMany'),
     studentUpdateById: StudentTC.getResolver('updateById'),
     studentUpdateOne: StudentTC.getResolver('updateOne'),
@@ -109,7 +138,7 @@ schemaComposer.Mutation.addFields({
     studentRemoveById: StudentTC.getResolver('removeById'),
     studentRemoveOne: StudentTC.getResolver('removeOne'),
     studentRemoveMany: StudentTC.getResolver('removeMany'),
-    classCreateOne: ClassTC.getResolver('createOne'),
+    classCreateOne: ClassTC.getResolver('classCreateOne'),
     classCreateMany: ClassTC.getResolver('createMany'),
     classUpdateById: ClassTC.getResolver('updateById'),
     classUpdateOne: ClassTC.getResolver('updateOne'),
@@ -121,6 +150,7 @@ schemaComposer.Mutation.addFields({
     changeSettings: StudentTC.getResolver('changeSettings'),
     removeStudentFromClass: StudentTC.getResolver('removeStudentFromClass'),
     changeClass: StudentTC.getResolver('changeClass'),
+    banStudent: StudentTC.getResolver('banStudent'),
 });
 
 const graphqlSchema = schemaComposer.buildSchema();

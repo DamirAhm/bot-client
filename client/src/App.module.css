@@ -7,16 +7,27 @@
     align-items: center;
 }
 
-.app {
+:global(.app) {
     width: 1440px;
     max-height: 100vh;
     background-color: var(--secondary);
     display: grid;
     grid-template-columns: 15% 1fr;
-    overflow: auto;
 }
 
 .content {
     overflow: auto;
     max-height: 100vh;
+}
+
+
+@media screen and (max-width: 650px) {
+    :global(.app){
+        grid-template-columns: 50px 1fr;
+    }
+
+    :global(.sidebarOpened) {
+        grid-template-columns: 100px calc(100% - 50px);
+        overflow: hidden;
+    }
 }

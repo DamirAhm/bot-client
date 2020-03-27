@@ -88,6 +88,58 @@ class DataBase {
         }
     }; //Возвращает ученика по его _id (это чисто для разработки (так быстрее ищется))
 
+    //Creators
+    static async createStudent(vkId, class_id) {
+        try {
+            if (vkId) {
+                if (typeof vkId === "number") {
+                    let newStudent;
+                    if (class_id) {
+                        const Class = await this.getClassBy_Id(class_id);
+                        newStudent = new _Student({vkId, class: Class ? class_id : undefined});
+                        if (Class) {
+                            await Class.updateOne({students: [...Class.students, newStudent._id]});
+                        }
+                    } else {
+                        newStudent = new _Student({vkId});
+                    }
+                    await newStudent.save();
+                    return await DataBase.getStudentBy_Id(newStudent._id);
+                } else {
+                    throw new TypeError("VkId must be number");
+                }
+            } else {
+                throw new TypeError("Vkid parameter is required")
+            }
+        } catch (e) {
+            if (e instanceof TypeError) throw e;
+            console.error(e);
+            return null;
+        }
+    }; //Создает и возвращает ученика
+    static async createClass(name) {
+        try {
+            if (name) {
+                if (typeof name === "string") {
+                    const newClass = new _Class({
+                        name
+                    });
+                    await newClass.save();
+                    return await DataBase.getClassBy_Id(newClass._id);
+                } else {
+                    throw new TypeError("name must be string");
+                }
+            } else {
+                throw new TypeError("name parameter is required")
+            }
+        } catch (e) {
+            console.log(e);
+            if (e instanceof TypeError) throw e;
+            console.error(e);
+            return null;
+        }
+    }; //Создает и возвращает класс
+
     //// Classes
 
     //Homework

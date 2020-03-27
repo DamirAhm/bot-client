@@ -34,6 +34,10 @@
     cursor: pointer;
 }
 
+.remove:hover > * {
+    color: var(--accent);
+}
+
 .wrapper {
     display: flex;
     justify-content: center;
@@ -74,4 +78,17 @@
 
 .confirm > * {
     color: var(--positive);
+}
+
+@media screen and (max-width: 650px) {
+    .creator {
+        width: calc(80% - 20px); /* preview size */
+        padding: 10px;
+    }
+
+    .reject,
+    .confirm {
+        padding: 0px;
+        box-sizing: border-box;
+    }
 }

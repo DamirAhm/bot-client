@@ -9,6 +9,13 @@
     padding-top: 20px;
 }
 
+.hamb {
+    display: none;
+}
+#check {
+    display: none;
+}
+
 .link {
     color: var(--accent);
     font-weight: 500;
@@ -32,4 +39,31 @@
 .active:hover {
     color: inherit;
     font-size: 3rem;
+}
+
+@media screen and (max-width: 768px) {
+    .sidebar {
+        min-width: 0;
+    }
+    
+    .sidebar .link {
+        display: none;
+    }
+
+    .hamb {
+        display: block;
+    }
+
+    #check:checked ~ .link{
+        display: block;
+        font-size: 1.6rem;
+        padding: 20px;
+    }
+
+    .sidebar label {
+        margin-bottom: 20px;
+        width: 100%;
+        justify-content: center;
+        display: flex;
+    }
 }

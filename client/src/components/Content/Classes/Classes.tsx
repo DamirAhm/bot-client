@@ -1,6 +1,6 @@
 import React from "react";
 import {gql} from "apollo-boost";
-import {useQuery,useApolloClient} from "@apollo/react-hooks";
+import {useQuery} from "@apollo/react-hooks";
 import ClassPreview from "./ClassPreview/ClassPreview";
 import styles from "./Classes.module.css";
 import ClassCreator from "./ClassPreview/ClassCreator";
@@ -10,6 +10,7 @@ export const GET_CLASSES = gql`
         classes: classMany {
             studentsCount
             name
+            _id
         }
     }
 `;
@@ -23,9 +24,8 @@ export type classesData = {
 
 const Classes: React.FC = () => {
     const {data, loading, error} = useQuery<classesData>(GET_CLASSES);
-    const client = useApolloClient();
     if (loading) return <div> Loading... </div>;
-    if (error) return <div> Error: {error} </div>;
+    if (error) return <div className={"content"}> Error: {JSON.stringify(error, null, 2)} </div>;
 
     return <div className="content">
         <ClassCreator />

@@ -2,8 +2,7 @@ import React, {memo} from "react";
 import styles from "./ClassPreview.module.css";
 import {IoIosTrash} from "react-icons/io";
 import {gql} from "apollo-boost";
-import {useApolloClient, useMutation} from "@apollo/react-hooks";
-import {classesData, GET_CLASSES} from "../Classes";
+import {useMutation} from "@apollo/react-hooks";
 
 type Props = {
     className: string,
@@ -13,29 +12,18 @@ type Props = {
 // language=GraphQL
 const DELETE_CLASS = gql`
     mutation RemoveOne($className: String!){
+        deleteClass(name: $className) @client
         classRemoveOne(filter: {name: $className}) {
-            record {
-                name
-                studentsCount
-            }
+            recordId
         }
     }
 `;
 //TODO добавить модалку спрашивающую уверен ли ты в удалении класса
 const ClassPreview: React.FC<Props> = ({className, studentsCount}) => {
-    const client = useApolloClient();
     const [deleteClass, {error, data}] = useMutation<{ classRemoveOne: { record: { name: string } } },
         { className: string }>
     (DELETE_CLASS, {
-            variables: {className},
-            onCompleted: (data) => {
-                client.writeQuery({
-                    query: GET_CLASSES,
-                    data: {
-                        classes: client.readQuery<classesData>({query: GET_CLASSES})?.classes?.filter(c => c.name !== data.classRemoveOne.record.name) || []
-                    }
-                })
-            }
+            variables: {className}
         }
     );
 

@@ -78,28 +78,14 @@ type CreateManyStudentPayload {
     records: [Student]!
 }
 
-type CreateOneClassPayload {
-    "Created document"
-    record: Class
-    "Created document ID"
-    recordId: MongoID
-}
-
-type CreateOneStudentPayload {
-    "Created document"
-    record: Student
-    "Created document ID"
-    recordId: MongoID
-}
-
 type Mutation {
+    banStudent(isBan: Boolean, vkId: Int!): Student
     changeClass(newClassName: String!, vkId: Int!): Boolean
     changeDay(className: String!, day: [String], dayIndex: Int): Boolean
     changeSettings(diffObject: StudentSettingsInput, vkId: Int!): Boolean
     "Creates Many documents with mongoose defaults, setters, hooks and validation"
     classCreateMany(records: [CreateManyClassInput!]!): CreateManyClassPayload
-    "Create one document with mongoose defaults, setters, hooks and validation"
-    classCreateOne(record: CreateOneClassInput!): CreateOneClassPayload
+    classCreateOne(className: String!): Class
     "Remove one document: 1) Retrieve one document and remove with hooks via findByIdAndRemove. 2) Return removed document."
     classRemoveById(_id: MongoID!): RemoveByIdClassPayload
     "Remove many documents without returning them: Use Query.remove mongoose method. Do not apply mongoose defaults, setters, hooks and validation. "
@@ -135,8 +121,7 @@ type Mutation {
     removeStudentFromClass(vkId: Int!): Boolean
     "Creates Many documents with mongoose defaults, setters, hooks and validation"
     studentCreateMany(records: [CreateManyStudentInput!]!): CreateManyStudentPayload
-    "Create one document with mongoose defaults, setters, hooks and validation"
-    studentCreateOne(record: CreateOneStudentInput!): CreateOneStudentPayload
+    studentCreateOne(vkId: Int!): Student
     "Remove one document: 1) Retrieve one document and remove with hooks via findByIdAndRemove. 2) Return removed document."
     studentRemoveById(_id: MongoID!): RemoveByIdStudentPayload
     "Remove many documents without returning them: Use Query.remove mongoose method. Do not apply mongoose defaults, setters, hooks and validation. "
@@ -528,24 +513,6 @@ input CreateManyClassInput {
 }
 
 input CreateManyStudentInput {
-    banned: Boolean
-    class: MongoID
-    lastHomeworkCheck: Date
-    role: EnumStudentRole
-    settings: StudentSettingsInput
-    vkId: Float!
-}
-
-input CreateOneClassInput {
-    changes: [ClassChangesInput]
-    homework: [ClassHomeworkInput]
-    name: String!
-    roleUpCodes: [String]
-    schedule: [[String]]
-    students: [MongoID]
-}
-
-input CreateOneStudentInput {
     banned: Boolean
     class: MongoID
     lastHomeworkCheck: Date
