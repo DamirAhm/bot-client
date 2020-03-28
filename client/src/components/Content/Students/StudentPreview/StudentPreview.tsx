@@ -47,9 +47,9 @@ const StudentPreview: React.FC<Props> = ({vkId,role,banned,className, searchText
 
     return (
         <div className={`${styles.preview} ${banned && styles.banned}`}>
-            <span> vkId: {highlighter(String(vkId))} </span>
-            <span> Роль: {highlighter(role)} </span>
-            <span> Класс: {highlighter(className)} </span>
+            <span className={styles.info}> vkId: {highlighter(String(vkId))} </span>
+            <span className={styles.info}> Роль: {highlighter(role)} </span>
+            <span className={styles.info}> Класс: {highlighter(className)} </span>
             {banned ?
                 <FaRegCheckCircle onClick={() => {banStudent()}} className={`${styles.unban} ${styles.button}`}/>:
                 <FaRegTimesCircle onClick={() => {banStudent()}} className={`${styles.ban} ${styles.button}`}/>

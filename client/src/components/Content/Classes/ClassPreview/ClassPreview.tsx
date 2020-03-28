@@ -31,7 +31,7 @@ const ClassPreview: React.FC<Props> = ({className, studentsCount, searchText}) =
     );
 
     const highlighter = (str: string) => {
-      return highlightSearch(str, searchText);
+        return highlightSearch(str, searchText);
     };
 
     if (error) console.error(error);
@@ -45,13 +45,9 @@ const ClassPreview: React.FC<Props> = ({className, studentsCount, searchText}) =
     }
     return (
         <div className={styles.preview}>
-            <div className={styles.firstRow}>
-                <p className={styles.name}> {highlighter(className)} </p>
-                <IoIosTrash onClick={() => deleteClass()} size={20} className={styles.remove}/>
-            </div>
-            <div className={styles.secondRow}>
-                <div className={styles.count}> Учеников: {highlighter(String(studentsCount))} </div>
-            </div>
+            <p className={styles.name}> {highlighter(className)} </p>
+            <div className={styles.count}> Учеников: {highlighter(String(studentsCount))} </div>
+            <IoIosTrash onClick={() => deleteClass()} size={20} className={styles.remove}/>
         </div>
     )
 };

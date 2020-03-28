@@ -1,8 +1,8 @@
 .filters {
     display: flex;
     justify-content: space-between;
-    padding: 0 30px 0 30px;
     box-sizing: border-box;
+    width: 100%;
 }
 
 .filters input,
@@ -12,12 +12,21 @@
     height: 100%;
 }
 
-.filters input {
+.filters .search {
     color: var(--main);
+    width: 60%;
+    max-width: 130px;
 }
 
-.sorts *{
-    color: var(--main);
+.filters .sorts {
+    width: 40%;
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.sorts * {
+    color: var(--main) !important;
+    font-size: 1.2rem;
 }
 
 @media screen and (max-width: 776px) {
@@ -25,6 +34,8 @@
     .filters select {
         padding: 3px 5px;
         background-color: #fff;
+        width: 100%;
+        color: var(--main) !important;
     }
 
     .filters .search {

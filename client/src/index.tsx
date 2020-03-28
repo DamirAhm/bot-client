@@ -11,12 +11,6 @@ import {InMemoryCache} from 'apollo-cache-inmemory';
 import {GET_CLASSES} from "./components/Content/Classes/Classes";
 import {Class} from "./types";
 
-export const SIDEBAR_OPENED = gql`
-    {
-        sidebarOpened @client
-    }
-`;
-
 const resolvers = {
     Mutation: {
         deleteClass: (_: any, {name}: { name: string }, {cache}: { cache: InMemoryCache }) => {
@@ -58,14 +52,6 @@ const resolvers = {
                 };
             }
             return null;
-        },
-        toggleSidebar: (_: any, {flag}: { flag: boolean }, {cache}: { cache: InMemoryCache }) => {
-            cache.writeQuery({query: SIDEBAR_OPENED, data: {sidebarOpened: flag}});
-
-            return {
-                __typename: "Mutation",
-                sidebarOpened: flag
-            }
         }
     }
 };
@@ -74,7 +60,6 @@ const typeDefs = gql`
     extend type Mutation {
         deleteClass(name: String): [Class]!
         createClass(name: String): Class!
-        toggleSidebar(flag: Boolean): Boolean!
     }
     extend type Query {
         sidebarOpened: Boolean
@@ -112,7 +97,5 @@ ReactDOM.render(
     </ApolloProvider>,
     document.getElementById('root')
 );
-
-client.writeQuery({query: SIDEBAR_OPENED, data: {sidebarOpened: false}});
 
 serviceWorker.unregister();

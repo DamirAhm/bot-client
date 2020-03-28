@@ -1,8 +1,8 @@
-import React, {useState} from "react";
+import React, {MouseEvent, useState} from "react";
 import styles from "./ClassPreview.module.css";
 import {FaRegCheckCircle, FaRegTimesCircle} from "react-icons/fa";
 import {gql} from "apollo-boost";
-import {useMutation, useApolloClient} from "@apollo/react-hooks";
+import {useMutation} from "@apollo/react-hooks";
 import {GET_CLASSES} from "../Classes";
 import {Class} from "../../../../types";
 const CREATE_CLASS = gql`
@@ -32,7 +32,6 @@ const ClassCreator: React.FC = () => {
             }
         },
         update: (proxy, data) => {
-            console.log(proxy.readQuery<{classes: any}>({query: GET_CLASSES})?.classes.concat([data]));
             proxy.writeQuery({
                 query: GET_CLASSES,
                 data: {
@@ -44,13 +43,20 @@ const ClassCreator: React.FC = () => {
         }
     });
 
-    const clear = () => {
-        setCreating(false);
-    };
-    const confirm = () => {
-        createClass();
+    const clear = (e: MouseEvent) => {
+        e.stopPropagation();
         setCreating(false);
         setName("");
+    };
+
+    const confirm = () => {
+        if (name) {
+            createClass();
+            setCreating(false);
+            setName("");
+        } else {
+            alert("Введите имя")
+        }
     };
 
     return (

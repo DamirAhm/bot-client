@@ -11,3 +11,7 @@
         padding: 15px;
     }
 }
+
+.filters {
+    padding: 0 calc((100% / 2 - 35%) / 3)
+}

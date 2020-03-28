@@ -64,8 +64,8 @@ const Classes: React.FC = () => {
 
     if (loading) return <div> Loading... </div>;
     if (error) return <div className={"content"}> Error: {JSON.stringify(error, null, 2)} </div>;
-    return <div className="content">
-        <Filters setSearchText={setSearchText} sortsList={sorts} setSort={setSorting}/>
+    return <div>
+        <Filters className={styles.filters} setSearchText={setSearchText} sortsList={sorts} setSort={setSorting}/>
         <ClassCreator />
         <div className={styles.classes}>
             {items.map(c => <ClassPreview searchText={searchText} key={c.name} className={c.name} studentsCount={c.studentsCount}/>)}

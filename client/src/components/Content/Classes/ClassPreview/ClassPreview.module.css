@@ -4,34 +4,22 @@
     background-color: var(--main);
     border-radius: 18px;
     width: 80%;
-    display: grid;
-    grid-template-rows: 50% 50%;
-    grid-row-gap: 15px;
+    display: flex;
     font-size: 1.6rem;
     font-weight: 500;
-    min-width: 150px;
+    justify-content: space-between;
 }
 
 .name {
     cursor: pointer;
-}
-
-.preview > * > * {
-    height: 100%;
-    /*vertical-align: top;*/
-}
-
-.firstRow,
-.secondRow{
-    display: flex;
-    justify-content: space-between;
-    letter-spacing: 0.07rem;
+    overflow: visible;
 }
 
 .remove > * {
     color: var(--negative);
     align-self: start;
     cursor: pointer;
+    letter-spacing: 0;
 }
 
 .remove:hover > * {
@@ -52,7 +40,8 @@
     height: 50px;
     align-self: center;
     width: 35%;
-    margin-top: 15px;
+    margin: 25px 0;
+    cursor: pointer;
 }
 
 .creator form {
@@ -85,7 +74,6 @@
     .creator {
         width: calc(80% - 20px); /* preview size */
         padding: auto;
-
     }
 
     .reject,

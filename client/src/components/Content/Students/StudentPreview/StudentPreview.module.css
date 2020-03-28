@@ -2,8 +2,7 @@
     background-color: var(--main);
     padding: 20px;
     display: flex;
-    width: 60%;
-    margin: 20px 0;
+    width: 80%;
     font-size: 1.6rem;
     border-radius: 18px;
     justify-content: space-between;
@@ -44,10 +43,16 @@
 
 @media screen and (max-width: 776px) {
     .preview {
-        width: 100%;
+        width: 80%;
         font-size: 1rem;
         display: flex;
         padding: 16px;
         margin: 15px 0;
+    }
+}
+
+@media screen and (min-width: 400px) and (max-width: 776px) {
+    .info {
+        font-size: 1.2rem;
     }
 }
