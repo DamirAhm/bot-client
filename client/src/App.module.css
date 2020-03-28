@@ -21,7 +21,6 @@
 }
 
 @media (max-width: 776px) {
-
     .content {
         min-width: calc(100% - 50px);
     }

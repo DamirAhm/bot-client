@@ -16,7 +16,7 @@ const Filters: React.FC<Props> = ({sortsList, setSearchText, setSort, ...props})
         <div className={styles.filters} {...props}>
             {setSearchText &&
                 <div className={styles.search}>
-                    <input type="text" onChange={(e) => {setText(e.target.value);setSearchText(e.target.value)}} value={text}/>
+                    <input placeholder="Поиск" type="text" onChange={(e) => {setText(e.target.value);setSearchText(e.target.value)}} value={text}/>
                 </div>
             }
             {sortsList?.length && setSort &&

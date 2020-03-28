@@ -56,10 +56,6 @@ const Students: React.FC = () => {
         {
             name: "Забаненности",
             sort: (a: studentPreview, b: studentPreview) => a.banned ? 1 : -1
-        },
-        {
-            name: "none",
-            sort: (a: studentPreview, b: studentPreview) => -1
         }
     ];
 
@@ -79,6 +75,8 @@ const Students: React.FC = () => {
         const sort = sorts.find(e => e.name === name)?.sort;
         if (sort) {
             setSort(sort)
+        } else {
+            setSort(() => 1)
         }
     };
 

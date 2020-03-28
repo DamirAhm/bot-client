@@ -2,26 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="29cbfad8-5aec-4269-a565-1a7d6fc2975e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../client/src/components/Filters/Filters.module.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../client/src/components/Filters/Filters.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/server.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../client/src/utils/functions.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../client/src/components/Content/Classes/ClassPreview/ClassCreator.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/Content/Classes/ClassPreview/ClassCreator.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/App.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/App.module.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../client/src/components/Content/Classes/ClassPreview/ClassPreview.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/Content/Classes/ClassPreview/ClassPreview.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../client/src/components/Content/Classes/Classes.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/Content/Classes/Classes.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../client/src/components/Content/Students/StudentPreview/StudentPreview.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/Content/Students/StudentPreview/StudentPreview.module.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../client/src/components/Content/Students/StudentPreview/StudentPreview.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/Content/Students/StudentPreview/StudentPreview.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../client/src/components/Content/Students/Students.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/Content/Students/Students.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../client/src/hooks/useFilter.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/hooks/useList.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/components/Filters/Filters.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/Filters/Filters.module.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/components/Filters/Filters.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/components/Filters/Filters.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../client/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/index.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../client/src/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../client/src/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../schema.graphql" beforeDir="false" afterPath="$PROJECT_DIR$/../schema.graphql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DataBase.js" beforeDir="false" afterPath="$PROJECT_DIR$/DataBase.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Models/Student.js" beforeDir="false" afterPath="$PROJECT_DIR$/Models/Student.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/schema.js" beforeDir="false" afterPath="$PROJECT_DIR$/schema.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -282,12 +274,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1585406605380</updated>
-      <workItem from="1585406606602" duration="2616000" />
+      <workItem from="1585406606602" duration="3215000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2616000" />
+    <option name="totallyTimeSpent" value="3215000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />

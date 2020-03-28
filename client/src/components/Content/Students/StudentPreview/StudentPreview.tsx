@@ -4,6 +4,7 @@ import {roles} from "../../../../types";
 import {FaRegCheckCircle, FaRegTimesCircle} from "react-icons/fa";
 import {gql} from "apollo-boost";
 import {useMutation} from "@apollo/react-hooks";
+import {highlightSearch} from "../../../../utils/functions";
 
 type Props = {
     vkId: number
@@ -39,18 +40,6 @@ const StudentPreview: React.FC<Props> = ({vkId,role,banned,className, searchText
             }
         }
     });
-
-    const highlightSearch = (str: string, searchString: string, highlightClass = styles.highlight) => {
-        if (searchString.trim() !== "") {
-            const string = str.toLowerCase();
-            searchString = searchString.toLowerCase();
-            const ind = string.search(searchString);
-            if (ind !== -1) {
-                return<span> {str.slice(0, ind)} <span className={highlightClass}> {str.slice(ind, ind + searchString.length)} </span> {str.slice(ind + searchString.length, str.length - ind + searchString.length)} </span>
-            }
-        }
-        return <span> {str} </span>
-    };
 
     const highlighter = (str: string) => {
         return highlightSearch(str, searchText);

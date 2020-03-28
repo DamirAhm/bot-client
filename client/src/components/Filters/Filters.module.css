@@ -1,13 +1,15 @@
 .filters {
     display: flex;
     justify-content: space-between;
-    padding: 0 30px;
+    padding: 0 30px 0 30px;
+    box-sizing: border-box;
 }
 
 .filters input,
 .filters select {
     border-radius: 10px;
-    padding: 5px;
+    padding: 5px 10px;
+    height: 100%;
 }
 
 .filters input {
@@ -16,4 +18,20 @@
 
 .sorts *{
     color: var(--main);
+}
+
+@media screen and (max-width: 776px) {
+    .filters input,
+    .filters select {
+        padding: 3px 5px;
+        background-color: #fff;
+    }
+
+    .filters .search {
+        /*width: 60px;*/
+    }
+
+    .filters {
+        padding: 0 15px;
+    }
 }
