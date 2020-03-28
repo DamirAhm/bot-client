@@ -65,6 +65,23 @@ ClassTC.addResolver({
         return await DataBase.createClass(args.className);
     }
 });
+ClassTC.addResolver({
+    name: "removeOne",
+    type: ClassTC.getType(),
+    args: { className: "String!" },
+    resolve: async ({ source, args, context, info }) => {
+        const Class = await DataBase.getClassByName(args.className);
+        const students = Class.students;
+        if (students.length > 0) {
+            for(let student of students) {
+                const Student = await DataBase.getStudentBy_Id(student);
+                await Student.updateOne({class: null});
+            }
+        }
+        await Class.deleteOne();
+        return Class;
+    }
+});
 StudentTC.addResolver({
     name: "changeSettings",
     type: "Boolean",
@@ -108,6 +125,20 @@ StudentTC.addResolver({
     args: { vkId: "Int!" },
     resolve: async ({ source, args, context, info }) => {
         return await DataBase.createStudent(args.vkId);
+    }
+});
+StudentTC.addResolver({
+    name: "removeOne",
+    type: StudentTC.getType(),
+    args: { vkId: "Int!" },
+    resolve: async ({ source, args, context, info }) => {
+        const Student = await DataBase.getStudentByVkId(args.vkId);
+        const Class = Student.class;
+        if (Class) {
+            await DataBase.removeStudentFromClass(args.vkId);
+        }
+        await Student.deleteOne();
+        return Student;
     }
 });
 

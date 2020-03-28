@@ -45,6 +45,10 @@ const studentSchema = mongoose.Schema({
     banned: {
         default: false,
         type: Boolean
+    },
+    created: {
+        type: Date,
+        default: new Date(Date.now())
     }
 });
 

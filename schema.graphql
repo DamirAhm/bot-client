@@ -93,12 +93,7 @@ type Mutation {
         #Filter by fields
         filter: FilterRemoveManyClassInput!
     ): RemoveManyClassPayload
-    "Remove one document: 1) Remove with hooks via findOneAndRemove. 2) Return removed document."
-    classRemoveOne(
-        #Filter by fields
-        filter: FilterRemoveOneClassInput,
-        sort: SortRemoveOneClassInput
-    ): RemoveOneClassPayload
+    classRemoveOne(className: String!): Class
     "Update one document: 1) Retrieve one document by findById. 2) Apply updates to mongoose document. 3) Mongoose applies defaults, setters, hooks and validation. 4) And save it."
     classUpdateById(record: UpdateByIdClassInput!): UpdateByIdClassPayload
     "Update many documents without returning them: Use Query.update mongoose method. Do not apply mongoose defaults, setters, hooks and validation. "
@@ -129,12 +124,7 @@ type Mutation {
         #Filter by fields
         filter: FilterRemoveManyStudentInput!
     ): RemoveManyStudentPayload
-    "Remove one document: 1) Remove with hooks via findOneAndRemove. 2) Return removed document."
-    studentRemoveOne(
-        #Filter by fields
-        filter: FilterRemoveOneStudentInput,
-        sort: SortRemoveOneStudentInput
-    ): RemoveOneStudentPayload
+    studentRemoveOne(vkId: Int!): Student
     "Update one document: 1) Retrieve one document by findById. 2) Apply updates to mongoose document. 3) Mongoose applies defaults, setters, hooks and validation. 4) And save it."
     studentUpdateById(record: UpdateByIdStudentInput!): UpdateByIdStudentPayload
     "Update many documents without returning them: Use Query.update mongoose method. Do not apply mongoose defaults, setters, hooks and validation. "
@@ -288,24 +278,11 @@ type RemoveManyStudentPayload {
     numAffected: Int
 }
 
-type RemoveOneClassPayload {
-    "Removed document"
-    record: Class
-    "Removed document ID"
-    recordId: MongoID
-}
-
-type RemoveOneStudentPayload {
-    "Removed document"
-    record: Student
-    "Removed document ID"
-    recordId: MongoID
-}
-
 type Student {
     _id: MongoID!
     banned: Boolean
     class: Class
+    created: Date
     lastHomeworkCheck: Date
     role: EnumStudentRole
     settings: StudentSettings
@@ -445,20 +422,6 @@ enum SortFindOneStudentInput {
     _ID_DESC
 }
 
-enum SortRemoveOneClassInput {
-    NAME_ASC
-    NAME_DESC
-    _ID_ASC
-    _ID_DESC
-}
-
-enum SortRemoveOneStudentInput {
-    VKID_ASC
-    VKID_DESC
-    _ID_ASC
-    _ID_DESC
-}
-
 enum SortUpdateManyClassInput {
     NAME_ASC
     NAME_DESC
@@ -515,6 +478,7 @@ input CreateManyClassInput {
 input CreateManyStudentInput {
     banned: Boolean
     class: MongoID
+    created: Date
     lastHomeworkCheck: Date
     role: EnumStudentRole
     settings: StudentSettingsInput
@@ -560,6 +524,7 @@ input FilterFindManyStudentInput {
     _operators: OperatorsFilterFindManyStudentInput
     banned: Boolean
     class: MongoID
+    created: Date
     lastHomeworkCheck: Date
     role: EnumStudentRole
     settings: StudentSettingsInput
@@ -590,6 +555,7 @@ input FilterFindOneStudentInput {
     _operators: OperatorsFilterFindOneStudentInput
     banned: Boolean
     class: MongoID
+    created: Date
     lastHomeworkCheck: Date
     role: EnumStudentRole
     settings: StudentSettingsInput
@@ -620,36 +586,7 @@ input FilterRemoveManyStudentInput {
     _operators: OperatorsFilterRemoveManyStudentInput
     banned: Boolean
     class: MongoID
-    lastHomeworkCheck: Date
-    role: EnumStudentRole
-    settings: StudentSettingsInput
-    vkId: Float
-}
-
-input FilterRemoveOneClassInput {
-    AND: [FilterRemoveOneClassInput!]
-    OR: [FilterRemoveOneClassInput!]
-    _id: MongoID
-    _ids: [MongoID]
-    "List of *indexed* fields that can be filtered via operators."
-    _operators: OperatorsFilterRemoveOneClassInput
-    changes: [ClassChangesInput]
-    homework: [ClassHomeworkInput]
-    name: String
-    roleUpCodes: [String]
-    schedule: [[String]]
-    students: [MongoID]
-}
-
-input FilterRemoveOneStudentInput {
-    AND: [FilterRemoveOneStudentInput!]
-    OR: [FilterRemoveOneStudentInput!]
-    _id: MongoID
-    _ids: [MongoID]
-    "List of *indexed* fields that can be filtered via operators."
-    _operators: OperatorsFilterRemoveOneStudentInput
-    banned: Boolean
-    class: MongoID
+    created: Date
     lastHomeworkCheck: Date
     role: EnumStudentRole
     settings: StudentSettingsInput
@@ -665,6 +602,7 @@ input FilterStudentInput {
     _operators: OperatorsFilterStudentInput
     banned: Boolean
     class: MongoID
+    created: Date
     lastHomeworkCheck: Date
     role: EnumStudentRole
     settings: StudentSettingsInput
@@ -695,6 +633,7 @@ input FilterUpdateManyStudentInput {
     _operators: OperatorsFilterUpdateManyStudentInput
     banned: Boolean
     class: MongoID
+    created: Date
     lastHomeworkCheck: Date
     role: EnumStudentRole
     settings: StudentSettingsInput
@@ -725,6 +664,7 @@ input FilterUpdateOneStudentInput {
     _operators: OperatorsFilterUpdateOneStudentInput
     banned: Boolean
     class: MongoID
+    created: Date
     lastHomeworkCheck: Date
     role: EnumStudentRole
     settings: StudentSettingsInput
@@ -762,16 +702,6 @@ input NameOperatorsFilterFindOneClassInput {
 }
 
 input NameOperatorsFilterRemoveManyClassInput {
-    gt: String
-    gte: String
-    in: [String]
-    lt: String
-    lte: String
-    ne: String
-    nin: [String]
-}
-
-input NameOperatorsFilterRemoveOneClassInput {
     gt: String
     gte: String
     in: [String]
@@ -844,18 +774,6 @@ input OperatorsFilterRemoveManyStudentInput {
 }
 
 "For performance reason this type contains only *indexed* fields."
-input OperatorsFilterRemoveOneClassInput {
-    _id: _idOperatorsFilterRemoveOneClassInput
-    name: NameOperatorsFilterRemoveOneClassInput
-}
-
-"For performance reason this type contains only *indexed* fields."
-input OperatorsFilterRemoveOneStudentInput {
-    _id: _idOperatorsFilterRemoveOneStudentInput
-    vkId: VkIdOperatorsFilterRemoveOneStudentInput
-}
-
-"For performance reason this type contains only *indexed* fields."
 input OperatorsFilterStudentInput {
     _id: _idOperatorsFilterStudentInput
     vkId: VkIdOperatorsFilterStudentInput
@@ -904,6 +822,7 @@ input UpdateByIdStudentInput {
     _id: MongoID!
     banned: Boolean
     class: MongoID
+    created: Date
     lastHomeworkCheck: Date
     role: EnumStudentRole
     settings: StudentSettingsInput
@@ -922,6 +841,7 @@ input UpdateManyClassInput {
 input UpdateManyStudentInput {
     banned: Boolean
     class: MongoID
+    created: Date
     lastHomeworkCheck: Date
     role: EnumStudentRole
     settings: StudentSettingsInput
@@ -940,6 +860,7 @@ input UpdateOneClassInput {
 input UpdateOneStudentInput {
     banned: Boolean
     class: MongoID
+    created: Date
     lastHomeworkCheck: Date
     role: EnumStudentRole
     settings: StudentSettingsInput
@@ -967,16 +888,6 @@ input VkIdOperatorsFilterFindOneStudentInput {
 }
 
 input VkIdOperatorsFilterRemoveManyStudentInput {
-    gt: Float
-    gte: Float
-    in: [Float]
-    lt: Float
-    lte: Float
-    ne: Float
-    nin: [Float]
-}
-
-input VkIdOperatorsFilterRemoveOneStudentInput {
     gt: Float
     gte: Float
     in: [Float]
@@ -1077,26 +988,6 @@ input _idOperatorsFilterRemoveManyClassInput {
 }
 
 input _idOperatorsFilterRemoveManyStudentInput {
-    gt: MongoID
-    gte: MongoID
-    in: [MongoID]
-    lt: MongoID
-    lte: MongoID
-    ne: MongoID
-    nin: [MongoID]
-}
-
-input _idOperatorsFilterRemoveOneClassInput {
-    gt: MongoID
-    gte: MongoID
-    in: [MongoID]
-    lt: MongoID
-    lte: MongoID
-    ne: MongoID
-    nin: [MongoID]
-}
-
-input _idOperatorsFilterRemoveOneStudentInput {
     gt: MongoID
     gte: MongoID
     in: [MongoID]

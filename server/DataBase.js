@@ -87,6 +87,20 @@ class DataBase {
             return null;
         }
     }; //Возвращает ученика по его _id (это чисто для разработки (так быстрее ищется))
+    static async getClasses() {
+        try {
+            return await _Class.find({})
+        } catch (e) {
+            return null;
+        }
+    }; //
+    static async getStudents() {
+        try {
+            return await _Student.find({})
+        } catch (e) {
+            return null;
+        }
+    }; //
 
     //Creators
     static async createStudent(vkId, class_id) {
@@ -299,6 +313,7 @@ class DataBase {
             const newClass = await this.getClassByName(newClassName);
             if (Student.class) {
                 const Class = await this.getClassBy_Id(Student.class);
+                console.log(Class, Student.class);
                 if (newClass) {
                     if (Class.name !== newClassName) {
                         if (newClass && Student) {

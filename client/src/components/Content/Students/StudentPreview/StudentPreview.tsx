@@ -9,7 +9,8 @@ type Props = {
     vkId: number
     className: string
     banned: boolean
-    role: roles
+    role: roles,
+    searchText: string
 }
 
 const BAN = gql`
@@ -21,10 +22,9 @@ const BAN = gql`
     }
 `;
 
-const StudentPreview: React.FC<Props> = ({vkId,role,banned,className}) => {
+const StudentPreview: React.FC<Props> = ({vkId,role,banned,className, searchText}) => {
     const [banStudent] = useMutation<
-        //check how to fix
-    {banStudent: {banned: boolean, vkId: number}} & any, {vkId: number, isBan?: boolean}
+    {banStudent: {banned: boolean, vkId: number, __typename: string}, __typename: string}, {vkId: number, isBan?: boolean}
     >(BAN, {
         variables: {
             vkId,
@@ -40,11 +40,27 @@ const StudentPreview: React.FC<Props> = ({vkId,role,banned,className}) => {
         }
     });
 
+    const highlightSearch = (str: string, searchString: string, highlightClass = styles.highlight) => {
+        if (searchString.trim() !== "") {
+            const string = str.toLowerCase();
+            searchString = searchString.toLowerCase();
+            const ind = string.search(searchString);
+            if (ind !== -1) {
+                return<span> {str.slice(0, ind)} <span className={highlightClass}> {str.slice(ind, ind + searchString.length)} </span> {str.slice(ind + searchString.length, str.length - ind + searchString.length)} </span>
+            }
+        }
+        return <span> {str} </span>
+    };
+
+    const highlighter = (str: string) => {
+        return highlightSearch(str, searchText);
+    };
+
     return (
         <div className={`${styles.preview} ${banned && styles.banned}`}>
-            <span> Типо имя </span>
-            <span> Роль: {role} </span>
-            <span> Класс: {className} </span>
+            <span> vkId: {highlighter(String(vkId))} </span>
+            <span> Роль: {highlighter(role)} </span>
+            <span> Класс: {highlighter(className)} </span>
             {banned ?
                 <FaRegCheckCircle onClick={() => {banStudent()}} className={`${styles.unban} ${styles.button}`}/>:
                 <FaRegTimesCircle onClick={() => {banStudent()}} className={`${styles.ban} ${styles.button}`}/>

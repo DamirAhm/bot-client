@@ -10,7 +10,7 @@ export const GET_CLASSES = gql`
         classes: classMany {
             studentsCount
             name
-            _id
+            __typename
         }
     }
 `;

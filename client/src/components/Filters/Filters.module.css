@@ -1,0 +1,19 @@
+.filters {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 30px;
+}
+
+.filters input,
+.filters select {
+    border-radius: 10px;
+    padding: 5px;
+}
+
+.filters input {
+    color: var(--main);
+}
+
+.sorts *{
+    color: var(--main);
+}

@@ -12,8 +12,9 @@ type Props = {
 // language=GraphQL
 const DELETE_CLASS = gql`
     mutation RemoveOne($className: String!){
-        classRemoveOne(filter: {name: $className}) {
-            recordId
+        classRemoveOne(className: $className) {
+            name
+            __typename
         }
         deleteClass(name: $className) @client
     }

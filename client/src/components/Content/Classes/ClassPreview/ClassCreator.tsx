@@ -2,12 +2,15 @@ import React, {useState} from "react";
 import styles from "./ClassPreview.module.css";
 import {FaRegCheckCircle, FaRegTimesCircle} from "react-icons/fa";
 import {gql} from "apollo-boost";
-import {useMutation} from "@apollo/react-hooks";
+import {useMutation, useApolloClient} from "@apollo/react-hooks";
+import {GET_CLASSES} from "../Classes";
+import {Class} from "../../../../types";
 const CREATE_CLASS = gql`
     mutation CreateClass($name: String!) {
-        createClass(name: $name) @client
+#        createClass(name: $name) @client
         classCreateOne(className: $name) {
             name
+            __typename
             studentsCount
         }
     }
@@ -16,11 +19,29 @@ const CREATE_CLASS = gql`
 const ClassCreator: React.FC = () => {
     const [creating, setCreating] = useState<boolean>(false);
     const [name, setName] = useState<string>("");
-    const [createClass] = useMutation<{ classCreateOne: { name: string, studentsCount: number } },
+    const [createClass] = useMutation<{ classCreateOne: { name: string, studentsCount: number, __typename: string } },
         { name: string }>(CREATE_CLASS, {
         variables: {
             name: name.toUpperCase().replace(/\s/g, "")
         },
+        optimisticResponse: {
+            classCreateOne: {
+                name,
+                studentsCount: 0,
+                __typename: "Class"
+            }
+        },
+        update: (proxy, data) => {
+            console.log(proxy.readQuery<{classes: any}>({query: GET_CLASSES})?.classes.concat([data]));
+            proxy.writeQuery({
+                query: GET_CLASSES,
+                data: {
+                    classes: proxy.readQuery<{classes: any}>({query: GET_CLASSES})?.classes.concat([data]),
+                    __typename: "Mutation"
+                }
+            });
+            return data;
+        }
     });
 
     const clear = () => {
