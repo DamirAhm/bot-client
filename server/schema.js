@@ -1,36 +1,19 @@
+const {Roles, Lessons} = require("./Models/utils");
 const {gql} = require('apollo-server-express');
 const { composeWithMongoose } = require('graphql-compose-mongoose');
 const { schemaComposer } = require('graphql-compose');
 const {StudentModel} = require("./Models/Student");
 const {ClassModel} = require("./Models/Class");
 const {DataBase} = require("./DataBase");
+const {createVkApi} = require("./utils/functions");
+const https = require("https");
+
+const vk = createVkApi("0c44f72c9eb8568cdc477605a807a03b5f924e7cf0a18121eff5b8ba1b886f3789496034c2cc75bc83924");
 
 const customizationOptions = {};
 
 const StudentTC = composeWithMongoose(StudentModel, customizationOptions);
 const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
-
-StudentTC.addRelation('class',{
-        resolver: () => ClassTC.getResolver('findById'),
-        prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
-            _id: (source) => source.class,
-        },
-        projection: { class: 1 }, // point fields in source object, which should be fetched from DB
-    });
-ClassTC.addRelation('students', {
-        resolver: () => StudentTC.getResolver('findByIds'),
-        prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
-            _ids: (source) => source.students,
-        },
-        projection: { class: 1 }, // point fields in source object, which should be fetched from DB
-    });
-ClassTC.addRelation("studentsCount",{
-    resolver: () => StudentTC.getResolver('count'),
-    prepareArgs: {
-        filter: (source) => ({class: source._id}),
-    },
-    projection: {_id: 1}
-});
 
 ClassTC.addResolver({
     name: "getHomework",
@@ -80,6 +63,23 @@ ClassTC.addResolver({
         }
         await Class.deleteOne();
         return Class;
+    }
+});
+ClassTC.addResolver({
+    name: "name",
+    type: "String",
+    args: { class_id: "String!" },
+    resolve: async ({ source, args, context, info }) => {
+        const Class = await DataBase.getClassBy_Id(args.class_id);
+        return Class.name;
+    }
+});
+ClassTC.addResolver({
+    name: "lessons",
+    type: "[String]",
+    args: {  },
+    resolve: async ({ source, args, context, info }) => {
+        return Lessons;
     }
 });
 StudentTC.addResolver({
@@ -141,6 +141,88 @@ StudentTC.addResolver({
         return Student;
     }
 });
+StudentTC.addResolver({
+    name: "roles",
+    type: '[String]',
+    args: {  },
+    resolve: async ({ source, args, context, info }) => {
+        return Object.values(Roles);
+    }
+});
+StudentTC.addResolver({
+    name: "firstName",
+    type: 'String',
+    args: { vkId: "String!" },
+    resolve: async ({ source, args, context, info }) => {
+        return await vk("users.get", {user_ids: args.vkId}).then(res => res[0].first_name);
+    }
+});
+StudentTC.addResolver({
+    name: "secondName",
+    type: 'String',
+    args: { vkId: "String!" },
+    resolve: async ({ source, args, context, info }) => {
+        return await vk("users.get", {user_ids: args.vkId}).then(res => res[0].last_name);
+    }
+});
+StudentTC.addResolver({
+    name: "fullName",
+    type: 'String',
+    args: { vkId: "String!" },
+    resolve: async ({ source, args, context, info }) => {
+        return await vk("users.get", {user_ids: args.vkId}).then(res => res[0]).then(res => res.first_name + " " + res.last_name);
+    }
+});
+
+StudentTC.addRelation('class',{
+    resolver: () => ClassTC.getResolver('findById'),
+    prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
+        _id: (source) => source.class,
+    },
+    projection: { class: 1 }, // point fields in source object, which should be fetched from DB
+});
+StudentTC.addRelation('firstName',{
+    resolver: () => StudentTC.getResolver('firstName'),
+    prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
+        vkId: (source) => source.vkId,
+    },
+    projection: { vkId: 1 }, // point fields in source object, which should be fetched from DB
+});
+StudentTC.addRelation('secondName',{
+    resolver: () => StudentTC.getResolver('secondName'),
+    prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
+        vkId: (source) => source.vkId,
+    },
+    projection: { vkId: 1 }, // point fields in source object, which should be fetched from DB
+});
+StudentTC.addRelation('fullName',{
+    resolver: () => StudentTC.getResolver('fullName'),
+    prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
+        vkId: (source) => source.vkId,
+    },
+    projection: { vkId: 1 }, // point fields in source object, which should be fetched from DB
+});
+ClassTC.addRelation('students', {
+    resolver: () => StudentTC.getResolver('findByIds'),
+    prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
+        _ids: (source) => source.students,
+    },
+    projection: { class: 1 }, // point fields in source object, which should be fetched from DB
+});
+ClassTC.addRelation("studentsCount",{
+    resolver: () => StudentTC.getResolver('count'),
+    prepareArgs: {
+        filter: (source) => ({class: source._id}),
+    },
+    projection: {_id: 1}
+});
+StudentTC.addRelation("className",{
+    resolver: () => ClassTC.getResolver('name'),
+    prepareArgs: {
+        class_id: source => source.class
+    },
+    projection: {class: 1}
+});
 
 schemaComposer.Query.addFields({
     studentById: StudentTC.getResolver('findById'),
@@ -159,6 +241,8 @@ schemaComposer.Query.addFields({
     classPagination: ClassTC.getResolver('pagination'),
     getHomework: ClassTC.getResolver('getHomework'),
     getChanges: ClassTC.getResolver('getChanges'),
+    getLessons: ClassTC.getResolver('lessons'),
+    getRoles: StudentTC.getResolver('roles')
 });
 schemaComposer.Mutation.addFields({
     studentCreateOne: StudentTC.getResolver('studentCreateOne'),

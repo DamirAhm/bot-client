@@ -1,3 +1,5 @@
+const https = require("https");
+const qs = require("querystring");
 const {DataBase} = require("../DataBase.js");
 
 const findNextDayWithLesson = (schedule, lesson, currentWeekDay) => {
@@ -100,6 +102,34 @@ const checkIsToday = (date, to = new Date()) => {
     return to.getDate() === date.getDate() && date.getMonth() === to.getMonth() && date.getFullYear() === to.getFullYear();
 };
 
+const createVkApi = (token) => {
+    return (method, pars) => {
+        pars.v = "5.103";
+        return new Promise((resolve, reject) => {
+            const params = qs.stringify(pars);
+            https.get({
+                host: "api.vk.com",
+                path: `/method/${method}?${params}&access_token=${token}`
+            }, res => {
+                let resData = "";
+                res.on("data", data => resData += data.toString());
+                res.on("end", () => {
+                    try {
+                        const result = JSON.parse(resData);
+                        if (result.error) {
+                            reject(result.error)
+                        } else {
+                            resolve(result.response)
+                        }
+                    } catch (e) {
+                        reject(e.message)
+                    }
+                })
+            })
+        })
+    }
+};
+
 module.exports = {
     toObject,
     isObjectId,
@@ -108,7 +138,8 @@ module.exports = {
     findNextLessonDate,
     findNotifiedStudents,
     lessonsIndexesToLessonsNames,
-    checkIsToday
+    checkIsToday,
+    createVkApi
 };
 
 
