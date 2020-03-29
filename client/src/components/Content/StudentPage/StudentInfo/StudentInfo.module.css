@@ -1,0 +1,21 @@
+.info {
+    padding: 5px 0;
+}
+
+.info *{
+    color: var(--main);
+    font-size: 1.6rem;
+    font-weight: bold;
+}
+
+.showing {
+
+}
+
+.changing {
+
+}
+
+.nested {
+    padding-left: 20px;
+}

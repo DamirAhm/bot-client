@@ -29,7 +29,9 @@ export type Student = {
         notificationTime: string,
     },
     lastHomeworkCheck: Date,
-    banned: boolean
+    banned: boolean,
+    fullName: string,
+    className: string
 }
 
 export type homework = {
@@ -56,4 +58,5 @@ export type Class = {
         default: []
     },
     roleUpCodes: string[]
+    fullName: string
 }

@@ -1,0 +1,48 @@
+.student {
+    padding: 0 40px;
+}
+
+
+.header {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.info {
+    display: flex;
+    align-items: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+.info * {
+    color: var(--main);
+}
+.vkId {
+    padding-left: 50px;
+}
+
+.icons {
+    width: auto;
+}
+.icon {
+    align-self: center;
+}
+.icon:not(:last-child) {
+    margin-right: 25px;
+}
+.pen * {
+    color: var(--main)
+}
+.trash  *,
+.ban  * {
+    color: var(--negative)
+}
+.unban * {
+    color: var(--positive)
+}
+
+
+.body {
+    padding-top: 30px;
+}

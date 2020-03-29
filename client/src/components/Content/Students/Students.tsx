@@ -81,7 +81,7 @@ const Students: React.FC = () => {
     };
     if (loading) return <div> Loading... </div>;
     if (error) return <div style={{padding: "10px"}}> Error: {JSON.stringify(error, null, 2)} </div>;
-    if (data?.students) {
+    if (items.length) {
         return (
             <div>
                 <Filters className={styles.filters} setSearchText={setSearchText} sortsList={sorts} setSort={setSorting}/>

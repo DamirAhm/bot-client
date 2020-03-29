@@ -34,7 +34,7 @@ const Classes: React.FC = () => {
     const sorts: sort[] = [
         {
             name: "Кол-ву учеников",
-            sort: (a: classPreview, b: classPreview) => a.studentsCount - b.studentsCount
+            sort: (a: classPreview, b: classPreview) => a.studentsCount > b.studentsCount ? -1 : 1
         },
         {
             name: "Имени",

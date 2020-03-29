@@ -211,6 +211,8 @@ type Query {
     ): ClassPagination
     getChanges(className: String!, date: Date): ClassChanges
     getHomework(className: String!, date: Date): ClassHomework
+    getLessons: [String]
+    getRoles: [String]
     studentById(_id: MongoID!): Student
     studentByIds(_ids: [MongoID]!, limit: Int = 1000, sort: SortFindByIdsStudentInput): [Student]
     studentConnection(
@@ -282,9 +284,13 @@ type Student {
     _id: MongoID!
     banned: Boolean
     class: Class
+    className: String
     created: Date
+    firstName: String
+    fullName: String
     lastHomeworkCheck: Date
     role: EnumStudentRole
+    secondName: String
     settings: StudentSettings
     vkId: Float
 }

@@ -5,6 +5,7 @@ import {FaRegCheckCircle, FaRegTimesCircle} from "react-icons/fa";
 import {gql} from "apollo-boost";
 import {useMutation} from "@apollo/react-hooks";
 import {highlightSearch} from "../../../../utils/functions";
+import {Link} from "react-router-dom";
 
 type Props = {
     vkId: number
@@ -46,7 +47,7 @@ const StudentPreview: React.FC<Props> = ({vkId,role,banned,className, searchText
     };
 
     return (
-        <div className={`${styles.preview} ${banned && styles.banned}`}>
+        <Link to={`/students/${vkId}`} className={`${styles.preview} ${banned && styles.banned}`}>
             <span className={styles.info}> vkId: {highlighter(String(vkId))} </span>
             <span className={styles.info}> Роль: {highlighter(role)} </span>
             <span className={styles.info}> Класс: {highlighter(className)} </span>
@@ -54,7 +55,7 @@ const StudentPreview: React.FC<Props> = ({vkId,role,banned,className, searchText
                 <FaRegCheckCircle onClick={() => {banStudent()}} className={`${styles.unban} ${styles.button}`}/>:
                 <FaRegTimesCircle onClick={() => {banStudent()}} className={`${styles.ban} ${styles.button}`}/>
             }
-        </div>
+        </Link>
     )
 };
 
