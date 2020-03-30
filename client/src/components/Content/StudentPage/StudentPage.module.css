@@ -38,7 +38,8 @@
 .ban  * {
     color: var(--negative)
 }
-.unban * {
+.unban *,
+.check * {
     color: var(--positive)
 }
 

@@ -2,8 +2,8 @@ const formStrs = ["Y", "M", "d", "h", "m", "s", "ms"];
 
 const month = ["Января", "Февраля", "Марта", "Апреля", "Мая", "Июня", "Июля", "Августа", "Сентября", "Октября", "Ноября", "Декабря"];
 
-export const parseDate = (dateStr: string, format: string) => {
-    if (Date.parse(dateStr)) {
+export const parseDate = (dateStr: string, format: string): string => {
+    if (!isNaN(Date.parse(dateStr))) {
         const date = new Date(dateStr);
         for (const str of formStrs) {
             const match = format.match(RegExp(`${str}+`));
@@ -24,7 +24,11 @@ export const parseDate = (dateStr: string, format: string) => {
                     }
                     case "M": {
                         if (ms.length == 2) {
-                            format = format.replace(/M+/i, String(month[date.getMonth()]));
+                            if (format.match(RegExp(`${str}+n`))) {
+                                format = format.replace(/M+n/i, String(date.getMonth() + 1));
+                            } else {
+                                format = format.replace(/M+/i, String(month[date.getMonth()]));
+                            }
                         } else {
                             throw new Error("Month must be 2 length")
                         }

@@ -28,7 +28,7 @@ export type Student = {
         notificationsEnabled: boolean,
         notificationTime: string,
     },
-    lastHomeworkCheck: Date,
+    lastHomeworkCheck: string,
     banned: boolean,
     fullName: string,
     className: string
