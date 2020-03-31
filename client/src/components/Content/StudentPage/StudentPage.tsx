@@ -63,14 +63,29 @@ export const UPDATE_STUDENT = gql`
     }
 `
 
+export const CHANGE_CLASS = gql`
+    mutation ChangeClass($vkId: Int!, $className: String!) {
+        changeClass(vkId: $vkId, newClassName: $className) {
+            __typename
+            vkId
+            className
+        }
+    }
+`
+
 const token = "0c44f72c9eb8568cdc477605a807a03b5f924e7cf0a18121eff5b8ba1b886f3789496034c2cc75bc83924";
 const StudentPage: React.FC<Props> = ({ vkId }) => {
     const { data, loading, error } = useQuery<{ studentOne: Student & { __typename: string } }>(GET_STUDENT, { variables: { vkId } });
     const [changing, setChanging] = useState(false);
     const iconSize = 30;
 
-    const diff: { [key: string]: string | boolean | number | object } = {};
-    const [updateStudent] = useMutation<{ updatedStudent: Student }, { record: Partial<Student>, vkId: number }>(UPDATE_STUDENT, { variables: { vkId, record: diff } });
+    const diff: { [key: string]: any } = {};
+    const [updater] = useMutation<
+        { updatedStudent: Partial<Student> & { __typename: string }, __typename: string },
+        { record: Partial<Student>, vkId: number }>(UPDATE_STUDENT);
+    const [changeClass] = useMutation<
+        { changeClass: Partial<Student> & { __typename: string }, __typename: string },
+        { vkId: number, className: string }>(CHANGE_CLASS);
 
     const changeHandler = (path: string, value: boolean | string | number) => {
         if (path.search(".") !== -1) {
@@ -88,6 +103,50 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
             diff[path] = value;
         }
     };
+
+    const updateStudent = () => {
+        if (diff.className) {
+            const { className } = diff;
+            if (typeof className === "string") {
+                changeClass({
+                    variables: { className, vkId },
+                    optimisticResponse: {
+                        changeClass: { vkId, __typename: "Student", className: className },
+                        __typename: "Mutation"
+                    }
+                });
+                delete diff.className
+            }
+        }
+        if (diff.settings?.notificationTime) {
+            const [f, s] = diff.settings?.notificationTime.split(":").map(Number).filter(Number.isInteger);
+            if (f && s) {
+                if (!(f >= 0 && f <= 23) || !(s >= 0 && s <= 59)) {
+                    return
+                }
+            } else {
+                return;
+            }
+        }
+        if (diff.lastHomeworkCheck) {
+            if (!Date.parse(diff.lastHomeworkCheck)) {
+                return;
+            }
+        }
+        if (Object.getOwnPropertyNames(diff).length) {
+            updater({
+                variables: { vkId, record: diff },
+                optimisticResponse: {
+                    __typename: "Mutation",
+                    updatedStudent: {
+                        __typename: "Student",
+                        vkId,
+                        ...diff
+                    }
+                }
+            })
+        }
+    }
 
     if (error) return <div>error: {JSON.stringify(error, null, 2)}</div>;
     else if (loading) return <div>Loading...</div>;

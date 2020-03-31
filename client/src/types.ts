@@ -24,14 +24,16 @@ export type Student = {
     class: string,
     role: roles,
     vkId: number,
-    settings: {
-        notificationsEnabled: boolean,
-        notificationTime: string,
-    },
+    settings: studentSettings,
     lastHomeworkCheck: string,
     banned: boolean,
     fullName: string,
     className: string
+}
+
+export type studentSettings = {
+    notificationsEnabled: boolean,
+    notificationTime: string,
 }
 
 export type homework = {
