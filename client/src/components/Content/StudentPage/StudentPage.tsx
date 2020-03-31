@@ -134,6 +134,7 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
             }
         }
         if (Object.getOwnPropertyNames(diff).length) {
+
             updater({
                 variables: { vkId, record: diff },
                 optimisticResponse: {

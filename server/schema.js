@@ -103,7 +103,11 @@ StudentTC.addResolver( {
     type: StudentTC.getType(),
     args: { vkId: "Int!", newClassName: "String!" },
     resolve: async ( { source, args, context, info } ) => {
-        await DataBase.changeClass( args.vkId, args.newClassName );
+        if ( args.newClassName !== "Нету" ) {
+            await DataBase.changeClass( args.vkId, args.newClassName );
+        } else {
+            await DataBase.removeStudentFromClass( args.vkId )
+        }
         return await DataBase.getStudentByVkId( args.vkId )
     }
 } );

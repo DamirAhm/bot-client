@@ -14,7 +14,8 @@ type SelectorProps = {
 const Selector: React.FC<SelectorProps> = ({ changeHandler, defaultValue, options = ["     "] }) => {
     return (
         <select onChange={(e) => changeHandler(e.target.value)}>
-            {options.map(option => <option key={option} value={option}>{option}</option>)}
+            <option key={defaultValue} value={defaultValue}>{defaultValue}</option>
+            {options.map(option => option !== defaultValue && <option key={option} value={option}>{option}</option>)}
         </select>
     )
 }
