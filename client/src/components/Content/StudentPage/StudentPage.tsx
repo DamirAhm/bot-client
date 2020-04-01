@@ -5,10 +5,12 @@ import styles from "./StudentPage.module.css";
 import { gql } from "apollo-boost";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import { Student } from "../../../types";
-import { FaPen, FaRegCheckCircle, FaRegTimesCircle, FaCheck } from "react-icons/fa";
+import { FaPen, FaRegCheckCircle, FaRegTimesCircle } from "react-icons/fa";
+import { MdClose, MdCheck } from "react-icons/md";
 import { IoIosTrash } from "react-icons/io";
 import StudentInfo from "./StudentInfo/StudentInfo";
 import { parseDate } from "../../../utils/date";
+import { BAN } from "../Students/StudentPreview/StudentPreview";
 
 interface Props {
     vkId: number
@@ -28,10 +30,8 @@ export const GET_STUDENT = gql`
             lastHomeworkCheck
             fullName
         }
-        getRoles
     }
 `;
-
 export const GET_CLASS_LIST = gql`
     {
         classMany {
@@ -39,7 +39,6 @@ export const GET_CLASS_LIST = gql`
         }
     }
 `;
-
 export const UPDATE_STUDENT = gql`
     fragment Student on Student {
         vkId
@@ -62,7 +61,6 @@ export const UPDATE_STUDENT = gql`
         }
     }
 `
-
 export const CHANGE_CLASS = gql`
     mutation ChangeClass($vkId: Int!, $className: String!) {
         changeClass(vkId: $vkId, newClassName: $className) {
@@ -73,19 +71,46 @@ export const CHANGE_CLASS = gql`
     }
 `
 
+
 const token = "0c44f72c9eb8568cdc477605a807a03b5f924e7cf0a18121eff5b8ba1b886f3789496034c2cc75bc83924";
 const StudentPage: React.FC<Props> = ({ vkId }) => {
-    const { data, loading, error } = useQuery<{ studentOne: Student & { __typename: string } }>(GET_STUDENT, { variables: { vkId } });
     const [changing, setChanging] = useState(false);
+    const [diff, setDiff] = useState<{ [key: string]: any }>({});
     const iconSize = 30;
 
-    const diff: { [key: string]: any } = {};
+    const { data, loading, error } = useQuery<
+        { studentOne: Student & { __typename: string } }
+    >(GET_STUDENT, { variables: { vkId } });
+
+    const [ban] = useMutation<
+        { banStudent: Partial<Student> & { __typename: string }, __typename: string },
+        { vkId: number, isBan?: boolean }>(BAN);
     const [updater] = useMutation<
-        { updatedStudent: Partial<Student> & { __typename: string }, __typename: string },
+        { updatedStudent: { record: Partial<Student> & { __typename: string }, __typename: string }, __typename: string },
         { record: Partial<Student>, vkId: number }>(UPDATE_STUDENT);
     const [changeClass] = useMutation<
         { changeClass: Partial<Student> & { __typename: string }, __typename: string },
         { vkId: number, className: string }>(CHANGE_CLASS);
+
+    const banStudent = (isBan: boolean) => {
+        const content = document.querySelector(".content");
+        content?.classList.remove("unbanned", "banned");
+        content?.classList.add(!isBan ? "unbanned" : "banned");
+        ban({
+            variables: {
+                vkId,
+                isBan: isBan
+            },
+            optimisticResponse: {
+                __typename: "Mutation",
+                banStudent: {
+                    banned: isBan,
+                    vkId,
+                    __typename: "Student"
+                }
+            }
+        })
+    }
 
     const changeHandler = (path: string, value: boolean | string | number) => {
         if (path.search(".") !== -1) {
@@ -99,11 +124,11 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
                 }
             }
             t[poles[poles.length - 1]] = value;
+            setDiff({ ...diff });
         } else {
-            diff[path] = value;
+            setDiff({ ...diff, path: value });
         }
     };
-
     const updateStudent = () => {
         if (diff.className) {
             const { className } = diff;
@@ -122,27 +147,37 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
             const [f, s] = diff.settings?.notificationTime.split(":").map(Number).filter(Number.isInteger);
             if (f && s) {
                 if (!(f >= 0 && f <= 23) || !(s >= 0 && s <= 59)) {
-                    return
+                    delete diff.settings.notificationTime;
                 }
             } else {
-                return;
+                delete diff.settings.notificationTime;
             }
         }
         if (diff.lastHomeworkCheck) {
             if (!Date.parse(diff.lastHomeworkCheck)) {
-                return;
+                delete diff.lastHomeworkCheck;
             }
         }
         if (Object.getOwnPropertyNames(diff).length) {
-
+            const settings = diff.settings;
+            delete diff.settings;
+            console.log({ ...diff, settings })
             updater({
-                variables: { vkId, record: diff },
+                variables: { vkId, record: { ...diff, settings } },
                 optimisticResponse: {
                     __typename: "Mutation",
                     updatedStudent: {
-                        __typename: "Student",
-                        vkId,
-                        ...diff
+                        record: {
+                            __typename: "Student",
+                            vkId,
+                            ...data?.studentOne,
+                            ...diff,
+                            settings: {
+                                ...data?.studentOne.settings,
+                                ...settings
+                            }
+                        },
+                        __typename: "UpdateStudent"
                     }
                 }
             })
@@ -153,7 +188,7 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
     else if (loading) return <div>Loading...</div>;
     else if (data?.studentOne) {
         const { fullName, banned, __typename, ...info } = data.studentOne;
-        info.className = info.className || "Нету";
+        info.className = info.className;
         info.lastHomeworkCheck = info.lastHomeworkCheck === "1970-01-01T00:00:00.000Z" ? "Никогда" : parseDate(info.lastHomeworkCheck, "YYYY.MMn.dd hh:mm");
 
         return (
@@ -165,14 +200,21 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
                     </div>
                     <div className={styles.icons}>
                         {changing ?
-                            <FaCheck onClick={() => { updateStudent(); setChanging(false) }} className={`${styles.check} ${styles.icon}`} size={iconSize} /> :
+                            <>
+                                <MdClose onClick={() => (setDiff({}), setChanging(false))} className={`${styles.close} ${styles.icon}`} size={iconSize} />
+                                <MdCheck onClick={() => { updateStudent(); setChanging(false) }} className={`${styles.check} ${styles.icon}`} size={iconSize} />
+                            </> :
                             <FaPen onClick={() => setChanging(true)} className={`${styles.icon} ${styles.pen}`} size={iconSize * 0.9} />
                         }
-                        {banned ?
-                            <FaRegCheckCircle className={`${styles.icon} ${styles.unban}`} size={iconSize} /> :
-                            <FaRegTimesCircle className={`${styles.icon} ${styles.ban}`} size={iconSize} />
+                        {!changing &&
+                            <>
+                                {banned ?
+                                    <FaRegCheckCircle onClick={() => banStudent(false)} className={`${styles.icon} ${styles.unban}`} size={iconSize} /> :
+                                    <FaRegTimesCircle onClick={() => banStudent(true)} className={`${styles.icon} ${styles.ban}`} size={iconSize} />
+                                }
+                                <IoIosTrash className={`${styles.icon} ${styles.trash}`} size={iconSize} />
+                            </>
                         }
-                        <IoIosTrash className={`${styles.icon} ${styles.trash}`} size={iconSize} />
                     </div>
                 </div>
                 <div className={styles.body}>

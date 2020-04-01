@@ -11,3 +11,12 @@
 .nested {
     padding-left: 20px;
 }
+
+@media screen and (max-width: 776px) {
+    .info *{
+        font-size: 1.3rem;
+    }
+    .changer input:not([type="checkbox"]) {
+        width: 100px;
+    }
+}

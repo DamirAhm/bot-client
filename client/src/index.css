@@ -38,10 +38,48 @@ html {
     box-sizing: border-box;
     height: 100%;
     padding: 40px 0 40px 150px;
+    background-color: var(--secondary);
+    min-height: 100vh;
 }
 
 .sidebarOpened .sidebar {
     width: 100px;
+}
+
+.banned {
+    animation: banned 2s forwards;
+    opacity: 0.5;
+}
+
+.unbanned {
+    animation: unbanned 2s forwards;
+    opacity: 0.5;
+}
+
+@keyframes unbanned{
+    0% {
+        background-color: var(--secondary);
+    }
+    50% {
+        background-color: rgba(113, 168, 66, 0.5);
+    }
+    100% {
+        background-color: var(--secondary);
+        opacity: 1;
+    }
+}
+
+@keyframes banned{
+    0% {
+        background-color: var(--secondary);
+    }
+    50% {
+        background-color: rgba(227, 74, 74, 0.5);
+    }
+    100% {
+        background-color: var(--secondary);
+        opacity: 1;
+    }
 }
 
 @media screen and (max-width: 776px) {

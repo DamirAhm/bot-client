@@ -70,8 +70,12 @@ ClassTC.addResolver( {
     type: "String",
     args: { class_id: "String!" },
     resolve: async ( { source, args, context, info } ) => {
-        const Class = await DataBase.getClassBy_Id( args.class_id );
-        return Class.name;
+        if ( args.class_id ) {
+            const Class = await DataBase.getClassBy_Id( args.class_id );
+            return Class.name
+        } else {
+            return "Нету";
+        }
     }
 } );
 ClassTC.addResolver( {

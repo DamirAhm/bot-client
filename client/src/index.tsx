@@ -83,7 +83,7 @@ const typeDefs = gql`
 `;
 
 const client = new ApolloClient({
-    uri: "http://localhost:4000/graphql",
+    uri: " http://a02ff41d.ngrok.io/graphql",
     cache: new InMemoryCache({
         dataIdFromObject: (obj: any) => {
             switch (obj.__typename) {

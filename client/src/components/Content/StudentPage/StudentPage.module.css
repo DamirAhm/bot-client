@@ -2,7 +2,6 @@
     padding: 0 40px;
 }
 
-
 .header {
     display: flex;
     width: 100%;
@@ -22,11 +21,9 @@
     padding-left: 50px;
 }
 
-.icons {
-    width: auto;
-}
 .icon {
     align-self: center;
+    cursor: pointer;
 }
 .icon:not(:last-child) {
     margin-right: 25px;
@@ -35,7 +32,8 @@
     color: var(--main)
 }
 .trash  *,
-.ban  * {
+.ban *,
+.close * {
     color: var(--negative)
 }
 .unban *,
@@ -46,4 +44,31 @@
 
 .body {
     padding-top: 30px;
+}
+
+@media screen and (max-width: 776px) {
+    .icons {
+        position: absolute;
+        right: 20px;
+        top: 10px;
+        display: flex;
+        flex-direction: column;
+        height: 100px;
+    }
+    .icon:not(:last-child) {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+    .icon {
+        width: 25px;
+    }
+    .info {
+        display: flex;
+        align-items: center;
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    .vkId {
+        padding-left: 25px;
+    }
 }

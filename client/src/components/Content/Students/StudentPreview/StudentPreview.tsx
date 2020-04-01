@@ -1,11 +1,11 @@
-import React, {memo} from "react";
+import React, { memo } from "react";
 import styles from "./StudentPreview.module.css";
-import {roles} from "../../../../types";
-import {FaRegCheckCircle, FaRegTimesCircle} from "react-icons/fa";
-import {gql} from "apollo-boost";
-import {useMutation} from "@apollo/react-hooks";
-import {highlightSearch} from "../../../../utils/functions";
-import {Link} from "react-router-dom";
+import { roles } from "../../../../types";
+import { FaRegCheckCircle, FaRegTimesCircle } from "react-icons/fa";
+import { gql } from "apollo-boost";
+import { useMutation } from "@apollo/react-hooks";
+import { highlightSearch } from "../../../../utils/functions";
+import { Link } from "react-router-dom";
 
 type Props = {
     vkId: number
@@ -15,7 +15,7 @@ type Props = {
     searchText: string
 }
 
-const BAN = gql`
+export const BAN = gql`
     mutation BanStudent($vkId: Int!, $isBan: Boolean){
         banStudent(vkId: $vkId, isBan: $isBan) {
             banned
@@ -24,9 +24,9 @@ const BAN = gql`
     }
 `;
 
-const StudentPreview: React.FC<Props> = ({vkId,role,banned,className, searchText}) => {
+const StudentPreview: React.FC<Props> = ({ vkId, role, banned, className, searchText }) => {
     const [banStudent] = useMutation<
-    {banStudent: {banned: boolean, vkId: number, __typename: string}, __typename: string}, {vkId: number, isBan?: boolean}
+        { banStudent: { banned: boolean, vkId: number, __typename: string }, __typename: string }, { vkId: number, isBan?: boolean }
     >(BAN, {
         variables: {
             vkId,
@@ -52,8 +52,8 @@ const StudentPreview: React.FC<Props> = ({vkId,role,banned,className, searchText
             <span className={styles.info}> Роль: {highlighter(role)} </span>
             <span className={styles.info}> Класс: {highlighter(className)} </span>
             {banned ?
-                <FaRegCheckCircle onClick={() => {banStudent()}} className={`${styles.unban} ${styles.button}`}/>:
-                <FaRegTimesCircle onClick={() => {banStudent()}} className={`${styles.ban} ${styles.button}`}/>
+                <FaRegCheckCircle onClick={() => { banStudent() }} className={`${styles.unban} ${styles.button}`} /> :
+                <FaRegTimesCircle onClick={() => { banStudent() }} className={`${styles.ban} ${styles.button}`} />
             }
         </Link>
     )
