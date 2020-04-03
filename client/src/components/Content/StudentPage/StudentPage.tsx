@@ -11,6 +11,9 @@ import { IoIosTrash } from "react-icons/io";
 import StudentInfo from "./StudentInfo/StudentInfo";
 import { parseDate } from "../../../utils/date";
 import { BAN } from "../Students/StudentPreview/StudentPreview";
+import { Redirect } from 'react-router';
+import { GET_STUDENTS } from "../Students/Students";
+import Suspender from "../../Common/Suspender";
 
 interface Props {
     vkId: number
@@ -71,11 +74,19 @@ export const CHANGE_CLASS = gql`
     }
 `
 
+export const DELETE_STUDENT = gql`
+    mutation DeleteStudent($vkId: Int!) {
+        removed: studentRemoveOne(vkId: $vkId) {
+            vkId
+        }
+    }
+`
 
 const token = "0c44f72c9eb8568cdc477605a807a03b5f924e7cf0a18121eff5b8ba1b886f3789496034c2cc75bc83924";
 const StudentPage: React.FC<Props> = ({ vkId }) => {
     const [changing, setChanging] = useState(false);
     const [diff, setDiff] = useState<{ [key: string]: any }>({});
+    const [removed, setRemoved] = useState(false);
     const iconSize = 30;
 
     const { data, loading, error } = useQuery<
@@ -91,6 +102,9 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
     const [changeClass] = useMutation<
         { changeClass: Partial<Student> & { __typename: string }, __typename: string },
         { vkId: number, className: string }>(CHANGE_CLASS);
+    const [deleter] = useMutation<
+        { removed: { vkId: number, __typename: string }, __typename: string },
+        { vkId: number }>(DELETE_STUDENT);
 
     const banStudent = (isBan: boolean) => {
         const content = document.querySelector(".content");
@@ -111,7 +125,34 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
             }
         })
     }
+    //TODO add popup to make sure you want to delete st
+    const deleteStudent = () => {
+        deleter({
+            variables: {
+                vkId
+            },
+            optimisticResponse: {
+                __typename: "Mutation",
+                removed: {
+                    vkId,
+                    __typename: "Student"
+                }
+            },
+            update: (proxy, response) => {
+                const data = proxy.readQuery<{ students: Student[] }>({ query: GET_STUDENTS });
 
+                proxy.writeQuery({
+                    query: GET_STUDENTS,
+                    data: {
+                        students: data?.students.filter(s => s.vkId !== response?.data?.removed.vkId)
+                    }
+                });
+                //TODO почему появляются ошибки
+                setRemoved(true);
+            }
+        });
+    }
+    console.log(removed)
     const changeHandler = (path: string, value: boolean | string | number) => {
         if (path.search(".") !== -1) {
             const poles = path.split(".");
@@ -184,46 +225,47 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
         }
     }
 
-    if (error) return <div>error: {JSON.stringify(error, null, 2)}</div>;
-    else if (loading) return <div>Loading...</div>;
-    else if (data?.studentOne) {
-        const { fullName, banned, __typename, ...info } = data.studentOne;
-        info.className = info.className;
-        info.lastHomeworkCheck = info.lastHomeworkCheck === "1970-01-01T00:00:00.000Z" ? "Никогда" : parseDate(info.lastHomeworkCheck, "YYYY.MMn.dd hh:mm");
+    if (removed) { return <Redirect to={`/students/`} /> };
 
-        return (
-            <div className={styles.student}>
-                <div className={styles.header}>
-                    <div className={styles.info}>
-                        <div className={styles.name}> {fullName} </div>
-                        <div className={styles.vkId}> {vkId} </div>
+    return (
+        <Suspender {...{ error, data, loading }}>
+            {(data: ({ studentOne: Student & { __typename: string } })) => {
+                const { fullName, banned, __typename, ...info } = data.studentOne;
+                info.className = info.className;
+                info.lastHomeworkCheck = info.lastHomeworkCheck === "1970-01-01T00:00:00.000Z" ? "Никогда" : parseDate(info.lastHomeworkCheck, "YYYY.MMn.dd hh:mm");
+
+                return <div className={styles.student}>
+                    <div className={styles.header}>
+                        <div className={styles.info}>
+                            <div className={styles.name}> {fullName} </div>
+                        </div>
+                        <div className={styles.icons}>
+                            {changing ?
+                                <>
+                                    <MdClose onClick={() => (setDiff({}), setChanging(false))} className={`negative ${styles.icon}`} size={iconSize} />
+                                    <MdCheck onClick={() => { updateStudent(); setChanging(false) }} className={`positive ${styles.icon}`} size={iconSize} />
+                                </> :
+                                <FaPen onClick={() => setChanging(true)} className={`${styles.icon} ${styles.pen}`} size={iconSize * 0.9} />
+                            }
+                            {!changing &&
+                                <>
+                                    {banned ?
+                                        <FaRegCheckCircle onClick={() => banStudent(false)} className={`${styles.icon} unban`} size={iconSize} /> :
+                                        <FaRegTimesCircle onClick={() => banStudent(true)} className={`${styles.icon} ban`} size={iconSize} />
+                                    }
+                                    <IoIosTrash onClick={deleteStudent} className={`${styles.icon} remove`} size={iconSize} />
+                                </>
+                            }
+                        </div>
                     </div>
-                    <div className={styles.icons}>
-                        {changing ?
-                            <>
-                                <MdClose onClick={() => (setDiff({}), setChanging(false))} className={`${styles.close} ${styles.icon}`} size={iconSize} />
-                                <MdCheck onClick={() => { updateStudent(); setChanging(false) }} className={`${styles.check} ${styles.icon}`} size={iconSize} />
-                            </> :
-                            <FaPen onClick={() => setChanging(true)} className={`${styles.icon} ${styles.pen}`} size={iconSize * 0.9} />
-                        }
-                        {!changing &&
-                            <>
-                                {banned ?
-                                    <FaRegCheckCircle onClick={() => banStudent(false)} className={`${styles.icon} ${styles.unban}`} size={iconSize} /> :
-                                    <FaRegTimesCircle onClick={() => banStudent(true)} className={`${styles.icon} ${styles.ban}`} size={iconSize} />
-                                }
-                                <IoIosTrash className={`${styles.icon} ${styles.trash}`} size={iconSize} />
-                            </>
-                        }
+                    <div className={styles.body}>
+                        {Object.entries(info).map(entrie => <StudentInfo name={entrie[0]} value={entrie[1]} isChanging={changing} key={`${entrie[0]}`} changeHandler={changeHandler} />)}
                     </div>
                 </div>
-                <div className={styles.body}>
-                    {Object.entries(info).map(entrie => <StudentInfo name={entrie[0]} value={entrie[1]} isChanging={changing} key={`${entrie[0]}`} changeHandler={changeHandler} />)}
-                </div>
-            </div>
-        )
-    }
-    return null;
+            }
+            }
+        </Suspender>
+    )
 };
 
 export default StudentPage;

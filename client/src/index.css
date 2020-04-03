@@ -9,10 +9,13 @@
     font-family: "Roboto", sans-serif !important;
     box-sizing: border-box;
     border: none;
+    padding: 0;
+    margin: 0;
+    border: none;
 }
 
 html {
-    font-size: 10px !important;
+    font-size: 10px;
 }
 
 .app {
@@ -40,6 +43,7 @@ html {
     padding: 40px 0 40px 150px;
     background-color: var(--secondary);
     min-height: 100vh;
+    position: relative;
 }
 
 .sidebarOpened .sidebar {
@@ -54,6 +58,19 @@ html {
 .unbanned {
     animation: unbanned 2s forwards;
     opacity: 0.5;
+}
+
+.negative *,
+.trash *,
+.remove *,
+.ban *{
+    color: var(--negative)
+}
+
+.positive *,
+.confirm *,
+.unban *{
+    color: var(--positive)
 }
 
 @keyframes unbanned{

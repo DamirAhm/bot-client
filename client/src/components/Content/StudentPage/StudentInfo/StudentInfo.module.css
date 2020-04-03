@@ -8,6 +8,10 @@
     font-weight: bold;
 }
 
+.info {
+    word-wrap: none;
+}
+
 .nested {
     padding-left: 20px;
 }
@@ -18,5 +22,8 @@
     }
     .changer input:not([type="checkbox"]) {
         width: 100px;
+    }
+    .nested {
+        padding-left: 10px;
     }
 }

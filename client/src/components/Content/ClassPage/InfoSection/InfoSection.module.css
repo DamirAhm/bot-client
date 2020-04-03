@@ -1,0 +1,17 @@
+.section {
+    padding-top: 20px;
+    width: 100%;
+}
+
+.header {
+    width: 100%;
+    padding-bottom: 5px;
+    border-bottom: 2px solid var(--main);
+    display: flex;
+    justify-content: space-between;
+}
+
+.name {
+    font-size: 2rem;
+    color: var(--main)
+}

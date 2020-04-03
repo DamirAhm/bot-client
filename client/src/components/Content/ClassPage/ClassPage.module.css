@@ -1,0 +1,19 @@
+.class {
+    padding: 0 20px 0 20px;
+    height: 100%;
+    width: 100%;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+    text-align: center;
+}
+
+.name {
+    font-size: 3rem;
+    color: var(--main);
+    font-weight: bolder;
+} 

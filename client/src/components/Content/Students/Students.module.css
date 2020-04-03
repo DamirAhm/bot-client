@@ -13,6 +13,12 @@
     padding: 0 calc((100%/2 - 40%) / 2);
 }
 
+@media screen and (max-width: 1000px) {
+    .students {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media screen and (max-width: 776px) {
     .filters {
         padding: 0 20px;

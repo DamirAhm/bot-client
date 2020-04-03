@@ -20,7 +20,18 @@
 .vkId {
     padding-left: 50px;
 }
+.name {
+    display: block;
+}
 
+.icons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 35px;
+    right: 40px;
+}
 .icon {
     align-self: center;
     cursor: pointer;
@@ -48,27 +59,12 @@
 
 @media screen and (max-width: 776px) {
     .icons {
-        position: absolute;
-        right: 20px;
-        top: 10px;
         display: flex;
         flex-direction: column;
-        height: 100px;
+        top: 20px;
     }
     .icon:not(:last-child) {
         margin-right: 0;
-        margin-bottom: 15px;
-    }
-    .icon {
-        width: 25px;
-    }
-    .info {
-        display: flex;
-        align-items: center;
-        font-size: 2rem;
-        font-weight: bold;
-    }
-    .vkId {
-        padding-left: 25px;
+        margin-bottom: 10px;
     }
 }

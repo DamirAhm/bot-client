@@ -1,10 +1,10 @@
-import React, {MouseEvent, useState} from "react";
+import React, { MouseEvent, useState } from "react";
 import styles from "./ClassPreview.module.css";
-import {FaRegCheckCircle, FaRegTimesCircle} from "react-icons/fa";
-import {gql} from "apollo-boost";
-import {useMutation} from "@apollo/react-hooks";
-import {GET_CLASSES} from "../Classes";
-import {Class} from "../../../../types";
+import { FaRegCheckCircle, FaRegTimesCircle } from "react-icons/fa";
+import { gql } from "apollo-boost";
+import { useMutation } from "@apollo/react-hooks";
+import { GET_CLASSES } from "../Classes";
+import { Class } from "../../../../types";
 const CREATE_CLASS = gql`
     mutation CreateClass($name: String!) {
 #        createClass(name: $name) @client
@@ -21,27 +21,27 @@ const ClassCreator: React.FC = () => {
     const [name, setName] = useState<string>("");
     const [createClass] = useMutation<{ classCreateOne: { name: string, studentsCount: number, __typename: string } },
         { name: string }>(CREATE_CLASS, {
-        variables: {
-            name: name.toUpperCase().replace(/\s/g, "")
-        },
-        optimisticResponse: {
-            classCreateOne: {
-                name,
-                studentsCount: 0,
-                __typename: "Class"
-            }
-        },
-        update: (proxy, data) => {
-            proxy.writeQuery({
-                query: GET_CLASSES,
-                data: {
-                    classes: proxy.readQuery<{classes: any}>({query: GET_CLASSES})?.classes.concat([data]),
-                    __typename: "Mutation"
+            variables: {
+                name: name.toUpperCase().replace(/\s/g, "")
+            },
+            optimisticResponse: {
+                classCreateOne: {
+                    name,
+                    studentsCount: 0,
+                    __typename: "Class"
                 }
-            });
-            return data;
-        }
-    });
+            },
+            update: (proxy, data) => {
+                proxy.writeQuery({
+                    query: GET_CLASSES,
+                    data: {
+                        classes: proxy.readQuery<{ classes: any }>({ query: GET_CLASSES })?.classes.concat([data]),
+                        __typename: "Mutation"
+                    }
+                });
+                return data;
+            }
+        });
 
     const clear = (e: MouseEvent) => {
         e.stopPropagation();
@@ -64,10 +64,10 @@ const ClassCreator: React.FC = () => {
             <div className={`${styles.creator} ${styles.preview}`} onClick={() => setCreating(true)}>
                 {creating ?
                     <form onSubmit={confirm} className={styles.form}>
-                        <FaRegTimesCircle size={20} className={`${styles.reject} ${styles.button}`} onClick={clear}/>
+                        <FaRegTimesCircle size={20} className={`${styles.reject} ${styles.button}`} onClick={clear} />
                         <input onChange={(e) => setName(e.target.value)} value={name} autoFocus={true} type="text"
-                               className={styles.input}/>
-                        <FaRegCheckCircle onClick={confirm} className={`${styles.confirm} ${styles.button}`} size={20}/>
+                            className={styles.input} />
+                        <FaRegCheckCircle onClick={confirm} className={`${styles.confirm} ${styles.button}`} size={20} />
                     </form> :
                     "Create class"
                 }

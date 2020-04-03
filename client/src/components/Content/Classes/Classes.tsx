@@ -7,6 +7,7 @@ import ClassCreator from "./ClassPreview/ClassCreator";
 import Filters from "../../Filters/Filters";
 import { sort } from "../Students/Students";
 import useList from "../../../hooks/useList";
+import Suspender from "../../Common/Suspender";
 
 export const GET_CLASSES = gql`
   {
@@ -28,7 +29,7 @@ export type classPreview = {
 };
 
 const Classes: React.FC = () => {
-  const { data, loading, error } = useQuery<classesData>(GET_CLASSES);
+  const query = useQuery<classesData>(GET_CLASSES);
   const { items, setFilter, setSort, setItems } = useList<classPreview>([]);
   const [searchText, setText] = useState("");
   const sorts: sort[] = [
@@ -65,36 +66,35 @@ const Classes: React.FC = () => {
   };
 
   useEffect(() => {
-    if (data?.classes) {
-      setItems(data.classes);
+    if (query.data?.classes) {
+      setItems(query.data.classes);
     }
-  }, [data?.classes]);
+  }, [query.data?.classes]);
 
-  if (loading) return <div> Loading... </div>;
-  if (error)
-    return (
-      <div className={"content"}> Error: {JSON.stringify(error, null, 2)} </div>
-    );
   return (
-    <div>
-      <Filters
-        className={styles.filters}
-        setSearchText={setSearchText}
-        sortsList={sorts}
-        setSort={setSorting}
-      />
-      <ClassCreator />
-      <div className={styles.classes}>
-        {items.map(c => (
-          <ClassPreview
-            searchText={searchText}
-            key={c.name}
-            className={c.name}
-            studentsCount={c.studentsCount}
+    <Suspender {...query}>
+      {() =>
+        <div>
+          <Filters
+            className={styles.filters}
+            setSearchText={setSearchText}
+            sortsList={sorts}
+            setSort={setSorting}
           />
-        ))}
-      </div>
-    </div>
+          <ClassCreator />
+          <div className={styles.classes}>
+            {items.map(c => (
+              <ClassPreview
+                searchText={searchText}
+                key={c.name}
+                className={c.name}
+                studentsCount={c.studentsCount}
+              />
+            ))}
+          </div>
+        </div>
+      }
+    </Suspender>
   );
 };
 

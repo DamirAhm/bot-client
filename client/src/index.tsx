@@ -3,7 +3,6 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
-import "reset.css";
 import ApolloClient, { gql } from "apollo-boost";
 import { ApolloProvider } from "@apollo/react-hooks";
 import { BrowserRouter } from "react-router-dom";
@@ -83,7 +82,7 @@ const typeDefs = gql`
 `;
 
 const client = new ApolloClient({
-    uri: " http://a02ff41d.ngrok.io/graphql",
+    uri: "http://localhost:4000/graphql",
     cache: new InMemoryCache({
         dataIdFromObject: (obj: any) => {
             switch (obj.__typename) {

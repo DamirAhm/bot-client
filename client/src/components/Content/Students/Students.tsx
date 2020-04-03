@@ -1,11 +1,12 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./Students.module.css";
-import {gql} from "apollo-boost";
-import {useQuery} from "@apollo/react-hooks";
-import {roles} from "../../../types";
+import { gql } from "apollo-boost";
+import { useQuery } from "@apollo/react-hooks";
+import { roles } from "../../../types";
 import StudentPreview from "./StudentPreview/StudentPreview";
 import useList from "../../../hooks/useList";
 import Filters from "../../Filters/Filters";
+import Suspender from "../../Common/Suspender";
 
 export const GET_STUDENTS = gql`
     {
@@ -17,6 +18,7 @@ export const GET_STUDENTS = gql`
             role
             banned
             created
+            fullName
         }
     }
 `;
@@ -29,6 +31,7 @@ export type studentPreview = {
     role: roles,
     banned: boolean,
     created: Date
+    fullName: string
 }
 
 export type sort = {
@@ -37,8 +40,8 @@ export type sort = {
 }
 
 const Students: React.FC = () => {
-    const {data, loading, error} = useQuery<{ students: studentPreview[] }>(GET_STUDENTS);
-    const {items, setSort, setFilter, setItems} = useList<studentPreview>([]);
+    const { data, loading, error } = useQuery<{ students: studentPreview[] }>(GET_STUDENTS);
+    const { items, setSort, setFilter, setItems } = useList<studentPreview>([]);
     const [text, setText] = useState("");
     const sorts: sort[] = [
         {
@@ -79,18 +82,19 @@ const Students: React.FC = () => {
             setSort(() => 1)
         }
     };
-    if (loading) return <div> Loading... </div>;
-    if (error) return <div style={{padding: "10px"}}> Error: {JSON.stringify(error, null, 2)} </div>;
     if (items.length) {
         return (
-            <div>
-                <Filters className={styles.filters} setSearchText={setSearchText} sortsList={sorts} setSort={setSorting}/>
-                <div className={styles.students}>
-                    {items.map(c => <StudentPreview searchText={text} key={c.vkId} vkId={c.vkId} banned={c.banned}
-                                                    role={c.role}
-                                                    className={c.class ? c.class.name : "Нету"}/>)}
-                </div>
-            </div>
+            <Suspender {...{ data, error, loading }}>
+                {() =>
+                    <div>
+                        <Filters className={styles.filters} setSearchText={setSearchText} sortsList={sorts} setSort={setSorting} />
+                        <div className={styles.students}>
+                            {items.map(c => <StudentPreview name={c.fullName} searchText={text} key={c.vkId} vkId={c.vkId} banned={c.banned}
+                                role={c.role}
+                                className={c.class ? c.class.name : "Нету"} />)}
+                        </div>
+                    </div>}
+            </Suspender>
         )
     }
     return null

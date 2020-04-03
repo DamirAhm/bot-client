@@ -6,6 +6,7 @@ import { gql } from "apollo-boost";
 import { useMutation } from "@apollo/react-hooks";
 import { highlightSearch } from "../../../../utils/functions";
 import { Link } from "react-router-dom";
+import { GiSpiralTentacle } from "react-icons/gi";
 
 type Props = {
     vkId: number
@@ -13,6 +14,7 @@ type Props = {
     banned: boolean
     role: roles,
     searchText: string
+    name: string
 }
 
 export const BAN = gql`
@@ -24,7 +26,7 @@ export const BAN = gql`
     }
 `;
 
-const StudentPreview: React.FC<Props> = ({ vkId, role, banned, className, searchText }) => {
+const StudentPreview: React.FC<Props> = ({ vkId, role, banned, className, searchText, name }) => {
     const [banStudent] = useMutation<
         { banStudent: { banned: boolean, vkId: number, __typename: string }, __typename: string }, { vkId: number, isBan?: boolean }
     >(BAN, {
@@ -45,18 +47,25 @@ const StudentPreview: React.FC<Props> = ({ vkId, role, banned, className, search
     const highlighter = (str: string) => {
         return highlightSearch(str, searchText);
     };
-
+    //TODO добавить обновление кеша после изменения чтоб на странице полхователей + классов тоже все менялось 
     return (
-        <Link to={`/students/${vkId}`} className={`${styles.preview} ${banned && styles.banned}`}>
-            <span className={styles.info}> vkId: {highlighter(String(vkId))} </span>
-            <span className={styles.info}> Роль: {highlighter(role)} </span>
-            <span className={styles.info}> Класс: {highlighter(className)} </span>
+        <div className={`${styles.preview} ${banned && styles.banned}`}>
+            <Link to={`/students/${vkId}`} className={`${styles.link}`}>
+                <span className={styles.info}> <span className={styles.infoValue}>{highlighter(getPrettyName(name))} </span> </span>
+                <span className={styles.info}> <span className={styles.infoValue}>{highlighter(getPrettyName(role))} </span> </span>
+                <span className={styles.info}> <span className={styles.infoValue}>{highlighter(getPrettyName(className))} </span> </span>
+            </Link>
             {banned ?
-                <FaRegCheckCircle onClick={() => { banStudent() }} className={`${styles.unban} ${styles.button}`} /> :
-                <FaRegTimesCircle onClick={() => { banStudent() }} className={`${styles.ban} ${styles.button}`} />
+                <FaRegCheckCircle size={20} onClick={() => { banStudent() }} className={`unban ${styles.button}`} /> :
+                <FaRegTimesCircle size={20} onClick={() => { banStudent() }} className={`ban ${styles.button}`} />
             }
-        </Link>
+        </div>
     )
 };
 
 export default memo(StudentPreview);
+
+function getPrettyName(name: string): string {
+    if (!name) return "Error empty name"
+    return name.split(" ")[0] + " " + (name.split(" ")[1]?.[0]?.toUpperCase() || "");
+}
