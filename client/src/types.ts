@@ -62,3 +62,6 @@ export type Class = {
     roleUpCodes: string[]
     fullName: string
 }
+
+
+export type WithTypename<T> = T & { __typename: string };
