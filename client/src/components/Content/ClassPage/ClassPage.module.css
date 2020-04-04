@@ -18,7 +18,7 @@
     font-weight: bolder;
 } 
 
-.students > *:not(:last-child){
+.students > *{
     margin-bottom: 20px;
 }
 
@@ -37,5 +37,17 @@
 .remove {
     padding-left: 10px;
     box-sizing: content-box;
+    cursor: pointer;
+}
+
+.creator {
+    background-color: var(--main);
+    display: flex;
+    width: 80%;
+    border-radius: 18px;
+    justify-content: center;
+    box-sizing: border-box;
+    align-items: center;
+    font-size: 1.6rem;
     cursor: pointer;
 }

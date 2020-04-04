@@ -17,12 +17,22 @@ const StudentTC = composeWithMongoose( StudentModel, customizationOptions );
 const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
 
 ClassTC.addResolver( {
+    name: "getSchedule",
+    type: "[ [ String ] ]",
+    args: { className: "String!" },
+    resolve: async ( { source, args, context, info } ) => {
+        const Class = await DataBase.getClassByName( args.className );
+        return Class.schedule;
+    }
+} )
+
+ClassTC.addResolver( {
     name: "getHomework",
     type: ClassTC.get( "homework" ).getType(),
     args: { className: "String!", date: "Date" },
     resolve: async ( { source, args, context, info } ) => {
         const result = await DataBase.getHomework( args.className, args.date );
-        return { result };
+        return result;
     }
 } );
 ClassTC.addResolver( {
@@ -262,7 +272,8 @@ schemaComposer.Query.addFields( {
     getChanges: ClassTC.getResolver( 'getChanges' ),
     getLessons: ClassTC.getResolver( 'lessons' ),
     getRoles: StudentTC.getResolver( 'roles' ),
-    studentsForClass: StudentTC.getResolver( 'getForClass' )
+    studentsForClass: StudentTC.getResolver( 'getForClass' ),
+    getSchedule: ClassTC.getResolver( "getSchedule" )
 } );
 schemaComposer.Mutation.addFields( {
     studentCreateOne: StudentTC.getResolver( 'studentCreateOne' ),

@@ -1,21 +1,21 @@
-const mongoose = require("mongoose");
-const uuid4 = require("uuid4");
-const {Lessons} = require("./utils");
+const mongoose = require( "mongoose" );
+const uuid4 = require( "uuid4" );
+const { Lessons } = require( "./utils" );
 
-const classSchema = mongoose.Schema({
+const classSchema = mongoose.Schema( {
     students: {
-        type: [{
+        type: [ {
             type: mongoose.Schema.ObjectId,
             ref: "Student"
-        }],
+        } ],
         default: []
     },
     name: {
         type: String,
         validate: {
-            validator: (name) => {
-                if (/(\d)+([A-Z]|[А-Я])/.test(name)) {
-                    if ((name.match(/\d/)[0] !== "0" && +name.match(/\d/)[0] <= 11 && +name.match(/\d/)[0] === ~~+name.match(/\d/)[0]) || name === "0Z") {
+            validator: ( name ) => {
+                if ( /(\d)+([A-Z]|[А-Я])/.test( name ) ) {
+                    if ( ( name.match( /\d/ )[ 0 ] !== "0" && +name.match( /\d/ )[ 0 ] <= 11 && +name.match( /\d/ )[ 0 ] === ~~+name.match( /\d/ )[ 0 ] ) || name === "0Z" ) {
                         return true;
                     }
                 }
@@ -43,7 +43,7 @@ const classSchema = mongoose.Schema({
                 },
                 to: {
                     type: Date,
-                    default: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+                    default: new Date( Date.now() + 1000 * 60 * 60 * 24 * 7 ),
                     validate: {
                         validator: date => Date.now() - date >= 0,
                         message: "Homework 'to' can`t be in future"
@@ -81,25 +81,25 @@ const classSchema = mongoose.Schema({
         ]
     },
     changes: {
-        type: [{
+        type: [ {
             text: String,
             attachments: String,
             to: Date,
             createdBy: Number,
             _id: false
-        }],
+        } ],
         default: []
     },
     roleUpCodes: {
-        type: [String],
+        type: [ String ],
         default: [],
         validate: {
-            validator: (arrayOfCodes) => arrayOfCodes.every(code => uuid4.valid(code)),
+            validator: ( arrayOfCodes ) => arrayOfCodes.every( code => uuid4.valid( code ) ),
             message: "All roleUp codes must be valid uuid4 codes"
         }
     }
-});
+} );
 
 
-module.exports.ClassModel = mongoose.model("Class", classSchema);
+module.exports.ClassModel = mongoose.model( "Class", classSchema );
 module.exports.ClassSchema = classSchema;

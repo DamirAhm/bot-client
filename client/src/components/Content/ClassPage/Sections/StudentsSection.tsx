@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import InfoSection from "../InfoSection/InfoSection"
 import Suspender from "../../../Common/Suspender"
 import StudentPreview from "../../Students/StudentPreview/StudentPreview"
@@ -7,8 +7,9 @@ import { useQuery, useMutation } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
 import { studentPreview } from "../../Students/Students"
 import { Student } from "../../../../types"
+import ReactDOM from "react-dom"
 
-
+const modalEl = document.getElementById("chooseStudentModal");
 type Props = {
     styles: { [key: string]: string }
     className: string
@@ -40,6 +41,8 @@ const StudentsSection: React.FC<Props> = ({ styles, className }) => {
 
     const [remove] = useMutation<{ removed: boolean }, { vkId: number }>(REMOVE_STUDENT_FROM_CLASS);
 
+    const [modalOpened, setModalOpened] = useState(false);
+
     const removeStudent = (vkId: number) => {
         remove({
             variables: { vkId: vkId },
@@ -67,6 +70,7 @@ const StudentsSection: React.FC<Props> = ({ styles, className }) => {
             <Suspender {...query}>
                 {(data: ({ students: Student[] })) =>
                     <div className={`${styles.students}`}>
+                        <div className={styles.creator} onClick={() => setModalOpened(true)}> Add student </div>
                         {data?.students.map(e =>
                             <div className={styles.student} key={e.vkId}>
                                 <StudentPreview  {...e} />
@@ -76,8 +80,18 @@ const StudentsSection: React.FC<Props> = ({ styles, className }) => {
                     </div>
                 }
             </Suspender>
+            {modalOpened &&
+                <StudentModal closeModal={() => setModalOpened(false)} />
+            }
         </InfoSection>
     )
 }
 
+const StudentModal: React.FC<{ closeModal: () => void }> = ({ closeModal }) => {
+    console.log(modalEl)
+    if (modalEl) {
+        return ReactDOM.createPortal(<div className={"modal"} onClick={closeModal}> Modal </div>, modalEl);
+    }
+    return null;
+}
 export default StudentsSection
