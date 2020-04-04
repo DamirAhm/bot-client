@@ -15,3 +15,9 @@
     font-size: 2rem;
     color: var(--main)
 }
+
+.content {
+    padding: 30px;
+    box-sizing: border-box;
+    overflow: auto;
+}

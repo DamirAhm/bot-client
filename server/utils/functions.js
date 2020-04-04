@@ -106,8 +106,8 @@ const createVkApi = ( token ) => {
     const cache = {};
     return ( method, pars ) => {
         pars.v = pars.v || "5.103";
-        if ( cache[ pars ] ) {
-            return Promise.resolve( cache[ pars ] );
+        if ( cache[ JSON.stringify( pars ) ] ) {
+            return Promise.resolve( cache[ JSON.stringify( pars ) ] );
         } else {
             return new Promise( ( resolve, reject ) => {
                 const params = qs.stringify( pars );
@@ -123,7 +123,7 @@ const createVkApi = ( token ) => {
                             if ( result.error ) {
                                 reject( result.error )
                             } else {
-                                cache[ pars ] = result.response;
+                                cache[ JSON.stringify( pars ) ] = result.response;
                                 resolve( result.response )
                             }
                         } catch ( e ) {

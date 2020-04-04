@@ -72,13 +72,24 @@ const resolvers = {
 };
 
 const typeDefs = gql`
-  extend type Mutation {
-    deleteClass(name: String): [Class]!
-    createClass(name: String): Class!
-  }
-  extend type Query {
-    sidebarOpened: Boolean
-  }
+    fragment StudentPreview on Student {
+        vkId
+        className
+        role,
+        banned,
+        fullName
+    }
+    fragment ClassPreview on Class {
+        name
+        studentsCount
+    }
+    extend type Mutation {
+        deleteClass(name: String): [Class]!
+        createClass(name: String): Class!
+    }
+    extend type Query {
+        sidebarOpened: Boolean
+    }
 `;
 
 const client = new ApolloClient({

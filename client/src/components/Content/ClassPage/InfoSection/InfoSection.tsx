@@ -5,11 +5,11 @@ import { FaFilter } from "react-icons/fa";
 type Props = {
     name: string
     withSearch: boolean
-    propsStyles?: React.CSSProperties
+    className?: string
     updateSearchString?: (str: string) => void
 }
 //Todo make searchinput component
-const InfoSection: React.FC<Props> = ({ name, children, withSearch, propsStyles = {}, updateSearchString }) => {
+const InfoSection: React.FC<Props> = ({ name, children, withSearch, className = "", updateSearchString }) => {
     if (withSearch && !updateSearchString) console.error("Don't use with search without updating wearch string!!!")
     return (
         <div className={styles.section}>
@@ -19,7 +19,7 @@ const InfoSection: React.FC<Props> = ({ name, children, withSearch, propsStyles 
                     <input type="text" className={styles.search} onChange={e => updateSearchString(e.target.value)} />
                 }
             </div>
-            <div className={styles.content} style={propsStyles}>
+            <div className={`${styles.content} ${className}`}>
                 {children}
             </div>
         </div>

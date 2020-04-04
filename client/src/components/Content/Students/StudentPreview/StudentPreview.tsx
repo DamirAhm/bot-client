@@ -13,8 +13,8 @@ type Props = {
     className: string
     banned: boolean
     role: roles,
-    searchText: string
-    name: string
+    searchText?: string
+    fullName: string
 }
 
 export const BAN = gql`
@@ -26,7 +26,7 @@ export const BAN = gql`
     }
 `;
 
-const StudentPreview: React.FC<Props> = ({ vkId, role, banned, className, searchText, name }) => {
+const StudentPreview: React.FC<Props> = ({ vkId, role, banned, className, searchText, fullName: name }) => {
     const [banStudent] = useMutation<
         { banStudent: { banned: boolean, vkId: number, __typename: string }, __typename: string }, { vkId: number, isBan?: boolean }
     >(BAN, {
@@ -45,15 +45,15 @@ const StudentPreview: React.FC<Props> = ({ vkId, role, banned, className, search
     });
 
     const highlighter = (str: string) => {
-        return highlightSearch(str, searchText);
+        return highlightSearch(str, searchText || "");
     };
     //TODO добавить обновление кеша после изменения чтоб на странице полхователей + классов тоже все менялось 
     return (
         <div className={`${styles.preview} ${banned && styles.banned}`}>
             <Link to={`/students/${vkId}`} className={`${styles.link}`}>
-                <span className={styles.info}> <span className={styles.infoValue}>{highlighter(getPrettyName(name))} </span> </span>
-                <span className={styles.info}> <span className={styles.infoValue}>{highlighter(getPrettyName(role))} </span> </span>
-                <span className={styles.info}> <span className={styles.infoValue}>{highlighter(getPrettyName(className))} </span> </span>
+                <span className={styles.info}> {highlighter(getPrettyName(name))} </span>
+                <span className={styles.info}> {highlighter(getPrettyName(role))} </span>
+                <span className={styles.info}> {highlighter(getPrettyName(className))} </span>
             </Link>
             {banned ?
                 <FaRegCheckCircle size={20} onClick={() => { banStudent() }} className={`unban ${styles.button}`} /> :

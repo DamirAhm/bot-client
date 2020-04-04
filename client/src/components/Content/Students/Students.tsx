@@ -12,9 +12,7 @@ export const GET_STUDENTS = gql`
     {
         students: studentMany {
             vkId,
-            class {
-                name
-            }
+            className
             role
             banned
             created
@@ -25,40 +23,42 @@ export const GET_STUDENTS = gql`
 
 export type studentPreview = {
     vkId: number
-    class: {
-        name: string
-    }
+    className: string
     role: roles,
     banned: boolean,
     created: Date
     fullName: string
 }
 
-export type sort = {
+export type sort<T = any> = {
     name: string,
-    sort: (a: any, b: any) => number;
+    sort: (a: T, b: T) => number;
 }
 
 const Students: React.FC = () => {
     const { data, loading, error } = useQuery<{ students: studentPreview[] }>(GET_STUDENTS);
     const { items, setSort, setFilter, setItems } = useList<studentPreview>([]);
     const [text, setText] = useState("");
-    const sorts: sort[] = [
+    const sorts: sort<studentPreview>[] = [
         {
             name: "Классу",
-            sort: (a: studentPreview, b: studentPreview) => a?.class?.name !== undefined ? (a.class.name > b?.class?.name ? 1 : -1) : 1
+            sort: (a, b) => a.className > b?.className ? 1 : -1
         },
         {
             name: "Роли",
-            sort: (a: studentPreview, b: studentPreview) => a.role > b.role ? 1 : -1
+            sort: (a, b) => a.role > b.role ? 1 : -1
         },
         {
             name: "vkId",
-            sort: (a: studentPreview, b: studentPreview) => a.vkId - b.vkId
+            sort: (a, b) => a.vkId - b.vkId
+        },
+        {
+            name: "Имени",
+            sort: (a, b) => a.fullName > b.fullName ? 1 : -1
         },
         {
             name: "Забаненности",
-            sort: (a: studentPreview, b: studentPreview) => a.banned ? 1 : -1
+            sort: (a, b) => a.banned ? 1 : -1
         }
     ];
 
@@ -70,9 +70,9 @@ const Students: React.FC = () => {
 
     const setSearchText = (str: string): void => {
         str = str.toLowerCase();
-        const _class = (item: studentPreview) => item?.class?.name || "Нету";
+        const _class = (item: studentPreview) => item.className;
         setText(str);
-        setFilter(item => String(item.vkId).search(str) !== -1 || _class(item).toLowerCase().search(str) !== -1 || item.role.toLowerCase().search(str) !== -1)
+        setFilter(item => item.fullName.search(str) !== -1 || _class(item).toLowerCase().search(str) !== -1 || item.role.toLowerCase().search(str) !== -1)
     };
     const setSorting = (name: string) => {
         const sort = sorts.find(e => e.name === name)?.sort;
@@ -82,22 +82,19 @@ const Students: React.FC = () => {
             setSort(() => 1)
         }
     };
-    if (items.length) {
-        return (
+    return (
+        <div>
+            <Filters className={styles.filters} setSearchText={setSearchText} sortsList={sorts} setSort={setSorting} />
             <Suspender {...{ data, error, loading }}>
                 {() =>
-                    <div>
-                        <Filters className={styles.filters} setSearchText={setSearchText} sortsList={sorts} setSort={setSorting} />
-                        <div className={styles.students}>
-                            {items.map(c => <StudentPreview name={c.fullName} searchText={text} key={c.vkId} vkId={c.vkId} banned={c.banned}
-                                role={c.role}
-                                className={c.class ? c.class.name : "Нету"} />)}
-                        </div>
-                    </div>}
+                    <div className={styles.students}>
+                        {items.map(c => <StudentPreview key={c.vkId} {...c} searchText={text} />)}
+                    </div>
+
+                }
             </Suspender>
-        )
-    }
-    return null
+        </div>
+    )
 };
 
 export default Students;

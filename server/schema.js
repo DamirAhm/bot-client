@@ -1,3 +1,4 @@
+// @ts-nocheck
 const { Roles, Lessons } = require( "./Models/utils" );
 const { gql } = require( 'apollo-server-express' );
 const { composeWithMongoose } = require( 'graphql-compose-mongoose' );
@@ -182,6 +183,15 @@ StudentTC.addResolver( {
         return await vk( "users.get", { user_ids: args.vkId } ).then( res => res[ 0 ] ).then( res => res.first_name + " " + res.last_name );
     }
 } );
+StudentTC.addResolver( {
+    name: "getForClass",
+    type: "[Student]",
+    args: { className: "String" },
+    resolve: async ( { source, args, context, info } ) => {
+        const Class = await DataBase.getClassByName( args.className );
+        return await StudentModel.find( { _id: { $in: Class.students } } );
+    }
+} );
 
 StudentTC.addRelation( 'class', {
     resolver: () => ClassTC.getResolver( 'findById' ),
@@ -251,7 +261,8 @@ schemaComposer.Query.addFields( {
     getHomework: ClassTC.getResolver( 'getHomework' ),
     getChanges: ClassTC.getResolver( 'getChanges' ),
     getLessons: ClassTC.getResolver( 'lessons' ),
-    getRoles: StudentTC.getResolver( 'roles' )
+    getRoles: StudentTC.getResolver( 'roles' ),
+    studentsForClass: StudentTC.getResolver( 'getForClass' )
 } );
 schemaComposer.Mutation.addFields( {
     studentCreateOne: StudentTC.getResolver( 'studentCreateOne' ),

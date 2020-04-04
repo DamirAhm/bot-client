@@ -17,3 +17,25 @@
     color: var(--main);
     font-weight: bolder;
 } 
+
+.students > *:not(:last-child){
+    margin-bottom: 20px;
+}
+
+.students {
+    max-height: 300px;
+    overflow: auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.student {
+    display: flex;
+    align-items: center;
+}
+
+.remove {
+    padding-left: 10px;
+    box-sizing: content-box;
+    cursor: pointer;
+}

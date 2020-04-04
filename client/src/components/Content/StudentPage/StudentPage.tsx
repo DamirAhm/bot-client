@@ -43,23 +43,20 @@ export const GET_CLASS_LIST = gql`
     }
 `;
 export const UPDATE_STUDENT = gql`
-    fragment Student on Student {
-        vkId
-        className
-        role
-        banned
-        settings {
-            notificationsEnabled
-            notificationTime
-        }
-        lastHomeworkCheck
-        fullName
-        __typename
-    }
     mutation UpdateStudent($record: UpdateOneStudentInput!, $vkId: Float!) {
         updatedStudent: studentUpdateOne(filter: {vkId: $vkId}, record: $record) {
             record {
-                ...Student
+                vkId
+                className
+                role
+                banned
+                settings {
+                    notificationsEnabled
+                    notificationTime
+                }
+                lastHomeworkCheck
+                fullName
+                __typename
             }
         }
     }
@@ -152,7 +149,7 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
             }
         });
     }
-    console.log(removed)
+
     const changeHandler = (path: string, value: boolean | string | number) => {
         if (path.search(".") !== -1) {
             const poles = path.split(".");

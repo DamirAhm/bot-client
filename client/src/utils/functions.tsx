@@ -7,7 +7,7 @@ export const highlightSearch = (str: string, searchString: string, highlightClas
         searchString = searchString.toLowerCase();
         const ind = string.search(searchString);
         if (ind !== -1) {
-            return<span> {str.slice(0, ind)} <span className={highlightClass}> {str.slice(ind, ind + searchString.length)} </span> {str.slice(ind + searchString.length, str.length - ind + searchString.length)} </span>
+            return <span> {str.slice(0, ind)} <span className={highlightClass}> {str.slice(ind, ind + searchString.length)} </span> {str.slice(ind + searchString.length, str.length - ind + searchString.length)} </span>
         }
     }
     return <span> {str} </span>
