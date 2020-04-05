@@ -12,7 +12,7 @@
     text-align: center;
 }
 
-.name {
+.className {
     font-size: 3rem;
     color: var(--main);
     font-weight: bolder;
@@ -50,4 +50,90 @@
     align-items: center;
     font-size: 1.6rem;
     cursor: pointer;
+    padding: 17px;
+}
+
+.chooseStudent {
+    height: 70%;
+    min-height: 300px;
+    width: 25%;
+    min-width: 200px;
+    background-color: var(--secondary);
+    overflow: auto;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    margin: 20px 0;
+}
+
+.title {
+    color: var(--main);
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    font-weight: bolder;
+    text-align: center;
+}
+
+.studentsChooser {
+    width: 100%;
+}
+
+.chooser {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 10px;
+    margin: 10px 0;
+    border: 1px solid var(--main);
+}
+
+.chooser:not(:first-child) {
+    cursor: pointer;
+}
+
+.chooser span {
+    color: var(--main);
+    font-size: 1.6rem;
+    align-self: center;
+}
+
+.chooser_name {
+    width: 50%;
+}
+.chooser_vkId {
+    width: 30%;
+    text-align: center;
+}
+.chooser_className {
+    width: 20%;
+    text-align: right;
+}
+
+@media screen and (max-width: 1300px) {
+    .chooseStudent {
+        width: 50%;
+    }
+}
+
+@media screen and (max-width: 1000px) {
+    .chooseStudent {
+        width: 65%;
+    }
+}
+
+@media screen and (max-width: 776px) {
+    .chooseStudent {
+        width: 90%;
+    }
+
+    .students {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media screen and (max-width: 400px) {
+    .chooser span {
+        font-size: 1rem;
+    }
 }

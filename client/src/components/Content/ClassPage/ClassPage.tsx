@@ -12,7 +12,7 @@ const ClassPage: React.FC<Props> = ({ className }) => {
     return (
         <div className={styles.class}>
             <div className={styles.header}>
-                <div className={styles.name}> {className} </div>
+                <div className={styles.className}> {className} </div>
                 <IoIosTrash size={30} className="remove" />
             </div>
             <div className={styles.content}>

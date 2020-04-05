@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import InfoSection from "../InfoSection/InfoSection"
-import Suspender from "../../../Common/Suspender"
+import Suspender from '../../../Common/Suspender';
 import StudentPreview from "../../Students/StudentPreview/StudentPreview"
 import { MdClose } from "react-icons/md"
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
 import { studentPreview } from "../../Students/Students"
-import { Student, WithTypename } from "../../../../types"
+import { Student, WithTypename } from '../../../../types';
 import ReactDOM from "react-dom"
 import { CHANGE_CLASS } from '../../StudentPage/StudentPage';
 
@@ -45,7 +45,7 @@ const ADD_STUDENT_TO_CLASS = gql`
         __typename
     }
     mutation AddStudentToClass($vkId: Int!, $className: String!) {
-        student: changeClass(vkId: $vkId, className: $className) {
+        student: changeClass(vkId: $vkId, newClassName: $className) {
             ...StudentPreview
         }
     }
@@ -80,9 +80,16 @@ const StudentsSection: React.FC<Props> = ({ styles, className }) => {
             }
         })
     }
-    const addToClass = (vkId: number) => {
+    const addToClass = (student: studentPreview) => {
         changeClass({
-            variables: { vkId, className },
+            variables: { vkId: student.vkId, className },
+            optimisticResponse: {
+                __typename: "Mutation",
+                student: {
+                    __typename: "Student",
+                    ...student
+                }
+            },
             update: (proxy, result) => {
                 const data = proxy.readQuery<{ students: studentPreview[] }>
                     ({
@@ -128,15 +135,67 @@ const StudentsSection: React.FC<Props> = ({ styles, className }) => {
                 }
             </Suspender>
             {modalOpened &&
-                <StudentModal addStudent={addToClass} closeModal={() => setModalOpened(false)} />
+                <StudentModal className={className} styles={styles} addStudent={addToClass} closeModal={() => setModalOpened(false)} />
             }
         </InfoSection>
     )
 }
 
-const StudentModal: React.FC<{ closeModal: () => void, addStudent: (vkID: number) => void }> = ({ closeModal }) => {
+const GET_STUDENTS_FOR_CHOOSING = gql`
+    fragment StudentPreview on Student {
+        vkId
+        className
+        role,
+        banned,
+        fullName
+    }
+    {
+        students: studentMany {
+            ...StudentPreview
+        }
+    }
+`
+
+type StudentModalProps = {
+    closeModal: () => void,
+    addStudent: (student: studentPreview) => void,
+    styles: { [key: string]: string },
+    className: string
+}
+
+
+const StudentModal: React.FC<StudentModalProps> = ({ closeModal, addStudent, styles, className }) => {
+    const query = useQuery<{ students: studentPreview[] }>(GET_STUDENTS_FOR_CHOOSING);
+
     if (modalEl) {
-        return ReactDOM.createPortal(<div className={"modal"} onClick={closeModal}> Modal </div>, modalEl);
+        return ReactDOM.createPortal(
+            <div className={"modal"} onClick={closeModal}>
+                <div className={styles.chooseStudent} onClick={e => (e.stopPropagation())}>
+                    <span className={styles.title}> Выберите ученика которого необходимо добавить </span>
+                    <Suspender {...query}>
+                        {(data: { students: studentPreview[] }) =>
+                            <div className={styles.studentsChooser}>
+                                <div key={"-1"} className={styles.chooser}>
+                                    <span className={styles.chooser_name}>Имя</span>
+                                    <span className={styles.chooser_vkId}>vkId</span>
+                                    <span className={styles.chooser_className}>Класс</span>
+                                </div>
+                                {data.students
+                                    .filter((student: studentPreview) => student.className !== className)
+                                    .map((student: studentPreview) =>
+                                        <div key={student.vkId} className={styles.chooser} onClick={() => (addStudent(student), closeModal())}>
+                                            <span className={styles.chooser_name}>{student.fullName}</span>
+                                            <span className={styles.chooser_vkId}>{student.vkId}</span>
+                                            <span className={styles.chooser_className}>{student.className}</span>
+                                        </div>
+                                    )
+                                }
+                            </div>
+                        }
+                    </Suspender>
+                </div>
+            </div>,
+            modalEl);
     }
     return null;
 }

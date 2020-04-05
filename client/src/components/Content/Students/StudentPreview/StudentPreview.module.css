@@ -17,6 +17,11 @@
     text-decoration: none;
 }
 
+.info {
+    display: flex;
+    align-items: center;
+}
+
 .highlight {
     background-color: lightgoldenrodyellow;
     color: var(--main);
@@ -64,14 +69,10 @@
 }
 
 
-@media screen and (max-width: 450px){
-    .info {
-        display: flex;
-        flex-direction: column;
-    }
-}
-
 @media screen and (max-width: 350px){
+    .preview {
+        padding: 10px;
+    }
     .info,
     .info *{
         font-size: 0.8rem;
