@@ -5,7 +5,6 @@ export default <T>(values: T[], defaultFilter: ((items: T) => boolean) = () => t
     const [items, setItems] = useState<T[]>(values.filter(defaultFilter).sort(defaultSort));
 
     const setFilter = (filter: typeof defaultFilter) => {
-        console.log(initialValues)
         setItems(initialValues.filter(filter));
     };
     const setSort = (sort: typeof defaultSort) => {

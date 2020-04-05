@@ -5,10 +5,11 @@ import StudentPreview from "../../Students/StudentPreview/StudentPreview"
 import { MdClose } from "react-icons/md"
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
-import { studentPreview } from "../../Students/Students"
+import { studentPreview } from '../../Students/Students';
 import { Student, WithTypename } from '../../../../types';
 import ReactDOM from "react-dom"
-import { CHANGE_CLASS } from '../../StudentPage/StudentPage';
+import useList from "../../../../hooks/useList";
+import { changeHandler } from '../../StudentPage/StudentInfo/Changer';
 
 const modalEl = document.getElementById("chooseStudentModal");
 type Props = {
@@ -52,12 +53,13 @@ const ADD_STUDENT_TO_CLASS = gql`
 `
 
 const StudentsSection: React.FC<Props> = ({ styles, className }) => {
-    const query = useQuery<{ students: studentPreview[] }>(GET_STUDENTS_FOR_CLASS, { variables: { className } });
+    const { data, loading, error } = useQuery<{ students: studentPreview[] }>(GET_STUDENTS_FOR_CLASS, { variables: { className } });
 
     const [remove] = useMutation<{ removed: boolean }, { vkId: number }>(REMOVE_STUDENT_FROM_CLASS);
     const [changeClass] = useMutation<WithTypename<{ student: WithTypename<studentPreview> }>, { vkId: number, className: string }>(ADD_STUDENT_TO_CLASS)
 
     const [modalOpened, setModalOpened] = useState(false);
+    const { items, setFilter, setItems } = useList<studentPreview>([]);
 
     const removeStudent = (vkId: number) => {
         remove({
@@ -113,27 +115,29 @@ const StudentsSection: React.FC<Props> = ({ styles, className }) => {
     }
 
     useEffect(() => {
-        const section = document.querySelector(`.${styles.studentsSection}`);
-        if (section) {
-            section.addEventListener("chooseStudent", (e) => console.log(e));
-        }
-    }, [])
+        if (data?.students) setItems(data?.students)
+    }, [data?.students])
+
+    const changeHandler = (str: string) => {
+        str = str.toLowerCase();
+        setFilter(st => st.fullName.toLowerCase().search(str) !== -1 || st.role.toLocaleLowerCase().search(str) !== -1)
+    }
 
     return (
-        <InfoSection name="Users" updateSearchString={() => { }} className={styles.studentsSection}>
-            <Suspender {...query}>
-                {(data: ({ students: Student[] })) =>
+        <InfoSection name="Users" updateSearchString={changeHandler} className={styles.studentsSection}>
+            {str => <Suspender data={items} {...{ loading, error }}>
+                {(data: Student[]) =>
                     <div className={`${styles.students}`}>
                         <div className={styles.creator} onClick={() => setModalOpened(true)}> Add student </div>
-                        {data?.students.map(e =>
+                        {data.map(e =>
                             <div className={styles.student} key={e.vkId}>
-                                <StudentPreview  {...e} />
+                                <StudentPreview searchText={str}  {...e} />
                                 <MdClose onClick={() => removeStudent(e.vkId)} size={30} className={`${styles.remove} remove`} />
                             </div>
                         )}
                     </div>
                 }
-            </Suspender>
+            </Suspender>}
             {modalOpened &&
                 <StudentModal className={className} styles={styles} addStudent={addToClass} closeModal={() => setModalOpened(false)} />
             }
