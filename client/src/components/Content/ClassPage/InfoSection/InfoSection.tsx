@@ -2,12 +2,13 @@ import React, { useState } from 'react'
 import styles from './InfoSection.module.css'
 import { FaFilter } from "react-icons/fa";
 import Searcher from '../../../Common/Searcher';
+import ReactElement from 'react';
 
 type Props = {
     name: string
     className?: string
     updateSearchString?: (str: string) => void,
-    children: ((JSX.Element | ((str: string) => JSX.Element) | false) | (false | JSX.Element))[]
+    children: ((str: string) => (JSX.Element | false)) | JSX.Element
 }
 //Todo make searchinput component
 const InfoSection: React.FC<Props> = ({ name, children, className = "", updateSearchString }) => {
@@ -22,7 +23,7 @@ const InfoSection: React.FC<Props> = ({ name, children, className = "", updateSe
                 }
             </div>
             <div className={`${styles.content} ${className}`}>
-                {children.map(c => <>{typeof c === "function" ? c(text) : children}</>)}
+                {children && typeof children === "function" ? children(text) : children}
             </div>
         </div>
     )

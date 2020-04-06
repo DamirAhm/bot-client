@@ -1,7 +1,8 @@
 import React from 'react'
 import styles from './ClassPage.module.css'
 import { IoIosTrash } from "react-icons/io";
-import StudentsSection from "./Sections/StudentsSection";
+import StudentsSection from "./Sections/StudentSection/StudentsSection";
+import ScheduleSection from "./Sections/ScheduleSection/ScheduleSection";
 
 type Props = {
     className: string
@@ -16,7 +17,8 @@ const ClassPage: React.FC<Props> = ({ className }) => {
                 <IoIosTrash size={30} className="remove" />
             </div>
             <div className={styles.content}>
-                <StudentsSection className={className} styles={styles} />
+                <StudentsSection className={className} />
+                <ScheduleSection className={className} />
             </div>
         </div>
     )

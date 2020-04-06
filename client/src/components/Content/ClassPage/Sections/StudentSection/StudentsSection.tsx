@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react'
-import InfoSection from "../InfoSection/InfoSection"
-import Suspender from '../../../Common/Suspender';
-import StudentPreview from "../../Students/StudentPreview/StudentPreview"
+import InfoSection from "../../InfoSection/InfoSection"
+import Suspender from '../../../../Common/Suspender';
+import StudentPreview from "../../../Students/StudentPreview/StudentPreview"
 import { MdClose } from "react-icons/md"
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
-import { studentPreview } from '../../Students/Students';
-import { Student, WithTypename } from '../../../../types';
+import { studentPreview } from '../../../Students/Students';
+import { Student, WithTypename } from '../../../../../types';
 import ReactDOM from "react-dom"
-import useList from "../../../../hooks/useList";
-import { changeHandler } from '../../StudentPage/StudentInfo/Changer';
+import useList from "../../../../../hooks/useList";
+import { changeHandler } from '../../../StudentPage/StudentInfo/Changer';
+import styles from "./StudentSection.module.css";
 
 const modalEl = document.getElementById("chooseStudentModal");
 type Props = {
-    styles: { [key: string]: string }
     className: string
 }
 
@@ -52,7 +52,7 @@ const ADD_STUDENT_TO_CLASS = gql`
     }
 `
 
-const StudentsSection: React.FC<Props> = ({ styles, className }) => {
+const StudentsSection: React.FC<Props> = ({ className }) => {
     const { data, loading, error } = useQuery<{ students: studentPreview[] }>(GET_STUDENTS_FOR_CLASS, { variables: { className } });
 
     const [remove] = useMutation<{ removed: boolean }, { vkId: number }>(REMOVE_STUDENT_FROM_CLASS);
@@ -124,22 +124,24 @@ const StudentsSection: React.FC<Props> = ({ styles, className }) => {
     }
 
     return (
-        <InfoSection name="Users" updateSearchString={changeHandler} className={styles.studentsSection}>
-            {str => <Suspender data={items} {...{ loading, error }}>
-                {(data: Student[]) =>
-                    <div className={`${styles.students}`}>
-                        <div className={styles.creator} onClick={() => setModalOpened(true)}> Add student </div>
-                        {data.map(e =>
-                            <div className={styles.student} key={e.vkId}>
-                                <StudentPreview searchText={str}  {...e} />
-                                <MdClose onClick={() => removeStudent(e.vkId)} size={30} className={`${styles.remove} remove`} />
-                            </div>
-                        )}
-                    </div>
-                }
-            </Suspender>}
-            {modalOpened &&
-                <StudentModal className={className} styles={styles} addStudent={addToClass} closeModal={() => setModalOpened(false)} />
+        <InfoSection name="Ученики" updateSearchString={changeHandler} className={styles.studentsSection}>
+            {str => <>
+                <Suspender data={items} {...{ loading, error }}>
+                    {(data: Student[]) =>
+                        <div className={`${styles.students}`}>
+                            <div className={styles.creator} onClick={() => setModalOpened(true)}> Add student </div>
+                            {data.map(e =>
+                                <div className={styles.student} key={e.vkId}>
+                                    <StudentPreview searchText={str}  {...e} />
+                                    <MdClose onClick={() => removeStudent(e.vkId)} size={30} className={`${styles.remove} remove`} />
+                                </div>
+                            )}
+                        </div>
+                    }
+                </Suspender>
+                {modalOpened &&
+                    <StudentModal className={className} styles={styles} addStudent={addToClass} closeModal={() => setModalOpened(false)} />
+                }</>
             }
         </InfoSection>
     )
