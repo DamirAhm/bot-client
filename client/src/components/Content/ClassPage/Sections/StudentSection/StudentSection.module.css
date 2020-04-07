@@ -7,11 +7,14 @@
     overflow: auto;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
+    color: var(--accent);
 }
 
 .student {
     display: flex;
     align-items: center;
+    color: var(--accent);
+
 }
 
 .remove {

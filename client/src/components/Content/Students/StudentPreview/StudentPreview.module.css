@@ -5,6 +5,7 @@
     width: 80%;
     border-radius: 18px;
     justify-content: space-between;
+    color: var(--accent) !important;
 }
 
 .link {

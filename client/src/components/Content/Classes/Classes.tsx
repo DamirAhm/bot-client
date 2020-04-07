@@ -72,7 +72,7 @@ const Classes: React.FC = () => {
   }, [query.data?.classes]);
 
   return (
-    <Suspender {...query}>
+    <Suspender query={query}>
       {() =>
         <div>
           <Filters

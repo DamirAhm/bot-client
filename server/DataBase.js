@@ -1,3 +1,4 @@
+// @ts-nocheck
 const { Roles, Lessons } = require( "./Models/utils" );
 
 const { StudentModel: _Student } = require( "./Models/Student" );

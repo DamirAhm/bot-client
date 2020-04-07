@@ -37,10 +37,11 @@ ClassTC.addResolver( {
 } );
 ClassTC.addResolver( {
     name: "changeDay",
-    type: "Boolean",
-    args: { className: "String!", dayIndex: "Int", day: "[String]" },
+    type: ClassTC.getType(),
+    args: { className: "String!", dayIndex: "Int!", newSchedule: "[String]!" },
     resolve: async ( { source, args, context, info } ) => {
-        return await DataBase.changeDay( args.className, args.dayIndex, args.day );
+        await DataBase.changeDay( args.className, args.dayIndex, args.newSchedule );
+        return await DataBase.getClassByName( args.className );
     }
 } );
 ClassTC.addResolver( {
@@ -273,7 +274,7 @@ schemaComposer.Query.addFields( {
     getLessons: ClassTC.getResolver( 'lessons' ),
     getRoles: StudentTC.getResolver( 'roles' ),
     studentsForClass: StudentTC.getResolver( 'getForClass' ),
-    getSchedule: ClassTC.getResolver( "getSchedule" )
+    getSchedule: ClassTC.getResolver( "getSchedule" ),
 } );
 schemaComposer.Mutation.addFields( {
     studentCreateOne: StudentTC.getResolver( 'studentCreateOne' ),

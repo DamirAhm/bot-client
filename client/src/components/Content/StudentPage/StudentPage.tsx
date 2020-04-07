@@ -225,7 +225,7 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
     if (removed) { return <Redirect to={`/students/`} /> };
 
     return (
-        <Suspender {...{ error, data, loading }}>
+        <Suspender query={{ data, loading, error }}>
             {(data: ({ studentOne: Student & { __typename: string } })) => {
                 const { fullName, banned, __typename, ...info } = data.studentOne;
                 info.className = info.className;

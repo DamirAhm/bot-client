@@ -85,7 +85,7 @@ const Students: React.FC = () => {
     return (
         <div>
             <Filters className={styles.filters} setSearchText={setSearchText} sortsList={sorts} setSort={setSorting} />
-            <Suspender {...{ data, error, loading }}>
+            <Suspender query={{ data, error, loading }}>
                 {() =>
                     <div className={styles.students}>
                         {items.map(c => <StudentPreview key={c.vkId} {...c} searchText={text} />)}

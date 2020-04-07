@@ -126,10 +126,10 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
     return (
         <InfoSection name="Ученики" updateSearchString={changeHandler} className={styles.studentsSection}>
             {str => <>
-                <Suspender data={items} {...{ loading, error }}>
+                <Suspender query={{ data: items, loading, error }}>
                     {(data: Student[]) =>
                         <div className={`${styles.students}`}>
-                            <div className={styles.creator} onClick={() => setModalOpened(true)}> Add student </div>
+                            <div className={styles.creator} onClick={() => setModalOpened(true)}> Добавить ученика </div>
                             {data.map(e =>
                                 <div className={styles.student} key={e.vkId}>
                                     <StudentPreview searchText={str}  {...e} />
