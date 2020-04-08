@@ -100,6 +100,7 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(({ index, lessons, lessonsL
 
     const reject = () => {
         setChanging(false);
+        setChanges(lessons);
     }
     const confirm = () => {
         setChanging(false);
@@ -120,11 +121,11 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(({ index, lessons, lessonsL
         setChanges(changes.filter((_, i) => i !== index));
     }
     const addLesson = () => {
-        setChanges(changes.concat([lessonsList[0]]));
+        setChanges(changes.concat([(changes[changes.length - 1] || lessonsList[0])]));
     }
 
     return <div className={styles.day}>
-        <FaPen className={styles.pen} size={iconSize} onClick={() => setChanging(true)} />
+        {!changing && <FaPen className={styles.pen} size={iconSize} onClick={() => setChanging(true)} />}
         <div className={styles.value}>
             <div className={styles.dayName}> {days[index]} </div>
             {changes.map((lesson, i) => !changing ?

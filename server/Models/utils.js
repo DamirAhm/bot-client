@@ -9,6 +9,7 @@ const Lessons = [
     "Русский",
     "Экономика",
     "География",
+    "Физкультура",
     "Физика",
     "Алгебра",
     "Геометрия",
@@ -16,11 +17,14 @@ const Lessons = [
     "История",
     "Обществознание",
     "Астрономия",
+    "Регионоведение",
     "ОБЖ",
     "Информатика",
+    "Классный час",
+    "Ничего"
 ];
-const checkValidTime = (str) => {
-    return typeof str === "string" && (!isNaN(+str[0]) && +str[0] >= 0) && (!isNaN(+str[1]) && +str[1] >= 0) && str[2] === ":" && (!isNaN(+str[3]) && +str[3] >= 0) && (!isNaN(+str[4]) && +str[4] >= 0);
+const checkValidTime = ( str ) => {
+    return typeof str === "string" && ( !isNaN( +str[ 0 ] ) && +str[ 0 ] >= 0 ) && ( !isNaN( +str[ 1 ] ) && +str[ 1 ] >= 0 ) && str[ 2 ] === ":" && ( !isNaN( +str[ 3 ] ) && +str[ 3 ] >= 0 ) && ( !isNaN( +str[ 4 ] ) && +str[ 4 ] >= 0 );
 };
 
 module.exports = {

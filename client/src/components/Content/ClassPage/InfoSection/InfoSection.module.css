@@ -9,11 +9,21 @@
     border-bottom: 2px solid var(--main);
     display: flex;
     justify-content: space-between;
+    cursor: pointer;
 }
 
 .name {
     font-size: 2rem;
-    color: var(--main)
+    display: flex;
+    align-items: center;
+}
+
+.name * {
+    color: var(--main);
+}
+
+.triangle_opened {
+    transform: rotate(90deg);
 }
 
 .content {

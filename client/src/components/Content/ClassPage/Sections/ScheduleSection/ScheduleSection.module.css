@@ -1,6 +1,6 @@
 .days {
     display: flex;
-    justify-content: space-between; 
+    justify-content: space-around; 
     flex-wrap: wrap;
 }
 
@@ -52,6 +52,7 @@
 
 .selectLesson {
     height: 1.6rem;
+    border-radius: 5px;
 }
 
 .removeLesson {

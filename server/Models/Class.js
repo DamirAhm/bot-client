@@ -1,3 +1,4 @@
+// @ts-nocheck
 const mongoose = require( "mongoose" );
 const uuid4 = require( "uuid4" );
 const { Lessons } = require( "./utils" );

@@ -178,7 +178,7 @@ const StudentModal: React.FC<StudentModalProps> = ({ closeModal, addStudent, sty
             <div className={"modal"} onClick={closeModal}>
                 <div className={styles.chooseStudent} onClick={e => (e.stopPropagation())}>
                     <span className={styles.title}> Выберите ученика которого необходимо добавить </span>
-                    <Suspender {...query}>
+                    <Suspender query={query}>
                         {(data: { students: studentPreview[] }) =>
                             <div className={styles.studentsChooser}>
                                 <div key={"-1"} className={styles.chooser}>
