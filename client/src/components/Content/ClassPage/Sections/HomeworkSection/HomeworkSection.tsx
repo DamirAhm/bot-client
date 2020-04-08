@@ -8,6 +8,7 @@ import Suspender from '../../../../Common/Suspender';
 import { parseDate } from '../../../../../utils/date';
 import Accordion from "../../../../Common/Accordion";
 import { GoTriangleRight } from "react-icons/go";
+import OpenableImg from '../../../../Common/OpenableImage';
 
 type Props = {
     className: string
@@ -27,7 +28,7 @@ const GET_HOMEWORK = gql`
 
 const HomeworkSection: React.FC<Props> = ({ className }) => {
     const homeworkQuery = useQuery<{ homework: homework[] }>(GET_HOMEWORK, { variables: { className } });
-    console.log(styles)
+
     return (
         <InfoSection name='Домашняя работа'>
             <Suspender query={homeworkQuery}>
@@ -37,17 +38,39 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                         {Object.keys(parsedHw).map(hwDate =>
                             <Accordion
                                 key={hwDate}
-                                Head={({ onClick, opened }) => <p className={styles.date} onClick={onClick}> {hwDate} <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} /> </p>}
+                                Head={({ onClick, opened }) =>
+                                    <p className={styles.date} onClick={onClick}>
+                                        {hwDate}
+                                        <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} />
+                                    </p>}
                                 Body={() =>
                                     <>
                                         {Object.keys(parsedHw[hwDate]).map(lesson =>
                                             <Accordion
                                                 className={styles.offseted} key={hwDate + lesson}
-                                                Head={({ onClick, opened }) => <p className={`${styles.lesson}`} onClick={onClick}> {lesson} <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={10} /> </p>}
+                                                Head={({ onClick, opened }) =>
+                                                    <p className={`${styles.lesson}`} onClick={onClick}>
+                                                        {lesson}
+                                                        <GoTriangleRight
+                                                            className={opened ? styles.triangle_opened : ""} size={10} />
+                                                    </p>}
                                                 Body={() =>
-                                                    <>
-                                                        {parsedHw[hwDate][lesson].map(({ task }) => <div key={hwDate + lesson + task} className={`${styles.offseted} ${styles.task}`}> {task.trim()} </div>)}
-                                                    </>
+                                                    <div className={styles.tasks}>
+                                                        {parsedHw[hwDate][lesson].map((hw, i) =>
+                                                            <div key={hwDate + lesson + hw.task + i}
+                                                                className={`
+                                                                    ${styles.offseted} 
+                                                                    ${styles.task} 
+                                                                    ${!hw.task && hw.attachments.length ? styles.fullImage : ""} 
+                                                                    ${hw.task && !hw.attachments.length ? styles.fullText : ""}
+                                                                `}
+                                                            >
+                                                                {hw.attachments.length &&
+                                                                    hw.attachments.map((at, i) => <OpenableImg key={at + i} className={styles.attach} alt="Фото дз" src={at} />)
+                                                                }
+                                                                <p className={styles.text}> {hw.task} </p>
+                                                            </div>)}
+                                                    </div>
                                                 }
                                             />
                                         )}

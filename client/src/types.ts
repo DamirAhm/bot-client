@@ -40,7 +40,7 @@ export type homework = {
     lesson: string,
     task: string,
     to: Date,
-    attachments: string,
+    attachments: string[],
     createdBy: number
 }
 

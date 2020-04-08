@@ -50,7 +50,7 @@ const classSchema = mongoose.Schema( {
                         message: "Homework 'to' can`t be in future"
                     }
                 },
-                attachments: String,
+                attachments: [ String ],
                 createdBy: {
                     type: Number,
                     validate: {
