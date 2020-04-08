@@ -2,8 +2,8 @@ const formStrs = ["Y", "M", "d", "h", "m", "s", "ms"];
 
 const month = ["Января", "Февраля", "Марта", "Апреля", "Мая", "Июня", "Июля", "Августа", "Сентября", "Октября", "Ноября", "Декабря"];
 
-export const parseDate = (dateStr: string, format: string): string => {
-    if (!isNaN(Date.parse(dateStr))) {
+export const parseDate = (dateStr: string | Date, format: string): string => {
+    if (typeof dateStr !== "object" ? !isNaN(Date.parse(dateStr)) : dateStr) {
         const date = new Date(dateStr);
         for (const str of formStrs) {
             const match = format.match(RegExp(`${str}+`));

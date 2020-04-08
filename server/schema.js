@@ -28,7 +28,7 @@ ClassTC.addResolver( {
 
 ClassTC.addResolver( {
     name: "getHomework",
-    type: ClassTC.get( "homework" ).getType(),
+    type: `[${ClassTC.get( "homework" ).getType()}]`,
     args: { className: "String!", date: "Date" },
     resolve: async ( { source, args, context, info } ) => {
         const result = await DataBase.getHomework( args.className, args.date );

@@ -52,7 +52,6 @@ const classSchema = mongoose.Schema( {
                 },
                 attachments: String,
                 createdBy: {
-                    required: true,
                     type: Number,
                     validate: {
                         validator: Number.isInteger,

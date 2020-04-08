@@ -1,0 +1,40 @@
+.homework {
+    width: 100%;
+}
+
+.offseted {
+    margin-left: 30px; 
+}
+
+.homework * {
+    color: var(--main)
+}
+
+.date {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.lesson {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.task {
+    color: var(--accent);
+    background-color: var(--main);
+    padding: 20px;
+    border-radius: 10px;
+    display: inline-block;
+    min-width: 150px;
+}
+
+.triangle_opened {
+    transform: rotate(90deg);
+}
