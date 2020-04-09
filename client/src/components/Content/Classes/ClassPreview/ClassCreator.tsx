@@ -3,8 +3,8 @@ import styles from "./ClassPreview.module.css";
 import { FaRegCheckCircle, FaRegTimesCircle } from "react-icons/fa";
 import { gql } from "apollo-boost";
 import { useMutation } from "@apollo/react-hooks";
-import { GET_CLASSES } from "../Classes";
-import { Class } from "../../../../types";
+import { GET_CLASSES, classPreview } from "../Classes";
+import { Class, WithTypename } from "../../../../types";
 const CREATE_CLASS = gql`
     mutation CreateClass($name: String!) {
 #        createClass(name: $name) @client
@@ -32,14 +32,16 @@ const ClassCreator: React.FC = () => {
                 }
             },
             update: (proxy, data) => {
-                proxy.writeQuery({
-                    query: GET_CLASSES,
-                    data: {
-                        classes: proxy.readQuery<{ classes: any }>({ query: GET_CLASSES })?.classes.concat([data]),
-                        __typename: "Mutation"
-                    }
-                });
-                return data;
+                if (data.data) {
+                    proxy.writeQuery({
+                        query: GET_CLASSES,
+                        data: {
+                            classes: proxy.readQuery<{ classes: WithTypename<classPreview>[] }>({ query: GET_CLASSES })?.classes.concat([data.data?.classCreateOne])
+                        }
+                    });
+                    return data;
+                }
+                return null;
             }
         });
 

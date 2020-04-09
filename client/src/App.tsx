@@ -16,7 +16,7 @@ function App() {
                     <Suspense fallback={<div> Loading... </div>}>
                         <Switch>
                             <Route exact path="/classes" component={Classes} />
-                            <Route path="/classes/:className" render={(props: RouteComponentProps<{ className: string }>) => <ClassPage className={props.match.params.className} />} />
+                            <Route path="/classes/:className" render={(props: RouteComponentProps<{ className: string }>) => <ClassPage history={props.history} className={props.match.params.className} />} />
                             <Route exact path="/students" component={Students} />
                             <Route path="/students/:vkId" render={(props: RouteComponentProps<{ vkId: string }>) => <StudentPage vkId={Number(props.match.params.vkId)} />} />
                             <Route paht="*" render={() => <Redirect to="/classes" />} />

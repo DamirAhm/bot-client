@@ -11,6 +11,23 @@ const https = require( "https" );
 
 const vk = createVkApi( "0c44f72c9eb8568cdc477605a807a03b5f924e7cf0a18121eff5b8ba1b886f3789496034c2cc75bc83924" );
 
+const getPhotoUrls = async ( ats ) => {
+    const urls = [];
+
+    for ( let at of ats ) {
+        if ( /^photo/.test( at ) ) {
+            const [ owner_id, photo_ids ] = at.slice( 5 ).split( "_" );
+            urls.push( await vk( "photos.get", {
+                owner_id,
+                photo_ids,
+                album_id: "saved"
+            } ) )
+        }
+    }
+
+    return urls.map( e => e.items[ 0 ].sizes[ 4 ].url );
+}
+
 const customizationOptions = {};
 
 const StudentTC = composeWithMongoose( StudentModel, customizationOptions );
@@ -31,7 +48,11 @@ ClassTC.addResolver( {
     type: `[${ClassTC.get( "homework" ).getType()}]`,
     args: { className: "String!", date: "Date" },
     resolve: async ( { source, args, context, info } ) => {
-        const result = await DataBase.getHomework( args.className, args.date );
+        let result = await DataBase.getHomework( args.className, args.date );
+        for ( const hw of result ) {
+            hw.attachments = await getPhotoUrls( hw.attachments )
+        }
+
         return result;
     }
 } );
