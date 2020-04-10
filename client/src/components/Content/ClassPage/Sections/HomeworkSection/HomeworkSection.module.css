@@ -31,8 +31,18 @@
 }
 
 .tasks {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    min-width: 0;
+}
+
+.container {
+    width: 100%;
     display: flex;
-    flex-wrap: wrap;
+    position: relative;
+    padding-right: 20px;
+    box-sizing: border-box;
 }
 
 .task {
@@ -40,34 +50,40 @@
     padding: 10px;
     border-radius: 10px;
     display: inline-block;
-    min-width: 150px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: calc(100%/4 - 40px);
     justify-content: space-around;
-    margin-bottom: 15px;
+    height: fit-content;
 }
 
 .task img {
     border-radius: 10px;
-    margin-bottom: 10px;
-    width: 60%;
+}
+
+.attachments {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: calc(100% - 20px);
+    gap: 10px;
+    padding: 10px;
+}
+
+.attachments img {
+    width: 100%;
 }
 
 .fullImage {
     padding: 0;
 }
 
-.fullImage img {
-    width: 100%;
-    height: 100%;
-    margin-bottom: 0;
+.onlyImage .attachments {
+    grid-template-columns: 1fr;
+    padding: 0;
 }
 
 .fullText {
     justify-content: start;
-    height: fit-content;
     flex-direction: initial;
     padding: 15px;
 }
@@ -80,4 +96,16 @@
 .text {
     font-size: 1.2rem;
     font-size: bold;
+}
+
+.pen {
+    visibility: hidden;
+    position: absolute;
+    top: 10px;
+    right: 0px;
+    cursor: pointer;
+}
+
+.container:hover .pen {
+    visibility: visible;
 }

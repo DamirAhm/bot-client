@@ -9,6 +9,7 @@ import { parseDate } from '../../../../../utils/date';
 import Accordion from "../../../../Common/Accordion";
 import { GoTriangleRight } from "react-icons/go";
 import OpenableImg from '../../../../Common/OpenableImage';
+import { FaPen } from 'react-icons/fa';
 
 type Props = {
     className: string
@@ -55,21 +56,8 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                                             className={opened ? styles.triangle_opened : ""} size={10} />
                                                     </p>}
                                                 Body={() =>
-                                                    <div className={styles.tasks}>
-                                                        {parsedHw[hwDate][lesson].map((hw, i) =>
-                                                            <div key={hwDate + lesson + hw.task + i}
-                                                                className={`
-                                                                    ${styles.offseted} 
-                                                                    ${styles.task} 
-                                                                    ${!hw.task && hw.attachments.length ? styles.fullImage : ""} 
-                                                                    ${hw.task && !hw.attachments.length ? styles.fullText : ""}
-                                                                `}
-                                                            >
-                                                                {hw.attachments.length &&
-                                                                    hw.attachments.map((at, i) => <OpenableImg key={at + i} className={styles.attach} alt="Фото дз" src={at} />)
-                                                                }
-                                                                <p className={styles.text}> {hw.task} </p>
-                                                            </div>)}
+                                                    <div className={`${styles.tasks} ${styles.offseted}`}>
+                                                        {parsedHw[hwDate][lesson].map((hw, i) => <Task homework={hw} />)}
                                                     </div>
                                                 }
                                             />
@@ -83,6 +71,34 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                 }
             </Suspender>
         </InfoSection>
+    )
+}
+
+type TaskProps = {
+    homework: homework
+}
+
+const Task: React.FC<TaskProps> = ({ homework }) => {
+    return (
+        <div className={styles.container}>
+            <div key={homework.lesson + homework.task + Date.now()}
+                className={`
+                ${styles.task} 
+                ${!homework.task && homework.attachments.length ? styles.fullImage : ""} 
+                ${homework.task && !homework.attachments.length ? styles.fullText : ""}
+                ${homework.attachments.length === 1 ? styles.onlyImage : ""}
+            `}>
+                {homework.attachments.length &&
+                    <div className={styles.attachments}>
+                        {homework.attachments.map((at, i) => <OpenableImg key={at + i} className={styles.attach} alt="Фото дз" src={at} />)}
+                    </div>
+                }
+                {homework.task &&
+                    <p className={styles.text}> {homework.task} </p>
+                }
+            </div>
+            <FaPen className={styles.pen} size={15} />
+        </div>
     )
 }
 
