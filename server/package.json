@@ -6,6 +6,7 @@
   "scripts": {
     "start": "supervisor index"
   },
+  "type": "module",
   "author": "",
   "license": "ISC",
   "dependencies": {

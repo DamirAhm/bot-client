@@ -2,6 +2,10 @@ const https = require( "https" );
 const qs = require( "querystring" );
 const { DataBase } = require( "../DataBase.js" );
 
+const letters = "ABCDEFGHIJKLNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
+let currentClassNumber = 1;
+let currentClassLetterIndex = 0;
+
 const findNextDayWithLesson = ( schedule, lesson, currentWeekDay ) => {
     let lastIndex = -1;
     if ( schedule.slice( currentWeekDay ).find( e => e.includes( lesson ) ) ) {
@@ -47,10 +51,10 @@ const createTestData = async ( { clAmt = 1, stAmt = 1 } = {} ) => {
     const students = [];
     const classes = [];
     for ( let i = 0; i < stAmt; i++ ) {
-        students.push( await DataBase.createStudent( Math.ceil( Math.random() * 100 + 1 ) ) );
+        students.push( await DataBase.createStudent( getUniqueVkId() ) );
     }
     for ( let i = 0; i < clAmt; i++ ) {
-        classes.push( await DataBase.createClass( Math.ceil( Math.random() * 10 ) + "A" ) );
+        classes.push( await DataBase.createClass( getUniqueClassName() ) );
     }
     return {
         Student: students.length > 1 ? students : students[ 0 ],
@@ -136,6 +140,21 @@ const createVkApi = ( token ) => {
     }
 };
 
+const getUniqueClassName = ( dpt = 0 ) => {
+    const num = ( currentClassNumber++ ).toString();
+    const letter = letters[ currentClassLetterIndex++ ];
+
+    const className = num + letter;
+
+    return className
+}
+
+const getUniqueVkId = ( dpt = 0 ) => {
+    const id = curentVkId++;
+
+    return id;
+}
+
 module.exports = {
     toObject,
     isObjectId,
@@ -145,7 +164,9 @@ module.exports = {
     findNotifiedStudents,
     lessonsIndexesToLessonsNames,
     checkIsToday,
-    createVkApi
+    createVkApi,
+    getUniqueClassName,
+    getUniqueVkId
 };
 
 

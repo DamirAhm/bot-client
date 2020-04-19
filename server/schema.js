@@ -1,13 +1,11 @@
 // @ts-nocheck
 const { Roles, Lessons } = require( "./Models/utils" );
-const { gql } = require( 'apollo-server-express' );
 const { composeWithMongoose } = require( 'graphql-compose-mongoose' );
 const { schemaComposer } = require( 'graphql-compose' );
-const { StudentModel } = require( "./Models/Student" );
-const { ClassModel } = require( "./Models/Class" );
-const { DataBase } = require( "./DataBase" );
+const { StudentModel } = require( "./DataBase/Models/Student" );
+const { ClassModel } = require( "./DataBase/Models/Class" );
+const { DataBase } = require( "./DataBase/DataBase" );
 const { createVkApi } = require( "./utils/functions" );
-const https = require( "https" );
 
 const vk = createVkApi( "0c44f72c9eb8568cdc477605a807a03b5f924e7cf0a18121eff5b8ba1b886f3789496034c2cc75bc83924" );
 
@@ -42,7 +40,6 @@ ClassTC.addResolver( {
         return Class.schedule;
     }
 } )
-
 ClassTC.addResolver( {
     name: "getHomework",
     type: `[${ClassTC.get( "homework" ).getType()}]`,
@@ -119,6 +116,19 @@ ClassTC.addResolver( {
         return Lessons;
     }
 } );
+
+//TODO
+// ClassTC.addResolver( {
+//     name: "removeHomework",
+//     type: ClassTC.getType(),
+//     args: { className: "String!", homeworkId: "String!" },
+//     resolve: async ( { source, args, context, info } ) => {
+//         await DataBase.removeHomework( args.className, args.homeworkId );
+//         return await DataBase.getClassByName( args.className );
+//     }
+// } );
+
+
 StudentTC.addResolver( {
     name: "changeSettings",
     type: "Boolean",

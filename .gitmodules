@@ -1,0 +1,3 @@
+[submodule "server/DataBase"]
+	path = server/DataBase
+	url = https://github.com/Proger3228/bot-database.git
