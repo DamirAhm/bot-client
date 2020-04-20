@@ -1,5 +1,4 @@
 import React, { ImgHTMLAttributes, useState } from 'react'
-import HTMLAttributes from 'react';
 import ReactDOM from "react-dom";
 
 const OpenableImg: React.FC<ImgHTMLAttributes<HTMLImageElement>> = ({ ...props }) => {
@@ -19,7 +18,7 @@ const OpenableImg: React.FC<ImgHTMLAttributes<HTMLImageElement>> = ({ ...props }
 
 const ModalImg: React.FC<ImgHTMLAttributes<HTMLImageElement> & { close: () => void }> = ({ close, ...props }) => {
     return <div className="modal" onClick={close}>
-        <img style={{ height: "70%" }} {...props} onClick={e => e.stopPropagation()} />
+        <img style={{ width: "70%", maxHeight: "70%" }} {...props} onClick={e => e.stopPropagation()} />
     </div>
 }
 

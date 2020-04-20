@@ -1,11 +1,11 @@
 // @ts-nocheck
-const { Roles, Lessons } = require( "./Models/utils" );
 const { composeWithMongoose } = require( 'graphql-compose-mongoose' );
 const { schemaComposer } = require( 'graphql-compose' );
-const { StudentModel } = require( "./DataBase/Models/Student" );
-const { ClassModel } = require( "./DataBase/Models/Class" );
+const { Roles, Lessons } = require( "./DataBase/Models/utils" );
+const { StudentModel } = require( "./DataBase/Models/StudentModel" );
+const { ClassModel } = require( "./DataBase/Models/ClassModel" );
 const { DataBase } = require( "./DataBase/DataBase" );
-const { createVkApi } = require( "./utils/functions" );
+const { createVkApi } = require( "../utils/functions" );
 
 const vk = createVkApi( "0c44f72c9eb8568cdc477605a807a03b5f924e7cf0a18121eff5b8ba1b886f3789496034c2cc75bc83924" );
 

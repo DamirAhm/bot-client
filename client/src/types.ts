@@ -42,6 +42,7 @@ export type homework = {
     to: Date,
     attachments: string[],
     createdBy: number
+    _id: string
 }
 
 export type Class = {
