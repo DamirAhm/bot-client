@@ -2,288 +2,439 @@
 const { composeWithMongoose } = require( 'graphql-compose-mongoose' );
 const { schemaComposer } = require( 'graphql-compose' );
 const { Roles, Lessons } = require( "./DataBase/Models/utils" );
-const { StudentModel } = require( "./DataBase/Models/StudentModel" );
-const { ClassModel } = require( "./DataBase/Models/ClassModel" );
+const StudentModel = require( "./DataBase/Models/StudentModel" );
+const ClassModel = require( "./DataBase/Models/ClassModel" );
 const { DataBase } = require( "./DataBase/DataBase" );
-const { createVkApi } = require( "../utils/functions" );
+const { createVkApi } = require( "./utils/vkApi" )
 
 const vk = createVkApi( "0c44f72c9eb8568cdc477605a807a03b5f924e7cf0a18121eff5b8ba1b886f3789496034c2cc75bc83924" );
 
 const getPhotoUrls = async ( ats ) => {
     const urls = [];
 
-    for ( let at of ats ) {
-        if ( /^photo/.test( at ) ) {
-            const [ owner_id, photo_ids ] = at.slice( 5 ).split( "_" );
-            urls.push( await vk( "photos.get", {
-                owner_id,
-                photo_ids,
-                album_id: "saved"
-            } ) )
+    if ( ats ) {
+        for ( let at of ats ) {
+            if ( /^photo/.test( at ) ) {
+                const [ owner_id, photo_ids ] = at.slice( 5 ).split( "_" );
+                urls.push( await vk( "photos.get", {
+                    owner_id,
+                    photo_ids,
+                    album_id: "saved"
+                } ) )
+            }
         }
-    }
 
-    return urls.map( e => e.items[ 0 ].sizes[ 4 ].url );
+        return urls.map( e => e.items[ 0 ].sizes[ 4 ].url );
+    } else {
+        return [];
+    }
 }
 
 const customizationOptions = {};
-
 const StudentTC = composeWithMongoose( StudentModel, customizationOptions );
 const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
 
-ClassTC.addResolver( {
-    name: "getSchedule",
-    type: "[ [ String ] ]",
-    args: { className: "String!" },
-    resolve: async ( { source, args, context, info } ) => {
-        const Class = await DataBase.getClassByName( args.className );
-        return Class.schedule;
-    }
-} )
-ClassTC.addResolver( {
-    name: "getHomework",
-    type: `[${ClassTC.get( "homework" ).getType()}]`,
-    args: { className: "String!", date: "Date" },
-    resolve: async ( { source, args, context, info } ) => {
-        let result = await DataBase.getHomework( args.className, args.date );
-        for ( const hw of result ) {
-            hw.attachments = await getPhotoUrls( hw.attachments )
+//Resolvers
+{
+    //! Classes
+    {
+        //* Ovreride
+        {
+            //? create 
+            ClassTC.addResolver( {
+                name: "classCreateOne",
+                type: ClassTC.getType(),
+                args: { className: "String!" },
+                resolve: async ( { source, args, context, info } ) => {
+                    return await DataBase.createClass( args.className );
+                }
+            } );
+            //? remove
+            ClassTC.addResolver( {
+                name: "removeOne",
+                type: ClassTC.getType(),
+                args: { className: "String!" },
+                resolve: async ( { source, args, context, info } ) => {
+                    const Class = await DataBase.getClassByName( args.className );
+                    const students = Class.students;
+                    if ( students.length > 0 ) {
+                        for ( let student of students ) {
+                            const Student = await DataBase.getStudentBy_Id( student );
+                            await Student.updateOne( { class: null } );
+                        }
+                    }
+                    await Class.deleteOne();
+                    return Class;
+                }
+            } );
         }
+        //* Properties 
+        {
+            //? name
+            ClassTC.addResolver( {
+                name: "name",
+                type: "String",
+                args: { class_id: "String!" },
+                resolve: async ( { source, args, context, info } ) => {
+                    if ( args.class_id ) {
+                        const Class = await DataBase.getClassBy_Id( args.class_id );
+                        return Class.name
+                    } else {
+                        return "Нету";
+                    }
+                }
+            } );
+        }
+        //* Schedule
+        {
+            //? get
+            ClassTC.addResolver( {
+                name: "getSchedule",
+                type: "[ [ String ] ]",
+                args: { className: "String!" },
+                resolve: async ( { source, args, context, info } ) => {
+                    const Class = await DataBase.getClassByName( args.className );
+                    return Class.schedule;
+                }
+            } )
+            //? change
+            ClassTC.addResolver( {
+                name: "changeDay",
+                type: ClassTC.getType(),
+                args: { className: "String!", dayIndex: "Int!", newSchedule: "[String]!" },
+                resolve: async ( { source, args, context, info } ) => {
+                    await DataBase.changeDay( args.className, args.dayIndex, args.newSchedule );
+                    return await DataBase.getClassByName( args.className );
+                }
+            } );
+        }
+        //* Changes
+        {
+            //? get
+            ClassTC.addResolver( {
+                name: "getChanges",
+                type: ClassTC.get( "changes" ).getType(),
+                args: { className: "String!", date: "Date" },
+                resolve: async ( { source, args, context, info } ) => {
+                    return await DataBase.getChanges( args.className, args.date );
+                }
+            } );
+            //TODO change return from _id to object
+            //TODO think about after all the shit around loading images
+            //? add
+            ClassTC.addResolver( {
+                name: "addChange",
+                type: ClassTC.get( "changes" ).getType(),
+                args: { className: "String!", content: ClassTC.get( "changes" ).getInputType() },
+                resolve: async ( source, args ) => {
+                    const change = await DataBase.addChanges( args.className, args.content );
 
-        return result;
+                    if ( change ) {
+                        return await DataBase.getClassByName( args.className ).then( c => c.changes.find( ch => ch._id.toString() === change.toString() ) );
+                    } else {
+                        return null;
+                    }
+                }
+            } )
+            //? remove
+            ClassTC.addResolver( {
+                name: "removeChange",
+                type: "String",
+                args: { className: "String!", changeId: "String!" },
+                resolve: async ( { source, args, context, info } ) => {
+                    // await DataBase.removeC( args.className, args.homeworkId );
+                    return args.homeworkId;
+                }
+            } );
+            //? change
+            ClassTC.addResolver( {
+                name: "updateChange",
+                type: ClassTC.get( "changes" ).getType(),
+                args: { className: "String!", changeId: "String!", updates: ClassTC.get( "changes" ).getInputType() },
+                resolve: async ( { source, args, context, info } ) => {
+                    const Class = await DataBase.getClassByName( args.className );
+
+                    if ( Class.homework.find( e => e._id.toString() === args.homeworkId.toString() ) ) {
+                        const updatedChange = await DataBase.updateChange( args.className, args.changeId, args.updates );
+                        return updatedHomework.find( e => e._id.toString() === args.changeId.toString() );
+                    } else {
+                        return {
+                            error: "Can't find homework"
+                        }
+                    }
+                }
+            } )
+        }
+        //* Homework
+        {
+            //? get
+            ClassTC.addResolver( {
+                name: "getHomework",
+                type: `[${ClassTC.get( "homework" ).getType()}]`,
+                args: { className: "String!", date: "Date" },
+                resolve: async ( { source, args, context, info } ) => {
+                    let result = await DataBase.getHomework( args.className, args.date );
+                    if ( result !== null ) {
+                        for ( const hw of result ) {
+                            hw.attachments = await getPhotoUrls( hw.attachments )
+                        }
+                        return result;
+                    }
+                    return [];
+                }
+            } );
+            //? remove
+            ClassTC.addResolver( {
+                name: "removeHomework",
+                type: "String",
+                args: { className: "String!", homeworkId: "String!" },
+                resolve: async ( { source, args, context, info } ) => {
+                    await DataBase.removeHomework( args.className, args.homeworkId );
+                    return args.homeworkId;
+                }
+            } );
+            //TODO replace return of addHomework from _id to object
+            //? add
+            ClassTC.addResolver( {
+                name: "addHomework",
+                type: ClassTC.get( "homework" ).getType(),
+                args: { className: "String!", task: "String!", toDate: "String", lesson: "String!" }, //TODO think about attachments
+                resolve: async ( { source, args, context, info } ) => {
+                    const id = await DataBase.addHomework( args.className, args.lesson, { task: args.task }, undefined, args.toDate );
+
+                    const hw = await DataBase.getClassByName( args.className ).then( cl => cl.homework.find( e => e._id.toString() === id.toString() ) );
+
+                    return hw;
+                }
+            } )
+            //? change
+            ClassTC.addResolver( {
+                name: "updateHomework",
+                type: ClassTC.get( "homework" ).getType(),
+                args: { className: "String!", homeworkId: "String!", updates: ClassTC.get( "homework" ).getInputType() },
+                resolve: async ( { source, args, context, info } ) => {
+                    const Class = await DataBase.getClassByName( args.className );
+                    if ( Class.homework.find( e => e._id.toString() === args.homeworkId.toString() ) ) {
+                        const updatedHomework = DataBase.updateHomework( args.className, args.homeworkId, args.updates );
+                        return updatedHomework.find( e => e._id.toString() === args.homeworkId.toString() );
+                    } else {
+                        return {
+                            error: "Can't find class"
+                        }
+                    }
+                }
+            } )
+        }
     }
-} );
-ClassTC.addResolver( {
-    name: "changeDay",
-    type: ClassTC.getType(),
-    args: { className: "String!", dayIndex: "Int!", newSchedule: "[String]!" },
-    resolve: async ( { source, args, context, info } ) => {
-        await DataBase.changeDay( args.className, args.dayIndex, args.newSchedule );
-        return await DataBase.getClassByName( args.className );
+
+    //! Students
+    {
+        //* Ovreride
+        {
+            //? Remove
+            StudentTC.addResolver( {
+                name: "removeOne",
+                type: StudentTC.getType(),
+                args: { vkId: "Int!" },
+                resolve: async ( { source, args, context, info } ) => {
+                    const Student = await DataBase.getStudentByVkId( args.vkId );
+                    const Class = Student.class;
+                    if ( Class ) {
+                        await DataBase.removeStudentFromClass( args.vkId );
+                    }
+                    await Student.deleteOne();
+                    return Student;
+                }
+            } );
+            //? Create
+            StudentTC.addResolver( {
+                name: "studentCreateOne",
+                type: StudentTC.getType(),
+                args: { vkId: "Int!" },
+                resolve: async ( { source, args, context, info } ) => {
+                    return await DataBase.createStudent( args.vkId );
+                }
+            } );
+        }
+        //* Properties
+        {
+            //? First name
+            StudentTC.addResolver( {
+                name: "firstName",
+                type: 'String',
+                args: { vkId: "String!" },
+                resolve: async ( { source, args, context, info } ) => {
+                    return await vk( "users.get", { user_ids: args.vkId } ).then( res => res[ 0 ].first_name );
+                }
+            } );
+            //? Second name
+            StudentTC.addResolver( {
+                name: "secondName",
+                type: 'String',
+                args: { vkId: "String!" },
+                resolve: async ( { source, args, context, info } ) => {
+                    return await vk( "users.get", { user_ids: args.vkId } ).then( res => res[ 0 ].last_name );
+                }
+            } );
+            //? Full name
+            StudentTC.addResolver( {
+                name: "fullName",
+                type: 'String',
+                args: { vkId: "String!" },
+                resolve: async ( { source, args, context, info } ) => {
+                    return await vk( "users.get", { user_ids: args.vkId } ).then( res => res[ 0 ] ).then( res => res.first_name + " " + res.last_name );
+                }
+            } );
+        }
+        //* Settings 
+        {
+            //? Change
+            StudentTC.addResolver( {
+                name: "changeSettings",
+                type: "Boolean",
+                args: { vkId: "Int!", diffObject: StudentTC.get( "settings" ).getInputType() },
+                resolve: async ( { source, args, context, info } ) => {
+                    return await DataBase.changeSettings( args.vkId, args.diffObject );
+                }
+            } );
+        }
+        //* Actions
+        {
+            //? Change class
+            StudentTC.addResolver( {
+                name: "changeClass",
+                type: StudentTC.getType(),
+                args: { vkId: "Int!", newClassName: "String!" },
+                resolve: async ( { source, args, context, info } ) => {
+                    if ( args.newClassName !== "Нету" ) {
+                        await DataBase.changeClass( args.vkId, args.newClassName );
+                    } else {
+                        await DataBase.removeStudentFromClass( args.vkId )
+                    }
+                    return await DataBase.getStudentByVkId( args.vkId )
+                }
+            } );
+            //? Remove from class
+            StudentTC.addResolver( {
+                name: "removeStudentFromClass",
+                type: "Boolean",
+                args: { vkId: "Int!" },
+                resolve: async ( { source, args, context, info } ) => {
+                    return await DataBase.removeStudentFromClass( args.vkId );
+                }
+            } );
+            //? Ban
+            StudentTC.addResolver( {
+                name: "banStudent",
+                type: StudentTC.getType(),
+                args: { vkId: "Int!", isBan: "Boolean" },
+                resolve: async ( { source, args, context, info } ) => {
+                    const result = await DataBase.banUser( args.vkId, args.isBan !== undefined ? args.isBan : true );
+                    if ( result ) {
+                        return await DataBase.getStudentByVkId( args.vkId );
+                    } else {
+                        return null;
+                    }
+                }
+            } );
+        }
+        //* Getters 
+        {
+            //? Get for class
+            StudentTC.addResolver( {
+                name: "getForClass",
+                type: "[Student]",
+                args: { className: "String" },
+                resolve: async ( { source, args, context, info } ) => {
+                    const Class = await DataBase.getClassByName( args.className );
+                    return await StudentModel.find( { _id: { $in: Class.students } } );
+                }
+            } );
+
+        }
     }
-} );
-ClassTC.addResolver( {
-    name: "getChanges",
-    type: ClassTC.get( "changes" ).getType(),
-    args: { className: "String!", date: "Date" },
-    resolve: async ( { source, args, context, info } ) => {
-        return await DataBase.getChanges( args.className, args.date );
-    }
-} );
-ClassTC.addResolver( {
-    name: "classCreateOne",
-    type: ClassTC.getType(),
-    args: { className: "String!" },
-    resolve: async ( { source, args, context, info } ) => {
-        return await DataBase.createClass( args.className );
-    }
-} );
-ClassTC.addResolver( {
-    name: "removeOne",
-    type: ClassTC.getType(),
-    args: { className: "String!" },
-    resolve: async ( { source, args, context, info } ) => {
-        const Class = await DataBase.getClassByName( args.className );
-        const students = Class.students;
-        if ( students.length > 0 ) {
-            for ( let student of students ) {
-                const Student = await DataBase.getStudentBy_Id( student );
-                await Student.updateOne( { class: null } );
+
+    //! Common
+    {
+        //? lessons
+        ClassTC.addResolver( {
+            name: "lessons",
+            type: "[String]",
+            args: {},
+            resolve: async ( { source, args, context, info } ) => {
+                return Lessons;
             }
-        }
-        await Class.deleteOne();
-        return Class;
+        } );
+        StudentTC.addResolver( {
+            name: "roles",
+            type: '[String]',
+            args: {},
+            resolve: async ( { source, args, context, info } ) => {
+                return Object.values( Roles );
+            }
+        } );
     }
-} );
-ClassTC.addResolver( {
-    name: "name",
-    type: "String",
-    args: { class_id: "String!" },
-    resolve: async ( { source, args, context, info } ) => {
-        if ( args.class_id ) {
-            const Class = await DataBase.getClassBy_Id( args.class_id );
-            return Class.name
-        } else {
-            return "Нету";
-        }
-    }
-} );
-ClassTC.addResolver( {
-    name: "lessons",
-    type: "[String]",
-    args: {},
-    resolve: async ( { source, args, context, info } ) => {
-        return Lessons;
-    }
-} );
+}
 
-//TODO
-// ClassTC.addResolver( {
-//     name: "removeHomework",
-//     type: ClassTC.getType(),
-//     args: { className: "String!", homeworkId: "String!" },
-//     resolve: async ( { source, args, context, info } ) => {
-//         await DataBase.removeHomework( args.className, args.homeworkId );
-//         return await DataBase.getClassByName( args.className );
-//     }
-// } );
+//Relations
+{
+    //! Classes
+    {
+        StudentTC.addRelation( 'class', {
+            resolver: () => ClassTC.getResolver( 'findById' ),
+            prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
+                _id: ( source ) => source.class,
+            },
+            projection: { class: 1 }, // point fields in source object, which should be fetched from DB
+        } );
+        ClassTC.addRelation( 'students', {
+            resolver: () => StudentTC.getResolver( 'findByIds' ),
+            prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
+                _ids: ( source ) => source.students,
+            },
+            projection: { class: 1 }, // point fields in source object, which should be fetched from DB
+        } );
+        ClassTC.addRelation( "studentsCount", {
+            resolver: () => StudentTC.getResolver( 'count' ),
+            prepareArgs: {
+                filter: ( source ) => ( { class: source._id } ),
+            },
+            projection: { _id: 1 }
+        } );
 
-
-StudentTC.addResolver( {
-    name: "changeSettings",
-    type: "Boolean",
-    args: { vkId: "Int!", diffObject: StudentTC.get( "settings" ).getInputType() },
-    resolve: async ( { source, args, context, info } ) => {
-        return await DataBase.changeSettings( args.vkId, args.diffObject );
     }
-} );
-StudentTC.addResolver( {
-    name: "removeStudentFromClass",
-    type: "Boolean",
-    args: { vkId: "Int!" },
-    resolve: async ( { source, args, context, info } ) => {
-        return await DataBase.removeStudentFromClass( args.vkId );
+    //! Students
+    {
+        StudentTC.addRelation( 'firstName', {
+            resolver: () => StudentTC.getResolver( 'firstName' ),
+            prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
+                vkId: ( source ) => source.vkId,
+            },
+            projection: { vkId: 1 }, // point fields in source object, which should be fetched from DB
+        } );
+        StudentTC.addRelation( 'secondName', {
+            resolver: () => StudentTC.getResolver( 'secondName' ),
+            prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
+                vkId: ( source ) => source.vkId,
+            },
+            projection: { vkId: 1 }, // point fields in source object, which should be fetched from DB
+        } );
+        StudentTC.addRelation( 'fullName', {
+            resolver: () => StudentTC.getResolver( 'fullName' ),
+            prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
+                vkId: ( source ) => source.vkId,
+            },
+            projection: { vkId: 1 }, // point fields in source object, which should be fetched from DB
+        } );
+        StudentTC.addRelation( "className", {
+            resolver: () => ClassTC.getResolver( 'name' ),
+            prepareArgs: {
+                class_id: source => source.class
+            },
+            projection: { class: 1 }
+        } );
     }
-} );
-StudentTC.addResolver( {
-    name: "changeClass",
-    type: StudentTC.getType(),
-    args: { vkId: "Int!", newClassName: "String!" },
-    resolve: async ( { source, args, context, info } ) => {
-        if ( args.newClassName !== "Нету" ) {
-            await DataBase.changeClass( args.vkId, args.newClassName );
-        } else {
-            await DataBase.removeStudentFromClass( args.vkId )
-        }
-        return await DataBase.getStudentByVkId( args.vkId )
-    }
-} );
-StudentTC.addResolver( {
-    name: "banStudent",
-    type: StudentTC.getType(),
-    args: { vkId: "Int!", isBan: "Boolean" },
-    resolve: async ( { source, args, context, info } ) => {
-        const result = await DataBase.banUser( args.vkId, args.isBan !== undefined ? args.isBan : true );
-        if ( result ) {
-            return await DataBase.getStudentByVkId( args.vkId );
-        } else {
-            return null;
-        }
-    }
-} );
-StudentTC.addResolver( {
-    name: "studentCreateOne",
-    type: StudentTC.getType(),
-    args: { vkId: "Int!" },
-    resolve: async ( { source, args, context, info } ) => {
-        return await DataBase.createStudent( args.vkId );
-    }
-} );
-StudentTC.addResolver( {
-    name: "removeOne",
-    type: StudentTC.getType(),
-    args: { vkId: "Int!" },
-    resolve: async ( { source, args, context, info } ) => {
-        const Student = await DataBase.getStudentByVkId( args.vkId );
-        const Class = Student.class;
-        if ( Class ) {
-            await DataBase.removeStudentFromClass( args.vkId );
-        }
-        await Student.deleteOne();
-        return Student;
-    }
-} );
-StudentTC.addResolver( {
-    name: "roles",
-    type: '[String]',
-    args: {},
-    resolve: async ( { source, args, context, info } ) => {
-        return Object.values( Roles );
-    }
-} );
-StudentTC.addResolver( {
-    name: "firstName",
-    type: 'String',
-    args: { vkId: "String!" },
-    resolve: async ( { source, args, context, info } ) => {
-        return await vk( "users.get", { user_ids: args.vkId } ).then( res => res[ 0 ].first_name );
-    }
-} );
-StudentTC.addResolver( {
-    name: "secondName",
-    type: 'String',
-    args: { vkId: "String!" },
-    resolve: async ( { source, args, context, info } ) => {
-        return await vk( "users.get", { user_ids: args.vkId } ).then( res => res[ 0 ].last_name );
-    }
-} );
-StudentTC.addResolver( {
-    name: "fullName",
-    type: 'String',
-    args: { vkId: "String!" },
-    resolve: async ( { source, args, context, info } ) => {
-        return await vk( "users.get", { user_ids: args.vkId } ).then( res => res[ 0 ] ).then( res => res.first_name + " " + res.last_name );
-    }
-} );
-StudentTC.addResolver( {
-    name: "getForClass",
-    type: "[Student]",
-    args: { className: "String" },
-    resolve: async ( { source, args, context, info } ) => {
-        const Class = await DataBase.getClassByName( args.className );
-        return await StudentModel.find( { _id: { $in: Class.students } } );
-    }
-} );
-
-StudentTC.addRelation( 'class', {
-    resolver: () => ClassTC.getResolver( 'findById' ),
-    prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
-        _id: ( source ) => source.class,
-    },
-    projection: { class: 1 }, // point fields in source object, which should be fetched from DB
-} );
-StudentTC.addRelation( 'firstName', {
-    resolver: () => StudentTC.getResolver( 'firstName' ),
-    prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
-        vkId: ( source ) => source.vkId,
-    },
-    projection: { vkId: 1 }, // point fields in source object, which should be fetched from DB
-} );
-StudentTC.addRelation( 'secondName', {
-    resolver: () => StudentTC.getResolver( 'secondName' ),
-    prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
-        vkId: ( source ) => source.vkId,
-    },
-    projection: { vkId: 1 }, // point fields in source object, which should be fetched from DB
-} );
-StudentTC.addRelation( 'fullName', {
-    resolver: () => StudentTC.getResolver( 'fullName' ),
-    prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
-        vkId: ( source ) => source.vkId,
-    },
-    projection: { vkId: 1 }, // point fields in source object, which should be fetched from DB
-} );
-ClassTC.addRelation( 'students', {
-    resolver: () => StudentTC.getResolver( 'findByIds' ),
-    prepareArgs: { // resolver `findByIds` has `_ids` arg, let provide value to it
-        _ids: ( source ) => source.students,
-    },
-    projection: { class: 1 }, // point fields in source object, which should be fetched from DB
-} );
-ClassTC.addRelation( "studentsCount", {
-    resolver: () => StudentTC.getResolver( 'count' ),
-    prepareArgs: {
-        filter: ( source ) => ( { class: source._id } ),
-    },
-    projection: { _id: 1 }
-} );
-StudentTC.addRelation( "className", {
-    resolver: () => ClassTC.getResolver( 'name' ),
-    prepareArgs: {
-        class_id: source => source.class
-    },
-    projection: { class: 1 }
-} );
+}
 
 schemaComposer.Query.addFields( {
     studentById: StudentTC.getResolver( 'findById' ),
@@ -329,6 +480,10 @@ schemaComposer.Mutation.addFields( {
     removeStudentFromClass: StudentTC.getResolver( 'removeStudentFromClass' ),
     changeClass: StudentTC.getResolver( 'changeClass' ),
     banStudent: StudentTC.getResolver( 'banStudent' ),
+    removeHomework: ClassTC.getResolver( 'removeHomework' ),
+    addHomework: ClassTC.getResolver( 'addHomework' ),
+    updateHomework: ClassTC.getResolver( 'updateHomework' ),
+    updateChange: ClassTC.getResolver( 'updateChange' ),
 } );
 
 const graphqlSchema = schemaComposer.buildSchema();
