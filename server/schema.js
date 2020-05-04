@@ -5,20 +5,17 @@ const { Roles, Lessons } = require( "./DataBase/Models/utils" );
 const StudentModel = require( "./DataBase/Models/StudentModel" );
 const ClassModel = require( "./DataBase/Models/ClassModel" );
 const { DataBase } = require( "./DataBase/DataBase" );
-const { createVkApi } = require( "./utils/vkApi" )
+const VK_API = require( "./DataBase/VkAPI/VK_API" );
+const config = require( "config" );
 
-const vk = createVkApi( "0c44f72c9eb8568cdc477605a807a03b5f924e7cf0a18121eff5b8ba1b886f3789496034c2cc75bc83924" );
+const vk = new VK_API( config.get( "VK_API_KEY" ) );
 
 const getPhotoUrl = async ( at ) => {
-
+    let url;
     if ( at ) {
         if ( /^photo/.test( at ) ) {
             const [ owner_id, photo_ids ] = at.slice( 5 ).split( "_" );
-            url = await vk( "photos.get", {
-                owner_id,
-                photo_ids,
-                album_id: "saved"
-            } ).then( photo => photo.items[ 0 ].sizes[ 4 ].url );
+            url = await vk.getPhotoUrl( at );
         }
 
         return url;
@@ -265,7 +262,7 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 type: 'String',
                 args: { vkId: "String!" },
                 resolve: async ( { source, args, context, info } ) => {
-                    return await vk( "users.get", { user_ids: args.vkId } ).then( res => res[ 0 ].first_name );
+                    return await vk.getUser( args.vkId ).then( res => res[ 0 ].first_name );
                 }
             } );
             //? Second name
@@ -274,7 +271,7 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 type: 'String',
                 args: { vkId: "String!" },
                 resolve: async ( { source, args, context, info } ) => {
-                    return await vk( "users.get", { user_ids: args.vkId } ).then( res => res[ 0 ].last_name );
+                    return await vk.getUser( args.vkId ).then( res => res[ 0 ].last_name );
                 }
             } );
             //? Full name
@@ -283,7 +280,7 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 type: 'String',
                 args: { vkId: "String!" },
                 resolve: async ( { source, args, context, info } ) => {
-                    return await vk( "users.get", { user_ids: args.vkId } ).then( res => res[ 0 ] ).then( res => res.first_name + " " + res.last_name );
+                    return await vk.getUser( args.vkId ).then( res => res[ 0 ] ).then( res => res.first_name + " " + res.last_name );
                 }
             } );
         }
