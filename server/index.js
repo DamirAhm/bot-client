@@ -10,7 +10,17 @@ mongoose.connect( "mongodb+srv://Damir:CLv4QEJJrfZp4BC0@botdata-sp9px.mongodb.ne
 }, () => console.log( "Mongoose connected" ) );
 
 const server = new ApolloServer( {
-    schema: graphqlSchema
+    typeDefs: `
+        attachment {
+            value: String
+            url: String
+        }
+        homeworkWithAttachments {
+            ...ClassHomework
+            attachments [attachment]
+        }
+    `,
+    schema: graphqlSchema,
 } );
 
 server.applyMiddleware( { app } );

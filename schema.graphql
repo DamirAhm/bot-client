@@ -46,7 +46,7 @@ type ClassHomework {
     attachments: String
     createdBy: Float
     lesson: String
-    task: String
+    text: String
     to: Date
 }
 
@@ -468,7 +468,7 @@ input ClassHomeworkInput {
     attachments: String
     createdBy: Float
     lesson: String
-    task: String
+    text: String
     to: Date
 }
 

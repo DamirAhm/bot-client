@@ -1,9 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import styles from './HomeworkSection.module.css'
 import InfoSection from '../../InfoSection/InfoSection';
 import { gql } from 'apollo-boost';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { homework, WithTypename } from '../../../../../types';
+import { homework, WithTypename, content } from '../../../../../types';
 import Suspender from '../../../../Common/Suspender';
 import { parseDate } from '../../../../../utils/date';
 import Accordion from "../../../../Common/Accordion";
@@ -11,6 +11,11 @@ import { GoTriangleRight } from "react-icons/go";
 import OpenableImg from '../../../../Common/OpenableImage';
 import { FaPen } from 'react-icons/fa';
 import { MdClose, MdCheck } from "react-icons/md";
+import { useParams } from "react-router-dom";
+import ReactDOM from "react-dom";
+import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
+
+const changeContentModalRoot = document.getElementById('changeContentModal');
 
 type Props = {
     className: string
@@ -19,10 +24,14 @@ type Props = {
 const GET_HOMEWORK = gql`
     query GetHomework($className: String!) {
         homework: getHomework(className: $className) {
-            task
+            text
             createdBy
             to
-            attachments
+            attachments {
+                url
+                value
+                _id
+            }
             lesson
             _id
         }
@@ -30,8 +39,24 @@ const GET_HOMEWORK = gql`
 `
 
 const REMOVE_TASK = gql`
-    mutation RemoveTask($className: String!, $homeworkId: String!) {
+    mutation Removetext($className: String!, $homeworkId: String!) {
         removeHomework(homeworkId: $homeworkId, className: $className)
+    }
+`
+
+const CHANGE_HOMEWORK = gql`
+    mutation ChangeHomework($className: String!, $homeworkId: String!, $updates: ClassHomeworkInput!) {
+        updateHomework(className: $className, homeworkId: $homeworkId, updates: $updates) {
+            _id 
+            text
+            attachments { 
+                url 
+                value
+                _id
+            }
+            to
+            lesson
+        }
     }
 `
 
@@ -48,9 +73,19 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
         }
     >(REMOVE_TASK);
 
+    const [updateHomework] = useMutation<
+        WithTypename<{
+            updateHomework: WithTypename<Partial<homework>>
+        }>,
+        {
+            className: string,
+            homeworkId: string,
+            updates: Partial<homework>
+        }>(CHANGE_HOMEWORK);
+
     const remove = (homeworkId: string) => {
         removeHomework({
-            variables: { className, homeworkId: homeworkId },
+            variables: { className, homeworkId },
             optimisticResponse: {
                 __typename: "Mutation",
                 removeHomework: homeworkId
@@ -70,18 +105,50 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
             }
         })
     }
+    const update = (homeworkId: string, updates: Partial<homework>) => {
+        if (updates.attachments && updates.attachments.length > 0) {
+            for (const at of updates.attachments) {
+                delete at.__typename;
+            }
+        }
+        updateHomework({
+            variables: { className, homeworkId, updates },
+            optimisticResponse: {
+                __typename: "Mutation",
+                updateHomework: {
+                    __typename: "ClassHomework",
+                    _id: homeworkId,
+                    ...homeworkQuery?.data?.homework.find(hw => hw._id === homeworkId),
+                    ...updates
+                }
+            },
+            update: (proxy, res) => {
+                const data = proxy.readQuery<{ homework: homework[] }>({ query: GET_HOMEWORK, variables: { className } });
+
+                if (res?.data) {
+                    proxy.writeQuery({
+                        query: GET_HOMEWORK,
+                        variables: { className },
+                        data: {
+                            homework: data?.homework.map(hw => hw._id === homeworkId ? res.data?.updateHomework : hw) || []
+                        }
+                    })
+                }
+            }
+        })
+    }
 
     return (
         <InfoSection name='Домашняя работа'>
             <Suspender query={homeworkQuery}>
-                {(data: { homework: homework[] }) => {
+                {(data: { homework: WithTypename<homework>[] }) => {
                     const parsedHw = parseHomework(data.homework);
                     return <div className={styles.homework}>
                         {Object.keys(parsedHw).map(hwDate =>
                             <Accordion
                                 key={hwDate}
                                 Head={({ onClick, opened }) =>
-                                    <p className={styles.date} onClick={onClick}>
+                                    <p className={`${styles.date} ${styles.accordion}`} onClick={onClick}>
                                         {hwDate}
                                         <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} />
                                     </p>}
@@ -91,14 +158,14 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                             <Accordion
                                                 className={styles.offseted} key={hwDate + lesson}
                                                 Head={({ onClick, opened }) =>
-                                                    <p className={`${styles.lesson}`} onClick={onClick}>
+                                                    <p className={`${styles.lesson} ${styles.accordion}`} onClick={onClick}>
                                                         {lesson}
                                                         <GoTriangleRight
                                                             className={opened ? styles.triangle_opened : ""} size={10} />
                                                     </p>}
                                                 Body={() =>
                                                     <div className={`${styles.tasks} ${styles.offseted}`}>
-                                                        {parsedHw[hwDate][lesson].map((hw, i) => <Task key={hw._id} removeHomework={remove} homework={hw} />)}
+                                                        {parsedHw[hwDate][lesson].map((hw, i) => <Task updateHomework={update} key={hw._id} removeHomework={remove} homework={hw} />)}
                                                     </div>
                                                 }
                                             />
@@ -115,44 +182,58 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
     )
 }
 
-type TaskProps = {
+type taskProps = {
     homework: homework
-    removeHomework: (homeworkId: string) => void
+    removeHomework: (homeworkId: string) => void,
+    updateHomework: (homeworkId: string, updates: Partial<homework>) => void
 }
 
 
 
-const Task: React.FC<TaskProps> = ({ homework, removeHomework }) => {
+const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework }) => {
+    const { className } = useParams<{ className: string }>();
+
+    const [changes, setChanges] = useState({} as Partial<typeof homework>);
+    const [changing, setChanging] = useState(false);
+
     return (
         <div className={styles.container}>
-            <div key={homework.lesson + homework.task + Date.now()}
+            <div key={homework.lesson + homework.text + Date.now()}
                 className={`
-                ${styles.task} 
-                ${!homework.task && homework.attachments.length ? styles.fullImage : ""} 
-                ${homework.task && !homework.attachments.length ? styles.fullText : ""}
+                ${styles.text} 
+                ${!homework.text && homework.attachments.length ? styles.fullImage : ""} 
+                ${homework.text && !homework.attachments.length ? styles.fullText : ""}
                 ${homework.attachments.length === 1 ? styles.onlyImage : ""}
             `}>
-                {homework.attachments.length &&
+                {homework.attachments.length > 0 &&
                     <div className={styles.attachments}>
-                        {homework.attachments.map((at, i) => <OpenableImg key={at + i} className={styles.attach} alt="Фото дз" src={at} />)}
+                        {homework.attachments.map((at, i) => <OpenableImg key={at.url + i} className={styles.attach} alt="Фото дз" src={at.url} />)}
                     </div>
                 }
-                {homework.task &&
-                    <p className={styles.text}> {homework.task} </p>
+                {homework.text &&
+                    <p className={styles.text}> {homework.text} </p>
+                }
+                {changing && changeContentModalRoot &&
+                    ReactDOM.createPortal(
+                        <ChangeContent
+                            contentChanger={(newContent: content) => updateHomework(homework._id, newContent)}
+                            content={homework} closer={() => setChanging(false)} />,
+                        changeContentModalRoot)
                 }
             </div>
             <div className={styles.controls}>
-                <FaPen className={`${styles.pen}`} size={15} />
+                <FaPen onClick={() => setChanging(true)} className={`${styles.pen}`} size={15} />
                 <MdClose className={`${styles.remove}`} onClick={() => removeHomework(homework._id)} size={20} />
             </div>
         </div>
     )
 }
 
-const parseHomework = (homework: homework[]): { [day: string]: { [lesson: string]: homework[] } } => {
+const parseHomework = (homework: WithTypename<homework>[]): { [day: string]: { [lesson: string]: homework[] } } => {
     const parsedHw = {} as { [day: string]: { [lesson: string]: homework[] } } & object;
 
     for (let hw of homework) {
+        delete hw.__typename;
         const hwDate = parseDate(hw.to, "dd MM");
         if (parsedHw.hasOwnProperty(hwDate)) {
             if (parsedHw[hwDate][hw.lesson]) {

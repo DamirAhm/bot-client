@@ -4,7 +4,8 @@
     --negative: #E34A4A;
     --positive: #71a842;
     --accent: #F5F5F5;
-    --secondary: #D1DEE4;
+    --secondary: #d1dee4;
+    --secondary-light: #b9d6e4;
     color: #F5F5F5;
     font-family: "Roboto", sans-serif !important;
     box-sizing: border-box;
@@ -87,6 +88,9 @@ html {
     z-index: 10000;
 }
 
+.accordion:hover {
+    background-color: var(--secondary-light);
+}
 
 @keyframes unbanned{
     0% {

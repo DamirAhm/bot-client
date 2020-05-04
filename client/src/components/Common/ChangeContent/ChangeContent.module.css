@@ -1,0 +1,56 @@
+.contentChanger {
+    background-color: var(--secondary);
+    padding: 10px 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.contentChanger section {
+    margin-bottom: 10px;
+}
+
+.text,
+.title {
+    color: var(--main);
+}
+
+.title {
+    margin-bottom: 5px; 
+    font-size: 1.8rem;
+}
+
+.attachmentsContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, calc(100%/3 - 10px)));
+    grid-template-rows: 1fr;
+    column-gap: 10px;
+    overflow: auto;
+    max-height: 300px;
+}
+
+.deletableAttachment {
+    position: relative;
+}
+
+.deletableAttachment:hover .removeAttachment {
+    visibility: visible;
+}
+
+.removeAttachment {
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    right: 12px;
+    visibility: hidden;
+}
+
+.text textarea {
+    resize: none;
+    padding: 10px;
+    box-sizing: border-box;
+}
+

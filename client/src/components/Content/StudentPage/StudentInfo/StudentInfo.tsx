@@ -33,9 +33,9 @@ const StudentInfo: React.FC<Props> = ({ name, value, changeHandler, isChanging }
             <div className={styles.info}>
                 {!isChanging || name === "vkId" ?
                     <div className={`${styles.showing}`}>
-                        {typeof value == "string" || typeof value == "number" || typeof value === "boolean" ?
-                            <div className={styles.value}>{infos[name] || name}: {text}</div> :
-                            <div className={styles.value}>
+                        {typeof value == "string" || typeof value == "number" || typeof value === "boolean"
+                            ? <div className={styles.value}>{infos[name] || name}: {text}</div>
+                            : <div className={styles.value}>
                                 {infos[name] || name}:
                                 <div className={styles.nested}>
                                     {Object.entries(value).map(entrie => <StudentInfo isChanging={isChanging}
@@ -50,6 +50,15 @@ const StudentInfo: React.FC<Props> = ({ name, value, changeHandler, isChanging }
                 }
             </div>
         )
+    } else if (name && value === null) {
+        return <div className={styles.info}>
+            {!isChanging ?
+                <div className={`${styles.showing}`}>
+                    <div className={styles.value} > {infos[name] || name}: {"Не указано"}</div>
+                </div>
+                : <Changer changeHandler={changeHandler} name={name} value={value} />
+            }
+        </div>
     }
     return <></>;
 }

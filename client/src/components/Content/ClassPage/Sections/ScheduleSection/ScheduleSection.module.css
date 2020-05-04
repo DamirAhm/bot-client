@@ -17,6 +17,7 @@
     position: relative;
     box-sizing: content-box;
     justify-content: space-between;
+    height: fit-content;
 }
 
 .value {
@@ -30,6 +31,7 @@
     align-self: center;
     margin-bottom: 10px;
     justify-self: center;
+    cursor: pointer;
 }
 
 .lesson {

@@ -9,7 +9,9 @@ const Accordion: React.FC<Props> = ({ Body, Head, children, ...attributes }) => 
 
     return (
         <div {...attributes}>
-            <Head onClick={() => { setOpened(!opened) }} opened={opened} />
+            <div className="accordion">
+                <Head onClick={() => { setOpened(!opened) }} opened={opened} />
+            </div>
             {opened &&
                 <Body opened={opened} />
             }

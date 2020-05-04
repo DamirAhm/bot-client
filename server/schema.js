@@ -9,24 +9,21 @@ const { createVkApi } = require( "./utils/vkApi" )
 
 const vk = createVkApi( "0c44f72c9eb8568cdc477605a807a03b5f924e7cf0a18121eff5b8ba1b886f3789496034c2cc75bc83924" );
 
-const getPhotoUrls = async ( ats ) => {
-    const urls = [];
+const getPhotoUrl = async ( at ) => {
 
-    if ( ats ) {
-        for ( let at of ats ) {
-            if ( /^photo/.test( at ) ) {
-                const [ owner_id, photo_ids ] = at.slice( 5 ).split( "_" );
-                urls.push( await vk( "photos.get", {
-                    owner_id,
-                    photo_ids,
-                    album_id: "saved"
-                } ) )
-            }
+    if ( at ) {
+        if ( /^photo/.test( at ) ) {
+            const [ owner_id, photo_ids ] = at.slice( 5 ).split( "_" );
+            url = await vk( "photos.get", {
+                owner_id,
+                photo_ids,
+                album_id: "saved"
+            } ).then( photo => photo.items[ 0 ].sizes[ 4 ].url );
         }
 
-        return urls.map( e => e.items[ 0 ].sizes[ 4 ].url );
+        return url;
     } else {
-        return [];
+        return "#";
     }
 }
 
@@ -78,7 +75,11 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 resolve: async ( { source, args, context, info } ) => {
                     if ( args.class_id ) {
                         const Class = await DataBase.getClassBy_Id( args.class_id );
-                        return Class.name
+                        if ( Class !== null ) {
+                            return Class.name
+                        } else {
+                            return "Неверное имя класса"
+                        }
                     } else {
                         return "Нету";
                     }
@@ -156,7 +157,7 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
 
                     if ( Class.homework.find( e => e._id.toString() === args.homeworkId.toString() ) ) {
                         const updatedChange = await DataBase.updateChange( args.className, args.changeId, args.updates );
-                        return updatedHomework.find( e => e._id.toString() === args.changeId.toString() );
+                        return updatedChange.find( e => e._id.toString() === args.changeId.toString() );
                     } else {
                         return {
                             error: "Can't find homework"
@@ -175,8 +176,9 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 resolve: async ( { source, args, context, info } ) => {
                     let result = await DataBase.getHomework( args.className, args.date );
                     if ( result !== null ) {
+                        const homework = []
                         for ( const hw of result ) {
-                            hw.attachments = await getPhotoUrls( hw.attachments )
+                            homework.push( hw.attachments.map( at => ( { url: getPhotoUrl( at ), value: at } ) ) );
                         }
                         return result;
                     }
@@ -198,9 +200,9 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
             ClassTC.addResolver( {
                 name: "addHomework",
                 type: ClassTC.get( "homework" ).getType(),
-                args: { className: "String!", task: "String!", toDate: "String", lesson: "String!" }, //TODO think about attachments
+                args: { className: "String!", text: "String!", toDate: "String", lesson: "String!" }, //TODO think about attachments
                 resolve: async ( { source, args, context, info } ) => {
-                    const id = await DataBase.addHomework( args.className, args.lesson, { task: args.task }, undefined, args.toDate );
+                    const id = await DataBase.addHomework( args.className, args.lesson, { text: args.text }, undefined, args.toDate );
 
                     const hw = await DataBase.getClassByName( args.className ).then( cl => cl.homework.find( e => e._id.toString() === id.toString() ) );
 
@@ -215,12 +217,11 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 resolve: async ( { source, args, context, info } ) => {
                     const Class = await DataBase.getClassByName( args.className );
                     if ( Class.homework.find( e => e._id.toString() === args.homeworkId.toString() ) ) {
-                        const updatedHomework = DataBase.updateHomework( args.className, args.homeworkId, args.updates );
+                        const updatedHomework = await DataBase.updateHomework( args.className, args.homeworkId, { ...args.updates } );
+
                         return updatedHomework.find( e => e._id.toString() === args.homeworkId.toString() );
                     } else {
-                        return {
-                            error: "Can't find class"
-                        }
+                        return null;
                     }
                 }
             } )
