@@ -10,12 +10,14 @@
     color: var(--main)
 }
 
+
 .date {
     font-size: 1.8rem;
-    margin-bottom: 10px;
+    /* margin-bottom: 10px; */
     cursor: pointer;
     display: flex;
     align-items: center;
+    padding: 5px;
 }
 
 .lesson { 
@@ -24,17 +26,22 @@
     cursor: pointer;
     display: flex;
     align-items: center;
+    padding: 10px;
 }
 
+.accordion:hover {
+    background-color: var(--secondary-light);  
+}
 .triangle_opened {
     transform: rotate(90deg);
 }
 
 .tasks {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(calc(100%/4 - 10px),150px));
+    grid-template-columns: repeat(auto-fill, minmax(calc(100%/4 - 10px),140px));
     row-gap: 25px;
     column-gap: 10px;
+    padding-top: 15px;
 }
 
 .container {
@@ -42,9 +49,10 @@
     display: flex;
     position: relative;
     box-sizing: border-box;
+    width: fit-content;
 }
 
-.task {
+.text {
     background-color: var(--main);
     padding: 10px;
     border-radius: 10px;
@@ -52,11 +60,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-around;
+    justify-content: space-between;
     height: fit-content;
 }
 
-.task img {
+.text img {
     border-radius: 10px;
 }
 
@@ -65,6 +73,7 @@
     grid-template-columns: 1fr 1fr;
     width: calc(100% - 20px);
     gap: 10px;
+    padding-bottom: 10px;
 }
 
 .attachments img {
@@ -75,6 +84,10 @@
     padding: 0;
 }
 
+.fullImage .attachments {
+    padding-bottom: 0;
+}
+
 .onlyImage .attachments {
     grid-template-columns: 1fr;
     padding: 0;
@@ -83,7 +96,6 @@
 .fullText {
     justify-content: start;
     flex-direction: initial;
-    padding: 15px;
 }
 
 .attach {
@@ -95,14 +107,24 @@
     font-size: bold;
 }
 
+
+.text:not(.fullText) .text {
+    padding-top: 5px;
+}
+
 .controls {
     display: flex;
     visibility: hidden;
     cursor: pointer;
     top: -20px;
-    right: 0;
+    right: -10px;
     flex-direction: row;
     position: absolute;
+    padding: 10px;
+    padding-top: 0;
+    box-sizing: content-box;
+    width: 40px;
+    justify-content: space-between;
 }
 
 .remove * {
@@ -113,17 +135,23 @@
     visibility: visible;
 }
 
+.controls:hover {
+    visibility: visible;
+}
+
 
 @media screen and (max-width: 476px) {
     .controls {
-        flex-direction: column;
+        flex-direction: column-reverse;
         top: 0;
-        right: -20px;
+        right: -30px;
+        width: fit-content;
+        height: 40px;
         align-items: center;
-        justify-content: start;
+        justify-content: space-between;
     }
 
-    .tasks {
+    .texts {
         gap: 10px 25px;
     }
 }

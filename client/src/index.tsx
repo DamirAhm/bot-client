@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
-import ApolloClient, { gql } from "apollo-boost";
+import ApolloClient, { gql, ApolloLink } from "apollo-boost";
 import { ApolloProvider } from "@apollo/react-hooks";
 import { BrowserRouter } from "react-router-dom";
 import { InMemoryCache } from "apollo-cache-inmemory";
@@ -92,20 +92,28 @@ const typeDefs = gql`
     }
 `;
 
+const omitTypename = (key: string, value: any) => {
+    return key === '__typename' ? undefined : value
+}
+
+const omitTypenameLink = new ApolloLink((operation, forward) => {
+    if (operation.variables) {
+        operation.variables = JSON.parse(
+            JSON.stringify(operation.variables),
+            omitTypename
+        )
+    }
+    return forward(operation)
+})
+
 const client = new ApolloClient({
     uri: "http://localhost:4000/graphql",
     cache: new InMemoryCache({
         dataIdFromObject: (obj: any) => {
-            switch (obj.__typename) {
-                case "Class": {
-                    return obj.name;
-                }
-                case "Student": {
-                    return obj.vkId;
-                }
-                default: {
-                    return null;
-                }
+            if (obj._id) {
+                return obj._id;
+            } else {
+                return null;
             }
         }
     }),

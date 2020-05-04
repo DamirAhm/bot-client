@@ -127,9 +127,9 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(({ index, lessons, lessonsL
     return <div className={styles.day}>
         {!changing && <FaPen className={styles.pen} size={iconSize} onClick={() => setChanging(true)} />}
         <div className={styles.value}>
-            <div className={styles.dayName}> {days[index]} </div>
+            <div className={styles.dayName} onClick={() => setChanging(true)}> {days[index]} </div>
             {changes.map((lesson, i) => !changing ?
-                <pre key={index + lesson + i} className={styles.lesson}> {i + 1})  {lesson} </pre> :
+                <span key={index + lesson + i} className={styles.lesson}> {i + 1})  {lesson} </span> :
                 <div className={styles.lessonChange} key={`picker${index + lesson + i}`}>
                     <select
                         data-index={i} className={styles.selectLesson} name="lesson"
