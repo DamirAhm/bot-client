@@ -13,9 +13,6 @@ const vk = new VK_API( config.get( "VK_API_KEY" ), config.get( "GROUP_ID" ), con
 
 
 const getFileExtension = fileName => fileName.match( /(.*)\.[^.]+$/ )[ 0 ];
-const parseAttachment = ( photo ) => {
-    return `photo${photo.owner_id}_${photo.id}`;
-};
 
 const storage = multer.diskStorage( {
     destination: function ( req, file, cb ) {
@@ -56,47 +53,20 @@ app.use( cors() );
 
 app.post( "/saveAttachment", upload.array( 'newAttachment', 5 ), async ( req, res ) => {
     try {
-        const { type, className, id } = req.query;
+        const photos = [];
 
-        if ( type && className && id && [ "homework", "changes" ].includes( type ) ) {
-            const photos = [];
-            for ( const file of req.files ) {
-                const readStream = fs.createReadStream( file.path );
-                const photo = await vk.uploadPhotoToAlbum( readStream );
-                photos.push( photo );
-                fs.unlink( file.path, function ( err ) {
-                    if ( err ) {
-                        console.error( err );
-                    }
-                } );
-            };
-
-            const classToSaveAttachment = await Class.findOne( { className } );
-            if ( classToSaveAttachment ) {
-                const element = classToSaveAttachment[ type ].find( el => el._id.toString() === id );
-                if ( element ) {
-                    const attachments = photos.map( photo => ( {
-                        album_id: photo.album_id,
-                        url: photo.sizes[ 4 ].url,
-                        value: parseAttachment( photo )
-                    } ) );
-
-                    if ( element.attachments ) {
-                        element.attachments = element.attachments.concat( attachments );
-
-                        await classToSaveAttachment.save();
-
-                        res.send( attachments );
-                    }
-                } else {
-                    res.send( { error: "Can't find element of given type by id" } );
+        for ( const file of req.files ) {
+            const readStream = fs.createReadStream( file.path );
+            const photo = await vk.uploadPhotoToAlbum( readStream );
+            photos.push( photo[ 0 ] );
+            fs.unlink( file.path, function ( err ) {
+                if ( err ) {
+                    console.error( err );
                 }
-            } else {
-                res.status( 503 ).send( { error: "Can't find file" } );
-            }
-        } else {
-            res.send( { error: "You must specifie type and className of attachment if query" } );
-        }
+            } );
+        };
+
+        res.json( { photos } );
     } catch ( e ) {
         console.error( e );
         res.send( { error: e } );

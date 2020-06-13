@@ -40,6 +40,8 @@
     grid-template-columns: repeat(auto-fill, minmax(calc(100%/4 - 10px),1fr));
     row-gap: 25px;
     column-gap: 10px;
+    justify-items: center;
+
 }
 
 .container {
@@ -58,7 +60,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     height: fit-content;
 }
 

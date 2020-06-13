@@ -9,8 +9,22 @@
     margin-bottom: 10px;
 }
 
+.header label {
+    width: fit-content;
+    display: flex;
+    align-items: center;
+}
+
+.uploaderIcon * {
+    color: var(--main);
+    cursor: pointer;
+}
+
 .contentChanger section {
     margin-bottom: 10px;
+    width: 1000px;
+    min-width: 600px;
+    max-width: 90vw;
 }
 
 .text,
@@ -24,16 +38,21 @@
 }
 
 .attachmentsContainer {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, calc(100%/3 - 10px)));
-    grid-template-rows: 1fr;
-    column-gap: 10px;
+    display: flex;
+    width: 100%;
     overflow: auto;
-    max-height: 300px;
 }
 
 .deletableAttachment {
     position: relative;
+    height: 300px;
+    display: flex;
+    margin: 0 10px;
+}
+.deletableAttachment img {
+    /* width: 100%; */
+    /* object-fit: cover; */
+    height: 300px;
 }
 
 .deletableAttachment:hover .removeAttachment {
@@ -52,5 +71,6 @@
     resize: none;
     padding: 10px;
     box-sizing: border-box;
+    width: 100%;
 }
 

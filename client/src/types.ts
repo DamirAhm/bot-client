@@ -41,6 +41,20 @@ export type attachment = {
     value: string
     _id: string
 }
+export type size = {
+    url: string
+    width: number
+    height: number
+}
+export type vkPhoto = {
+    id: number
+    album_id: number
+    owner_id: number
+    user_id: number
+    text: string
+    date: number
+    sizes: size[]
+}
 
 export type content = {
     attachments: WithTypename<attachment>[]

@@ -200,6 +200,11 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 resolve: async ( { source, args, context, info } ) => {
                     const Class = await DataBase.getClassByName( args.className );
                     if ( Class.homework.find( e => e._id.toString() === args.homeworkId.toString() ) ) {
+                        if ( args.updates.attachments ) {
+                            for ( const attachment of args.updates.attachments ) {
+                                delete attachment._id;
+                            }
+                        }
                         const updatedHomework = await DataBase.updateHomework( args.className, args.homeworkId, { ...args.updates } );
 
                         return updatedHomework.find( e => e._id.toString() === args.homeworkId.toString() );

@@ -111,6 +111,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                 delete at.__typename;
             }
         }
+
         updateHomework({
             variables: { className, homeworkId, updates },
             optimisticResponse: {

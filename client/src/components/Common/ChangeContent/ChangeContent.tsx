@@ -1,11 +1,12 @@
-import React, { useReducer } from 'react'
+import React, { useReducer, ChangeEvent } from 'react'
 import { MdClose, MdCheck, MdFileUpload } from "react-icons/md";
 
-import { content, attachment, WithTypename } from "../../../types"
+import { content, attachment, WithTypename, vkPhoto } from "../../../types"
 
 import styles from './ChangeContent.module.css'
-import { CHANGE_TEXT, REMOVE_ATTACHMENT, ADD_ATTACHMENT } from "./ReducerConstants";
 import OpenableImg from "../OpenableImage";
+import FileUploader from "../FileUploader";
+import { useParams } from "react-router-dom";
 
 type Props = {
     content: content
@@ -13,6 +14,9 @@ type Props = {
     closer: () => void
 };
 
+const CHANGE_TEXT = "CHANGE_TEXT";
+const REMOVE_ATTACHMENT = "REMOVE_ATTACHMENT";
+const ADD_ATTACHMENT = "ADD_ATTACHMENT";
 const reducer = (state: content, action: ActionType): content => {
     switch (action.type) {
         case CHANGE_TEXT: {
@@ -28,6 +32,7 @@ const reducer = (state: content, action: ActionType): content => {
             }
         }
         case ADD_ATTACHMENT: {
+            console.log(action.payload)
             return {
                 ...state,
                 attachments: [...state.attachments, action.payload]
@@ -38,28 +43,76 @@ const reducer = (state: content, action: ActionType): content => {
         }
     }
 }
-
 const actions = {
     changeText: (newText: string): { type: typeof CHANGE_TEXT, payload: string } => ({ type: CHANGE_TEXT, payload: newText }),
     removeAttachment: (attachmentIndex: string): { type: typeof REMOVE_ATTACHMENT, payload: string } => ({ type: REMOVE_ATTACHMENT, payload: attachmentIndex }),
     addAttachment: (attachment: WithTypename<attachment>): { type: typeof ADD_ATTACHMENT, payload: WithTypename<attachment> } => ({ type: ADD_ATTACHMENT, payload: attachment })
 }
-
 type ActionType =
     | { type: typeof CHANGE_TEXT, payload: string }
     | { type: typeof REMOVE_ATTACHMENT, payload: string }
     | { type: typeof ADD_ATTACHMENT, payload: WithTypename<attachment> }
 
+const parseAttachment = (photo: vkPhoto) => {
+    return `photo${photo.owner_id}_${photo.id}`;
+};
+
 const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer }) => {
-    const [newContent, dispatch] = useReducer(reducer, content)
+    const [newContent, dispatch] = useReducer(reducer, content);
+    const { className } = useParams();
+    const fileInputRef = React.createRef<HTMLInputElement>();
 
     const confirm = () => {
         if (JSON.stringify(content) === JSON.stringify(newContent)) {
             closer();
         } else {
             contentChanger(newContent);
+            closer();
         }
     }
+    const onPhotoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+        try {
+            const files = e.target.files
+            if (files) {
+                const fd = new FormData();
+                for (let i = 0; i < files.length && i < 5; i++) {
+                    fd.append("newAttachment", files[i]);
+                }
+
+                const { photos }: { photos: vkPhoto[] } = await fetch(
+                    document.location.hostname === "localhost"
+                        ? "http://localhost:4000/saveAttachment"
+                        : document.location.origin.endsWith("/")
+                            ? document.location.origin + `saveAttachment?className=${className}&type=homework&id=${content._id}`
+                            : document.location.origin + `/saveAttachment?className=${className}&type=homework&id=${content._id}`,
+                    {
+                        method: "POST",
+                        body: fd,
+                        headers: {
+                            "accepts": "application/json"
+                        }
+                    }
+                )
+                    .then(res => res.json());
+
+                const newAttachments: WithTypename<attachment>[] = photos.map((photo, i) => ({
+                    url: photo.sizes[5].url,
+                    value: parseAttachment(photo),
+                    _id: i + Date.now().toString(),
+                    __typename: "ClassHomeworkAttachment"
+                }));
+
+                for (const attachment of newAttachments) {
+                    dispatch({
+                        type: ADD_ATTACHMENT,
+                        payload: attachment
+                    })
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     return (
         <div className="modal" onClick={closer}>
@@ -69,7 +122,10 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer }) => 
                     <MdCheck size={25} className={"positive"} onClick={() => confirm()} />
                 </div>
                 <section className={styles.attachments}>
-                    <h1 className={styles.title}> Вложения </h1>
+                    <div className={styles.header}>
+                        <h1 className={styles.title}> Вложения </h1>
+                        <FileUploader View={() => <MdFileUpload size={25} className={styles.uploaderIcon} />} inputRef={fileInputRef} onChange={onPhotoUpload} />
+                    </div>
                     <div className={styles.attachmentsContainer}>
                         {
                             newContent.attachments.map(att => <DeletableAttachment key={att._id} attachment={att.url} remove={() => dispatch(actions.removeAttachment(att._id))} />)
