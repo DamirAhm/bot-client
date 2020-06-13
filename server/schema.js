@@ -10,20 +10,6 @@ const config = require( "config" );
 
 const vk = new VK_API( config.get( "VK_API_KEY" ) );
 
-const getPhotoUrl = async ( at ) => {
-    let url;
-    if ( at ) {
-        if ( /^photo/.test( at ) ) {
-            const [ owner_id, photo_ids ] = at.slice( 5 ).split( "_" );
-            url = await vk.getPhotoUrl( at );
-        }
-
-        return url;
-    } else {
-        return "#";
-    }
-}
-
 const customizationOptions = {};
 const StudentTC = composeWithMongoose( StudentModel, customizationOptions );
 const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
@@ -175,7 +161,7 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                     if ( result !== null ) {
                         const homework = []
                         for ( const hw of result ) {
-                            homework.push( hw.attachments.map( at => ( { url: getPhotoUrl( at ), value: at } ) ) );
+                            homework.push( hw.attachments.map( at => ( { url: vk.getPhotoUrl( at.value, at.album_id ), value: at } ) ) );
                         }
                         return result;
                     }
