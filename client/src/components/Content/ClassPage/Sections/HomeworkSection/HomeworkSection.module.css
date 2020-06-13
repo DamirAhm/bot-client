@@ -13,7 +13,6 @@
 
 .date {
     font-size: 1.8rem;
-    /* margin-bottom: 10px; */
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -22,11 +21,11 @@
 
 .lesson { 
     font-size: 1.6rem;
-    margin-bottom: 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    padding: 10px;
+    padding: 5px;
+    margin-bottom: 5px;
 }
 
 .accordion:hover {
@@ -38,10 +37,9 @@
 
 .tasks {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(calc(100%/4 - 10px),140px));
+    grid-template-columns: repeat(auto-fill, minmax(calc(100%/4 - 10px),1fr));
     row-gap: 25px;
     column-gap: 10px;
-    padding-top: 15px;
 }
 
 .container {
@@ -52,9 +50,9 @@
     width: fit-content;
 }
 
-.text {
+.task {
     background-color: var(--main);
-    padding: 10px;
+    padding: 10px 10px 5px 10px;
     border-radius: 10px;
     display: inline-block;
     display: flex;
@@ -64,7 +62,7 @@
     height: fit-content;
 }
 
-.text img {
+.task img {
     border-radius: 10px;
 }
 
@@ -78,6 +76,7 @@
 
 .attachments img {
     width: 100%;
+    min-width: 80px;
 }
 
 .fullImage {
@@ -85,17 +84,18 @@
 }
 
 .fullImage .attachments {
+    width: fit-content;
     padding-bottom: 0;
 }
 
 .onlyImage .attachments {
     grid-template-columns: 1fr;
-    padding: 0;
 }
 
 .fullText {
     justify-content: start;
     flex-direction: initial;
+    padding: 10px;
 }
 
 .attach {
@@ -151,7 +151,11 @@
         justify-content: space-between;
     }
 
-    .texts {
+    .tasks {
         gap: 10px 25px;
+    }
+
+    .offseted {
+        margin-left: 10px;
     }
 }

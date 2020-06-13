@@ -1,5 +1,5 @@
 import React, { useReducer } from 'react'
-import { MdClose, MdCheck } from "react-icons/md";
+import { MdClose, MdCheck, MdFileUpload } from "react-icons/md";
 
 import { content, attachment, WithTypename } from "../../../types"
 

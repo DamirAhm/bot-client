@@ -32,6 +32,26 @@
   <div id="changeContentModal"></div>
   <div id="photoModal"></div>
   <div id="deleteModal"></div>
+
+  <input type="file" multiple id="id" />
+  <button id="click">clck</button>
+  <script>
+    function click() {
+      const fd = new FormData();
+      for ( let i = 0; i < document.getElementById( "id" ).files.length && i < 5; i++ ) {
+        fd.append( "newAttachment", document.getElementById( "id" ).files[ i ] );
+      }
+      // for ( let i = 0; i < document.getElementById( "id" ).files.lenght && i < 5; i++ ) {
+      //   fd.append( "file" + ( i + 1 ), document.getElementById( "id" ).files[ i ] );
+      // }
+      fetch( "http://localhost:4000/saveAttachment", {
+        method: "POST", body: fd, headers: {
+          "accepts": "application/json"
+        }
+      } );
+    }
+    document.getElementById( "click" ).addEventListener( "click", click );
+  </script>
   <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.

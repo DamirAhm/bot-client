@@ -200,7 +200,7 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
         <div className={styles.container}>
             <div key={homework.lesson + homework.text + Date.now()}
                 className={`
-                ${styles.text} 
+                ${styles.task} 
                 ${!homework.text && homework.attachments.length ? styles.fullImage : ""} 
                 ${homework.text && !homework.attachments.length ? styles.fullText : ""}
                 ${homework.attachments.length === 1 ? styles.onlyImage : ""}
