@@ -198,14 +198,9 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
     const [changing, setChanging] = useState(false);
 
     return (
-        <div className={styles.container}>
+        <div className={`${styles.container} ${homework.attachments.length === 2 ? styles.pair : ""}`}>
             <div key={homework.lesson + homework.text + Date.now()}
-                className={`
-                ${styles.task} 
-                ${!homework.text && homework.attachments.length ? styles.fullImage : ""} 
-                ${homework.text && !homework.attachments.length ? styles.fullText : ""}
-                ${homework.attachments.length === 1 ? styles.onlyImage : ""}
-            `}>
+                className={styles.task}>
                 {homework.attachments.length > 0 &&
                     <div className={styles.attachments}>
                         {homework.attachments.map((at, i) => <OpenableImg key={at.url + i} className={styles.attach} alt="Фото дз" src={at.url} />)}
