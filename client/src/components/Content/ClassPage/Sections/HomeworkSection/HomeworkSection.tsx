@@ -80,7 +80,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
         {
             className: string,
             homeworkId: string,
-            updates: Partial<homework>
+            updates: Partial<Omit<homework, "attachments"> & { attachments: attachment[] }>
         }>(CHANGE_HOMEWORK);
 
     const remove = (homeworkId: string) => {
@@ -106,14 +106,8 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
         })
     }
     const update = (homeworkId: string, updates: Partial<homework>) => {
-        if (updates.attachments && updates.attachments.length > 0) {
-            for (const at of updates.attachments) {
-                delete at.__typename;
-            }
-        }
-
         updateHomework({
-            variables: { className, homeworkId, updates },
+            variables: { className, homeworkId, updates: { ...updates, attachments: updates.attachments?.map(({ __typename, ...att }) => att) } },
             optimisticResponse: {
                 __typename: "Mutation",
                 updateHomework: {
@@ -242,9 +236,11 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
                 }
                 {changing && changeContentModalRoot &&
                     ReactDOM.createPortal(
-                        <ChangeContent
-                            contentChanger={(newContent: content) => updateHomework(homework._id, newContent)}
-                            content={homework} closer={() => setChanging(false)} />,
+                        <div className="modal" onClick={() => setChanging(false)}>
+                            <ChangeContent
+                                contentChanger={(newContent: content) => updateHomework(homework._id, newContent)}
+                                content={homework} closer={() => setChanging(false)} />
+                        </div>,
                         changeContentModalRoot)
                 }
             </div>
@@ -254,6 +250,12 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
             </div>
         </div>
     )
+}
+
+const CreateHomeworkModal: React.FC<{ returnHomework: (hw: homework) => void }> = ({ returnHomework }) => {
+    return <div>
+
+    </div>
 }
 
 const parseHomework = (homework: WithTypename<homework>[]): { [day: string]: { [lesson: string]: homework[] } } => {
