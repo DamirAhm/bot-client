@@ -205,7 +205,7 @@ const addNextPrev: (atts: attachment[]) => OpenableImgProps[] = (attachments) =>
             parsedAttachments[i].prevImg = parsedAttachments[i - 1];
         }
     }
-    console.log(parsedAttachments);
+
     return parsedAttachments;
 }
 

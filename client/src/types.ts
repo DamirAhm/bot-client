@@ -60,11 +60,11 @@ export type content = {
     attachments: WithTypename<attachment>[]
     text: string
     _id: string
+    to: string
 }
 
 export type homework = {
     lesson: string
-    to: string, //date string
     createdBy: number
 } & content
 
@@ -79,7 +79,6 @@ export type Class = {
 }
 
 export type change = {
-    to: string, //date string
     createdBy: number,
 } & content
 export type WithTypename<T> = T & { __typename: string };

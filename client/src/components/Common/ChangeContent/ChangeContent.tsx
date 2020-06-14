@@ -1,6 +1,7 @@
-import React, { useReducer, ChangeEvent } from 'react'
+import React, { useReducer, ChangeEvent, useState } from 'react'
 import { MdClose, MdCheck, MdFileUpload } from "react-icons/md";
-
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { content, attachment, WithTypename, vkPhoto } from "../../../types"
 
 import styles from './ChangeContent.module.css'
@@ -17,6 +18,8 @@ type Props = {
 const CHANGE_TEXT = "CHANGE_TEXT";
 const REMOVE_ATTACHMENT = "REMOVE_ATTACHMENT";
 const ADD_ATTACHMENT = "ADD_ATTACHMENT";
+const CHANGE_TO = "CHANGE_TO";
+
 const reducer = (state: content, action: ActionType): content => {
     switch (action.type) {
         case CHANGE_TEXT: {
@@ -38,20 +41,31 @@ const reducer = (state: content, action: ActionType): content => {
                 attachments: [...state.attachments, action.payload]
             }
         }
+        case CHANGE_TO: {
+            return {
+                ...state,
+                to: action.payload.toISOString()
+            }
+        }
         default: {
             return state;
         }
     }
 }
+
 const actions = {
     changeText: (newText: string): { type: typeof CHANGE_TEXT, payload: string } => ({ type: CHANGE_TEXT, payload: newText }),
     removeAttachment: (attachmentIndex: string): { type: typeof REMOVE_ATTACHMENT, payload: string } => ({ type: REMOVE_ATTACHMENT, payload: attachmentIndex }),
-    addAttachment: (attachment: WithTypename<attachment>): { type: typeof ADD_ATTACHMENT, payload: WithTypename<attachment> } => ({ type: ADD_ATTACHMENT, payload: attachment })
+    addAttachment: (attachment: WithTypename<attachment>): { type: typeof ADD_ATTACHMENT, payload: WithTypename<attachment> } => ({ type: ADD_ATTACHMENT, payload: attachment }),
+    changeTo: (newTo: Date): { type: typeof CHANGE_TO, payload: Date } => ({ type: CHANGE_TO, payload: newTo })
 }
+
 type ActionType =
     | { type: typeof CHANGE_TEXT, payload: string }
     | { type: typeof REMOVE_ATTACHMENT, payload: string }
     | { type: typeof ADD_ATTACHMENT, payload: WithTypename<attachment> }
+    | { type: typeof CHANGE_TO, payload: Date }
+
 
 const parseAttachment = (photo: vkPhoto) => {
     return `photo${photo.owner_id}_${photo.id}`;
@@ -59,8 +73,8 @@ const parseAttachment = (photo: vkPhoto) => {
 
 const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer }) => {
     const [newContent, dispatch] = useReducer(reducer, content);
+
     const { className } = useParams();
-    const fileInputRef = React.createRef<HTMLInputElement>();
 
     const confirm = () => {
         if (JSON.stringify(content) === JSON.stringify(newContent)) {
@@ -103,10 +117,7 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer }) => 
                 }));
 
                 for (const attachment of newAttachments) {
-                    dispatch({
-                        type: ADD_ATTACHMENT,
-                        payload: attachment
-                    })
+                    dispatch(actions.addAttachment(attachment))
                 }
             }
         } catch (e) {
@@ -121,10 +132,22 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer }) => 
                     <MdClose size={25} className={"negative"} onClick={closer} />
                     <MdCheck size={25} className={"positive"} onClick={() => confirm()} />
                 </div>
+                <section className={styles.date}>
+                    <span className={styles.title}> Дата </span>
+                    <DatePicker
+                        selected={new Date(Date.parse(newContent.to))}
+                        onChange={date => date && dispatch(actions.changeTo(date))}
+                        minDate={new Date()}
+                        dateFormat={"dd/MM/yyyy"}
+                        className={styles.datePickerInput}
+                        showPopperArrow={false}
+                        calendarClassName={styles.datePickerCalendar}
+                    />
+                </section>
                 <section className={styles.attachments}>
                     <div className={styles.header}>
                         <h1 className={styles.title}> Вложения </h1>
-                        <FileUploader View={() => <MdFileUpload size={25} className={styles.uploaderIcon} />} inputRef={fileInputRef} onChange={onPhotoUpload} />
+                        <FileUploader View={() => <MdFileUpload size={25} className={styles.uploaderIcon} />} onChange={onPhotoUpload} />
                     </div>
                     <div className={styles.attachmentsContainer}>
                         {

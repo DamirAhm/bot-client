@@ -8,16 +8,10 @@
     justify-content: space-between;
     margin-bottom: 10px;
 }
-
 .header label {
     width: fit-content;
     display: flex;
     align-items: center;
-}
-
-.uploaderIcon * {
-    color: var(--main);
-    cursor: pointer;
 }
 
 .contentChanger section {
@@ -28,7 +22,8 @@
 }
 
 .text,
-.title {
+.title,
+.uploaderIcon * {
     color: var(--main);
 }
 
@@ -37,10 +32,26 @@
     font-size: 1.8rem;
 }
 
+.datePickerInput {
+    padding: 5px;
+    border-radius: 5px;
+    color: var(--main);
+    margin-left: 10%;
+}
+.datePickerCalendar,
+.datePickerCalendar :global(.react-datepicker__current-month) {
+    font-size: 1.1rem;
+    color: var(--main);
+}
+
 .attachmentsContainer {
     display: flex;
     width: 100%;
     overflow: auto;
+}
+
+.uploaderIcon {
+    cursor: pointer;
 }
 
 .deletableAttachment {

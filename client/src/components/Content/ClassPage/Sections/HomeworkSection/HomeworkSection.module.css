@@ -89,7 +89,8 @@
     font-size: 1.4rem;
     font-size: bolder;
 }
-.attachments + .text {
+.attachments + .text,
+.imgStab + .text {
     margin-top: 10px;
 }
 
