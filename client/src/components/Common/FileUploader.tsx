@@ -1,6 +1,6 @@
 import React, { CSSProperties, ChangeEvent } from 'react'
 type Props = {
-    View: React.FC<any>,
+    View: React.FC<{}>,
     inputRef: React.RefObject<HTMLInputElement>,
     style?: CSSProperties,
     onChange: (e: ChangeEvent<HTMLInputElement>) => void

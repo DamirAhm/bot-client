@@ -3,12 +3,12 @@ import styles from './HomeworkSection.module.css'
 import InfoSection from '../../InfoSection/InfoSection';
 import { gql } from 'apollo-boost';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { homework, WithTypename, content } from '../../../../../types';
+import { homework, WithTypename, content, attachment } from '../../../../../types';
 import Suspender from '../../../../Common/Suspender';
 import { parseDate } from '../../../../../utils/date';
 import Accordion from "../../../../Common/Accordion";
 import { GoTriangleRight } from "react-icons/go";
-import OpenableImg from '../../../../Common/OpenableImage';
+import OpenableImg, { ImgStab, OpenableImgProps } from '../../../../Common/OpenableImage';
 import { FaPen } from 'react-icons/fa';
 import { MdClose, MdCheck } from "react-icons/md";
 import { useParams } from "react-router-dom";
@@ -189,22 +189,53 @@ type taskProps = {
     updateHomework: (homeworkId: string, updates: Partial<homework>) => void
 }
 
+const addNextPrev: (atts: attachment[]) => OpenableImgProps[] = (attachments) => {
+    const parsedAttachments: OpenableImgProps[] = [];
 
+    for (let i = 0; i < attachments.length; i++) {
+        const newImgProps: OpenableImgProps = {} as OpenableImgProps;
+        newImgProps.src = attachments[i].url;
+        parsedAttachments.push(newImgProps);
+    }
+    for (let i = 0; i < parsedAttachments.length; i++) {
+        if (i + 1 < parsedAttachments.length) {
+            parsedAttachments[i].nextImg = parsedAttachments[i + 1];
+        }
+        if (i - 1 >= 0) {
+            parsedAttachments[i].prevImg = parsedAttachments[i - 1];
+        }
+    }
+    console.log(parsedAttachments);
+    return parsedAttachments;
+}
 
 const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework }) => {
     const { className } = useParams<{ className: string }>();
 
-    const [changes, setChanges] = useState({} as Partial<typeof homework>);
     const [changing, setChanging] = useState(false);
+
+    const parsedAttachments = addNextPrev(homework.attachments);
 
     return (
         <div className={`${styles.container} ${homework.attachments.length === 2 ? styles.pair : ""}`}>
             <div key={homework.lesson + homework.text + Date.now()}
                 className={styles.task}>
                 {homework.attachments.length > 0 &&
-                    <div className={styles.attachments}>
-                        {homework.attachments.map((at, i) => <OpenableImg key={at.url + i} className={styles.attach} alt="Фото дз" src={at.url} />)}
-                    </div>
+                    <> {homework.attachments.length <= 2
+                        ? <div className={styles.attachments}>
+                            {homework.attachments.map(
+                                (at, i) => <OpenableImg key={at.url + i} className={styles.attach} alt="Фото дз" {...parsedAttachments[i]} />
+                            )}
+                        </div>
+                        : <ImgStab
+                            {...parsedAttachments[0]}
+                            Stab={({ onClick }) => (
+                                <div className={styles.imgStab} onClick={onClick}>
+                                    <span>{homework.attachments.length}</span>
+                                    <span> Photos </span>
+                                </div>
+                            )} />
+                    } </>
                 }
                 {homework.text &&
                     <p className={styles.text}> {homework.text} </p>

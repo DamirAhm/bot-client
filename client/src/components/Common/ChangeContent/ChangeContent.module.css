@@ -54,7 +54,6 @@
     /* object-fit: cover; */
     height: 300px;
 }
-
 .deletableAttachment:hover .removeAttachment {
     visibility: visible;
 }
