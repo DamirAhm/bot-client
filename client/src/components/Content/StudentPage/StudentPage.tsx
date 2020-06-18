@@ -1,6 +1,4 @@
-// @ts-ignore
 import React, { useState } from "react";
-// @ts-ignore
 import styles from "./StudentPage.module.css";
 import { gql } from "apollo-boost";
 import { useQuery, useMutation } from "@apollo/react-hooks";

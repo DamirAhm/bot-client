@@ -59,13 +59,13 @@ export type vkPhoto = {
 export type content = {
     attachments: WithTypename<attachment>[]
     text: string
-    _id: string
+    _id?: string
     to: string
 }
 
 export type homework = {
     lesson: string
-    createdBy: number
+    createdBy?: number
 } & content
 
 export type Class = {

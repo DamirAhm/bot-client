@@ -15,13 +15,13 @@ type Props = {
     className: string,
 }
 
-const GET_SCHEDULE = gql`
+export const GET_SCHEDULE = gql`
     query GetSchedule($className: String!){
         schedule: getSchedule(className: $className)
     }
 `
-const GET_LESSONS = gql`
-    {
+export const GET_LESSONS = gql`
+    query GetLessons {
         lessons: getLessons
     }
 `

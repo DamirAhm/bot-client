@@ -2,17 +2,23 @@ import React, { useReducer, ChangeEvent, useState } from 'react'
 import { MdClose, MdCheck, MdFileUpload } from "react-icons/md";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { content, attachment, WithTypename, vkPhoto } from "../../../types"
+import { content, attachment, WithTypename, vkPhoto } from '../../../types';
 
 import styles from './ChangeContent.module.css'
 import OpenableImg from "../OpenableImage";
 import FileUploader from "../FileUploader";
 import { useParams } from "react-router-dom";
+import ConfirmReject from "../ConfirmReject";
 
 type Props = {
     content: content
-    contentChanger: (newContent: content) => void
-    closer: () => void
+    contentChanger?: (newContent: content) => void
+    closer?: () => void
+    onChangeText?: (newText: string) => void
+    onAddAttachment?: (newAttachments: WithTypename<attachment>) => void
+    onRemoveAttachment?: (attachmentId: string) => void
+    onChangeTo?: (newTo: Date) => void
+    withConfirm?: boolean
 };
 
 const CHANGE_TEXT = "CHANGE_TEXT";
@@ -35,7 +41,6 @@ const reducer = (state: content, action: ActionType): content => {
             }
         }
         case ADD_ATTACHMENT: {
-            console.log(action.payload)
             return {
                 ...state,
                 attachments: [...state.attachments, action.payload]
@@ -71,19 +76,11 @@ const parseAttachment = (photo: vkPhoto) => {
     return `photo${photo.owner_id}_${photo.id}`;
 };
 
-const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer }) => {
+const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onChangeTo, onChangeText, onAddAttachment, onRemoveAttachment, withConfirm = true }) => {
     const [newContent, dispatch] = useReducer(reducer, content);
 
     const { className } = useParams();
 
-    const confirm = () => {
-        if (JSON.stringify(content) === JSON.stringify(newContent)) {
-            closer();
-        } else {
-            contentChanger(newContent);
-            closer();
-        }
-    }
     const onPhotoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
         try {
             const files = e.target.files
@@ -118,6 +115,7 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer }) => 
 
                 for (const attachment of newAttachments) {
                     dispatch(actions.addAttachment(attachment))
+                    if (onAddAttachment) onAddAttachment(attachment);
                 }
             }
         } catch (e) {
@@ -126,51 +124,64 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer }) => 
     };
 
     return (
-        <div className="modal" onClick={closer}>
-            <div className={styles.contentChanger} onClick={e => e.stopPropagation()}>
-                <div className={styles.header}>
-                    <MdClose size={25} className={"negative"} onClick={closer} />
-                    <MdCheck size={25} className={"positive"} onClick={() => confirm()} />
-                </div>
-                <section className={styles.date}>
-                    <span className={styles.title}> Дата </span>
-                    <DatePicker
-                        selected={new Date(Date.parse(newContent.to))}
-                        onChange={date => date && dispatch(actions.changeTo(date))}
-                        minDate={new Date()}
-                        dateFormat={"dd/MM/yyyy"}
-                        className={styles.datePickerInput}
-                        showPopperArrow={false}
-                        calendarClassName={styles.datePickerCalendar}
-                    />
-                </section>
-                <section className={styles.attachments}>
-                    <div className={styles.header}>
-                        <h1 className={styles.title}> Вложения </h1>
-                        <FileUploader View={() => <MdFileUpload size={25} className={styles.uploaderIcon} />} onChange={onPhotoUpload} />
-                    </div>
-                    <div className={styles.attachmentsContainer}>
-                        {
-                            newContent.attachments.map(att => <DeletableAttachment key={att._id} attachment={att.url} remove={() => dispatch(actions.removeAttachment(att._id))} />)
+        <div className={styles.contentChanger} onMouseDown={e => e.stopPropagation()}>
+            {withConfirm && contentChanger && closer &&
+                <ConfirmReject
+                    confirm={
+                        JSON.stringify(content) === JSON.stringify(newContent)
+                            ? closer
+                            : () => (contentChanger(newContent), closer())}
+                    reject={closer}
+                    className={styles.header}
+                />
+            }
+            <section className={styles.date}>
+                <h1 className={styles.title}> Дата </h1>
+                <DatePicker
+                    selected={new Date(Date.parse(newContent.to))}
+                    onChange={date => {
+                        if (date !== null) {
+                            dispatch(actions.changeTo(date))
+                            if (onChangeTo) onChangeTo(date)
                         }
-                    </div>
-                </section>
-                <section className={styles.text}>
-                    <h1 className={styles.title}> Домашняя работа </h1>
-                    <textarea
-                        name="text" value={newContent.text}
-                        className={styles.text} onChange={e => dispatch(actions.changeText(e.target.value))}
-                        cols={60} rows={5}
-                        onSubmit={() => contentChanger(newContent)}>
-                        {content.text}
-                    </textarea>
-                </section>
-            </div>
+                    }}
+                    minDate={new Date()}
+                    dateFormat={"dd/MM/yyyy"}
+                    className={styles.datePickerInput}
+                    showPopperArrow={false}
+                    calendarClassName={styles.datePickerCalendar}
+                />
+            </section>
+            <section className={styles.attachments}>
+                <div className={styles.header}>
+                    <h1 className={styles.title}> Вложения </h1>
+                    <FileUploader View={() => <MdFileUpload size={25} className={styles.uploaderIcon} />} onChange={onPhotoUpload} />
+                </div>
+                <div className={styles.attachmentsContainer}>
+                    {
+                        newContent.attachments.map(att =>
+                            <DeletableAttachment
+                                key={att._id}
+                                attachment={att.url}
+                                remove={() => (dispatch(actions.removeAttachment(att._id)), onRemoveAttachment && onRemoveAttachment(att._id))} />)
+                    }
+                </div>
+            </section>
+            <section className={styles.text}>
+                <h1 className={styles.title}> Домашняя работа </h1>
+                <textarea
+                    name="text" value={newContent.text}
+                    className={styles.text} onChange={e => (dispatch(actions.changeText(e.target.value)), onChangeText && onChangeText(e.target.value))}
+                    cols={60} rows={5}
+                >
+                    {content.text}
+                </textarea>
+            </section>
         </div>
     )
 }
 
-const DeletableAttachment: React.FC<{ attachment: string, remove: () => void }> = ({ attachment, remove }) => {
+export const DeletableAttachment: React.FC<{ attachment: string, remove: () => void }> = ({ attachment, remove }) => {
     return (
         <div className={styles.deletableAttachment}>
             <OpenableImg src={attachment} alt="вложение" />
