@@ -72,11 +72,11 @@ export const ModalImg: React.FC<ModalImgProps> = ({ close, nextImg, prevImg, ...
         setNext(nextImg);
     }
 
-    return <div className="modal" onClick={close}>
+    return <div className="modal" onMouseDown={close}>
         {prev &&
             <MdNavigateBefore size={40} style={prevImgChevronStyle} onClick={(e) => toImg(prev, e)} />
         }
-        <img style={{ width: "100%", maxWidth: "80vh" }} {...props} src={src} onClick={e => e.stopPropagation()} />
+        <img style={{ width: "100%", maxWidth: "80vh" }} {...props} src={src} onMouseDown={e => e.stopPropagation()} />
         {next &&
             <MdNavigateNext size={40} style={nextImgChevronStyle} onClick={(e) => toImg(next, e)} />
         }

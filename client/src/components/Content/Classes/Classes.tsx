@@ -10,7 +10,7 @@ import useList from "../../../hooks/useList";
 import Suspender from "../../Common/Suspender";
 
 export const GET_CLASSES = gql`
-  {
+  query GetClasses {
     classes: classMany {
       studentsCount
       name

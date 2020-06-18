@@ -92,19 +92,6 @@ const typeDefs = gql`
     }
 `;
 
-const omitTypename = (key: string, value: any) => {
-    return key === '__typename' ? undefined : value
-}
-
-const omitTypenameLink = new ApolloLink((operation, forward) => {
-    if (operation.variables) {
-        operation.variables = JSON.parse(
-            JSON.stringify(operation.variables),
-            omitTypename
-        )
-    }
-    return forward(operation)
-})
 
 const client = new ApolloClient({
     uri: "http://localhost:4000/graphql",
@@ -118,7 +105,9 @@ const client = new ApolloClient({
         }
     }),
     resolvers,
-    typeDefs
+    typeDefs,
+    //@ts-ignore
+    connectToDevToolsL: true
 });
 
 ReactDOM.render(
