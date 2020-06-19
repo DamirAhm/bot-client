@@ -88,6 +88,17 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
     const [homeworkCreating, setHomeworkCreating] = useState(false);
     const homeworkQuery = useQuery<{ homework: homework[] }>(GET_HOMEWORK, { variables: { className } });
 
+    const t = useApolloClient();
+
+    (async () => {
+        try {
+            console.log(t.readQuery({
+                query: GET_HOMEWORK, variables: { className }
+            }, true))
+        }
+        catch (e) { }
+    })()
+
     const [removeHomework] = useMutation<
         WithTypename<{
             removeHomework: string
@@ -250,6 +261,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
         </>
     )
 }
+
 const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework }) => {
     const [changing, setChanging] = useState(false);
 
@@ -387,7 +399,6 @@ const parseHomeworkByDate = (homework: WithTypename<homework>[]): { [day: string
 
     return parsedHw;
 }
-
 const addNextPrev: (atts: attachment[]) => OpenableImgProps[] = (attachments) => {
     const parsedAttachments: OpenableImgProps[] = [];
 
