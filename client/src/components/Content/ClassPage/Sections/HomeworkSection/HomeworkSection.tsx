@@ -47,7 +47,7 @@ const GET_HOMEWORK = gql`
 `
 
 const REMOVE_TASK = gql`
-    mutation Removetext($className: String!, $homeworkId: String!) {
+    mutation RemoveTask($className: String!, $homeworkId: String!) {
         removeHomework(homeworkId: $homeworkId, className: $className)
     }
 `
@@ -257,7 +257,7 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
 
     return (
         <div className={`${styles.container} ${homework.attachments.length === 2 ? styles.pair : ""}`}>
-            <div key={homework.lesson + homework.text + Date.now()}
+            <div key={homework._id}
                 className={styles.task}>
                 {homework.attachments.length > 0 &&
                     <> {homework.attachments.length <= 2
@@ -387,6 +387,7 @@ const parseHomeworkByDate = (homework: WithTypename<homework>[]): { [day: string
 
     return parsedHw;
 }
+
 const addNextPrev: (atts: attachment[]) => OpenableImgProps[] = (attachments) => {
     const parsedAttachments: OpenableImgProps[] = [];
 

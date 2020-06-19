@@ -97,27 +97,36 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
             //? get
             ClassTC.addResolver( {
                 name: "getChanges",
-                type: ClassTC.get( "changes" ).getType(),
+                type: `[${ClassTC.get( "changes" ).getType()}]`,
                 args: { className: "String!", date: "Date" },
                 resolve: async ( { source, args, context, info } ) => {
                     return await DataBase.getChanges( args.className, args.date );
                 }
             } );
-            //TODO change return from _id to object
-            //TODO think about after all the shit around loading images
             //? add
             ClassTC.addResolver( {
                 name: "addChange",
                 type: ClassTC.get( "changes" ).getType(),
-                args: { className: "String!", content: ClassTC.get( "changes" ).getInputType() },
-                resolve: async ( source, args ) => {
-                    const change = await DataBase.addChanges( args.className, args.content );
+                args: { className: "String!", text: "String!", to: "String", attachments: `[${ClassTC.get( "homework.attachments" ).getInputType()}]!` },
+                resolve: async ( { source, args: { attachments, text, to, className } } ) => {
+                    try {
+                        if ( attachments ) {
+                            for ( const attachment of attachments ) {
+                                delete attachment._id;
+                            }
+                        }
 
-                    if ( change ) {
-                        return await DataBase.getClassByName( args.className ).then( c => c.changes.find( ch => ch._id.toString() === change.toString() ) );
-                    } else {
-                        return null;
+                        const change = await DataBase.addChanges( className, { attachments, text }, to );
+                        console.log( change );
+                        if ( change ) {
+                            return await DataBase.getClassByName( className ).then( c => c.changes.find( ch => ch._id.toString() === change.toString() ) );
+                        } else {
+                            return null;
+                        }
+                    } catch ( e ) {
+                        console.error( e );
                     }
+                    return { attachments, text, to, className, _id: "123122" };
                 }
             } )
             //? remove
@@ -125,26 +134,31 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 name: "removeChange",
                 type: "String",
                 args: { className: "String!", changeId: "String!" },
-                resolve: async ( { source, args, context, info } ) => {
-                    // await DataBase.removeC( args.className, args.homeworkId );
-                    return args.homeworkId;
+                resolve: async ( { source, args } ) => {
+                    const result = await DataBase.removeChanges( args.className, args.changeId );
+                    if ( result ) {
+                        return args.changeId;
+                    }
+                    return null;
                 }
             } );
             //? change
             ClassTC.addResolver( {
                 name: "updateChange",
                 type: ClassTC.get( "changes" ).getType(),
-                args: { className: "String!", changeId: "String!", updates: ClassTC.get( "changes" ).getInputType() },
+                args: { className: "String!", changeId: "String!", updates: `${ClassTC.get( "changes" ).getInputType()}!` },
                 resolve: async ( { source, args, context, info } ) => {
-                    const Class = await DataBase.getClassByName( args.className );
-
-                    if ( Class.homework.find( e => e._id.toString() === args.homeworkId.toString() ) ) {
-                        const updatedChange = await DataBase.updateChange( args.className, args.changeId, args.updates );
-                        return updatedChange.find( e => e._id.toString() === args.changeId.toString() );
-                    } else {
-                        return {
-                            error: "Can't find homework"
+                    const { updates: { attachments } } = args;
+                    if ( attachments ) {
+                        for ( const attachment of attachments ) {
+                            delete attachment._id;
                         }
+                    }
+                    const updatedChange = await DataBase.updateChange( args.className, args.changeId, args.updates );
+                    if ( updatedChange ) {
+                        return updatedChange.find( e => e._id.toString() === args.changeId );
+                    } else {
+                        return null;
                     }
                 }
             } )
@@ -183,13 +197,21 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
             ClassTC.addResolver( {
                 name: "addHomework",
                 type: ClassTC.get( "homework" ).getType(),
-                args: { className: "String!", text: "String!", toDate: "String", lesson: "String!" }, //TODO think about attachments
-                resolve: async ( { source, args, context, info } ) => {
-                    const id = await DataBase.addHomework( args.className, args.lesson, { text: args.text }, undefined, args.toDate );
+                args: { className: "String!", text: "String!", to: "String", lesson: "String!", attachments: `[${ClassTC.get( "homework.attachments" ).getInputType()}]!` }, //TODO think about attachments
+                resolve: async ( { source, args } ) => {
+                    if ( args.attachments ) {
+                        for ( const attachment of args.attachments ) {
+                            delete attachment._id;
+                        }
+                    }
+                    const id = await DataBase.addHomework( args.className, args.lesson, { text: args.text, attachments: args.attachments }, -1, args.to );
+                    if ( id ) {
+                        const hw = await DataBase.getClassByName( args.className )
+                            .then( cl => cl.homework.find( e => e._id.toString() === id.toString() ) );
 
-                    const hw = await DataBase.getClassByName( args.className ).then( cl => cl.homework.find( e => e._id.toString() === id.toString() ) );
-
-                    return hw;
+                        return hw;
+                    }
+                    return null;
                 }
             } )
             //? change
@@ -469,9 +491,11 @@ schemaComposer.Mutation.addFields( {
     removeStudentFromClass: StudentTC.getResolver( 'removeStudentFromClass' ),
     changeClass: StudentTC.getResolver( 'changeClass' ),
     banStudent: StudentTC.getResolver( 'banStudent' ),
-    removeHomework: ClassTC.getResolver( 'removeHomework' ),
     addHomework: ClassTC.getResolver( 'addHomework' ),
+    removeHomework: ClassTC.getResolver( 'removeHomework' ),
     updateHomework: ClassTC.getResolver( 'updateHomework' ),
+    addChange: ClassTC.getResolver( 'addChange' ),
+    removeChange: ClassTC.getResolver( 'removeChange' ),
     updateChange: ClassTC.getResolver( 'updateChange' ),
 } );
 

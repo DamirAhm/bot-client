@@ -61,11 +61,11 @@ export type content = {
     text: string
     _id?: string
     to: string
+    ceratedBy?: number
 }
 
 export type homework = {
     lesson: string
-    createdBy?: number
 } & content
 
 export type Class = {
@@ -78,7 +78,5 @@ export type Class = {
     fullName: string
 }
 
-export type change = {
-    createdBy: number,
-} & content
+export type change = content
 export type WithTypename<T> = T & { __typename: string };

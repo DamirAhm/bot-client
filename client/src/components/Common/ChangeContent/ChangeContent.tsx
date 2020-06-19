@@ -75,6 +75,7 @@ type ActionType =
 const parseAttachment = (photo: vkPhoto) => {
     return `photo${photo.owner_id}_${photo.id}`;
 };
+const findMaxPhotoResolution = (photo: vkPhoto) => photo.sizes.reduce<{ url: string, height: number }>((acc, c) => c.height > acc.height ? c : acc, { height: 0, url: "" }).url;
 
 const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onChangeTo, onChangeText, onAddAttachment, onRemoveAttachment, withConfirm = true }) => {
     const [newContent, dispatch] = useReducer(reducer, content);
@@ -103,11 +104,10 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onCha
                             "accepts": "application/json"
                         }
                     }
-                )
-                    .then(res => res.json());
+                ).then(res => res.json());
 
                 const newAttachments: WithTypename<attachment>[] = photos.map((photo, i) => ({
-                    url: photo.sizes[5].url,
+                    url: findMaxPhotoResolution(photo),
                     value: parseAttachment(photo),
                     _id: i + Date.now().toString(),
                     __typename: "ClassHomeworkAttachment"
@@ -123,10 +123,14 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onCha
         }
     };
 
+    const checkUnEmptyContent = () => {
+        return newContent.attachments.length > 0 || newContent.text.trim() !== "";
+    }
+
     return (
         <div className={styles.contentChanger} onMouseDown={e => e.stopPropagation()}>
-            {withConfirm && contentChanger && closer &&
-                <ConfirmReject
+            {withConfirm && contentChanger && closer && checkUnEmptyContent()
+                ? <ConfirmReject
                     confirm={
                         JSON.stringify(content) === JSON.stringify(newContent)
                             ? closer
@@ -134,6 +138,7 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onCha
                     reject={closer}
                     className={styles.header}
                 />
+                : <div style={{ width: "100%", height: "25px", marginBottom: "10px" }}></div>
             }
             <section className={styles.date}>
                 <h1 className={styles.title}> Дата </h1>
