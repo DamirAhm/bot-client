@@ -51,7 +51,7 @@ server.applyMiddleware( { app } );
 
 app.use( cors() );
 
-app.post( "/saveAttachment", upload.array( 'newAttachment', 5 ), async ( req, res ) => {
+app.post( "/saveAttachment", upload.array( 'newAttachment' ), async ( req, res ) => {
     try {
         const photos = [];
 

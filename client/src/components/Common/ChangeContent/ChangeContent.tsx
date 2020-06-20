@@ -87,7 +87,7 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onCha
             const files = e.target.files
             if (files) {
                 const fd = new FormData();
-                for (let i = 0; i < files.length && i < 5; i++) {
+                for (let i = 0; i < files.length; i++) {
                     fd.append("newAttachment", files[i]);
                 }
 
