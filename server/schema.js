@@ -275,7 +275,17 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 type: 'String',
                 args: { vkId: "String!" },
                 resolve: async ( { source, args, context, info } ) => {
-                    return await vk.getUser( args.vkId ).then( res => res[ 0 ].first_name );
+                    const student = await DataBase.getStudentByVkId( args.vkId );
+                    if ( student && student.firstName ) {
+                        return student.firstName;
+                    } else if ( student ) {
+                        const firstName = await vk.getUser( args.vkId ).then( res => res[ 0 ].first_name );
+                        student.firstName = firstName;
+                        student.save();
+                        return firstName;
+                    } else {
+                        return null;
+                    }
                 }
             } );
             //? Second name
@@ -284,7 +294,17 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 type: 'String',
                 args: { vkId: "String!" },
                 resolve: async ( { source, args, context, info } ) => {
-                    return await vk.getUser( args.vkId ).then( res => res[ 0 ].last_name );
+                    const student = await DataBase.getStudentByVkId( args.vkId );
+                    if ( student && student.secondName ) {
+                        return student.secondName;
+                    } else if ( student ) {
+                        const secondName = await vk.getUser( args.vkId ).then( res => res[ 0 ].last_name )
+                        student.firstName = secondName;
+                        student.save();
+                        return secondName;
+                    } else {
+                        return null;
+                    }
                 }
             } );
             //? Full name
@@ -293,7 +313,17 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 type: 'String',
                 args: { vkId: "String!" },
                 resolve: async ( { source, args, context, info } ) => {
-                    return await vk.getUser( args.vkId ).then( res => res[ 0 ] ).then( res => res.first_name + " " + res.last_name );
+                    const student = await DataBase.getStudentByVkId( args.vkId );
+                    if ( student && student.fullName ) {
+                        return student.fullName;
+                    } else if ( student ) {
+                        const fullName = await vk.getUser( args.vkId ).then( res => res[ 0 ] ).then( res => res.first_name + " " + res.last_name );
+                        student.firstName = fullName;
+                        student.save();
+                        return fullName;
+                    } else {
+                        return null;
+                    }
                 }
             } );
         }
