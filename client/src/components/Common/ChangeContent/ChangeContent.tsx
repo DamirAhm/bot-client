@@ -129,7 +129,8 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onCha
 
     return (
         <div className={styles.contentChanger} onMouseDown={e => e.stopPropagation()}>
-            {withConfirm && contentChanger && closer && checkUnEmptyContent()
+            {withConfirm 
+            ? <>{ contentChanger && closer && checkUnEmptyContent()
                 ? <ConfirmReject
                     confirm={
                         JSON.stringify(content) === JSON.stringify(newContent)
@@ -138,7 +139,9 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onCha
                     reject={closer}
                     className={styles.header}
                 />
-                : <div style={{ width: "100%", height: "25px", marginBottom: "10px" }}></div>
+                    : <div style={{ width: "100%", height: "25px", marginBottom: "10px" }}></div> 
+                }</>
+                : <div></div> 
             }
             <section className={styles.date}>
                 <h1 className={styles.title}> Дата </h1>

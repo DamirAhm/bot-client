@@ -7,8 +7,9 @@ const config = require( 'config' );
 const cors = require( "cors" );
 const multer = require( "multer" );
 const fs = require( "fs" );
-const path = require( "path" );
+const { DataBase: DB } = require( "./DataBase/DataBase" );
 
+const DataBase = new DB( config.get( "MONGODB_URI" ) );
 const vk = new VK_API( config.get( "VK_API_KEY" ), config.get( "GROUP_ID" ), config.get( "ALBUM_ID" ) );
 
 
@@ -26,7 +27,7 @@ const storage = multer.diskStorage( {
 
 var upload = multer( { storage: storage } )
 
-mongoose.connect( "mongodb+srv://Damir:CLv4QEJJrfZp4BC0@botdata-sp9px.mongodb.net/prod?retryWrites=true&w=majority", {
+DataBase.connect( {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true

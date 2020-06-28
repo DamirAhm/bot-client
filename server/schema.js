@@ -4,10 +4,11 @@ const { schemaComposer } = require( 'graphql-compose' );
 const { Roles, Lessons } = require( "./DataBase/Models/utils" );
 const StudentModel = require( "./DataBase/Models/StudentModel" );
 const ClassModel = require( "./DataBase/Models/ClassModel" );
-const { DataBase } = require( "./DataBase/DataBase" );
+const { DataBase: DB } = require( "./DataBase/DataBase" );
 const VK_API = require( "./DataBase/VkAPI/VK_API" );
 const config = require( "config" );
 
+const DataBase = new DB( config.get( "MONGODB_URI" ) );
 const vk = new VK_API( config.get( "VK_API_KEY" ) );
 
 const customizationOptions = {};
@@ -299,7 +300,7 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                         return student.secondName;
                     } else if ( student ) {
                         const secondName = await vk.getUser( args.vkId ).then( res => res[ 0 ].last_name )
-                        student.firstName = secondName;
+                        student.lastName = secondName;
                         student.save();
                         return secondName;
                     } else {
@@ -318,7 +319,7 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                         return student.fullName;
                     } else if ( student ) {
                         const fullName = await vk.getUser( args.vkId ).then( res => res[ 0 ] ).then( res => res.first_name + " " + res.last_name );
-                        student.firstName = fullName;
+                        student.fullName = fullName;
                         student.save();
                         return fullName;
                     } else {
