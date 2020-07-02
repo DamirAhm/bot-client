@@ -181,7 +181,7 @@ const StudentModal: React.FC<StudentModalProps> = ({ closeModal, addStudent, sty
                     <Suspender query={query}>
                         {(data: { students: studentPreview[] }) =>
                             <div className={styles.studentsChooser}>
-                                <div key={"-1"} className={styles.chooser}>
+                                <div className={styles.chooser}>
                                     <span className={styles.chooser_name}>Имя</span>
                                     <span className={styles.chooser_vkId}>vkId</span>
                                     <span className={styles.chooser_className}>Класс</span>

@@ -1,0 +1,18 @@
+.next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 30px;
+    padding: 500px 20px;
+    box-sizing: content-box
+
+}
+
+.prev {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 30px;
+    padding: 500px 20px;
+    box-sizing: content-box
+}

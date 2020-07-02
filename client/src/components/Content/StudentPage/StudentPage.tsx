@@ -30,6 +30,7 @@ export const GET_STUDENT = gql`
             }
             lastHomeworkCheck
             fullName
+            _id
         }
     }
 `;
@@ -54,6 +55,7 @@ export const UPDATE_STUDENT = gql`
                 }
                 lastHomeworkCheck
                 fullName
+                _id
                 __typename
             }
         }

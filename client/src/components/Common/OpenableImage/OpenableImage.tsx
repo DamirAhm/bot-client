@@ -1,6 +1,7 @@
 import React, { ImgHTMLAttributes, useState, CSSProperties, HTMLAttributes } from 'react'
 import ReactDOM from "react-dom";
 import { MdNavigateBefore, MdNavigateNext } from "react-icons/md";
+import styles from "./OpenableImage.module.css";
 
 export type OpenableImgProps = {
     prevImg?: OpenableImgProps
@@ -41,25 +42,6 @@ export const ImgStab: React.FC<OpenableImgProps & { Stab: React.FC<HTMLAttribute
     )
 }
 
-const nextImgChevronStyle: CSSProperties = {
-    position: 'absolute',
-    top: "50%",
-    transform: "translateY(-50%)",
-    right: "30px",
-    padding: "500px 20px",
-    boxSizing: "content-box"
-
-}
-
-const prevImgChevronStyle: CSSProperties = {
-    position: 'absolute',
-    top: "50%",
-    transform: "translateY(-50%)",
-    left: "30px",
-    padding: "500px 20px",
-    boxSizing: "content-box"
-}
-
 export const ModalImg: React.FC<ModalImgProps> = ({ close, nextImg, prevImg, ...props }) => {
     const [src, setSrc] = useState(props.src);
     const [prev, setPrev] = useState(prevImg);
@@ -74,11 +56,11 @@ export const ModalImg: React.FC<ModalImgProps> = ({ close, nextImg, prevImg, ...
 
     return <div className="modal" onMouseDown={close}>
         {prev &&
-            <MdNavigateBefore size={40} style={prevImgChevronStyle} onClick={(e) => toImg(prev, e)} />
+            <MdNavigateBefore size={40} className={styles.prev} onMouseDown={(e) => toImg(prev, e)} />
         }
         <img style={{ width: "100%", maxWidth: "80vh" }} {...props} src={src} onMouseDown={e => e.stopPropagation()} />
         {next &&
-            <MdNavigateNext size={40} style={nextImgChevronStyle} onClick={(e) => toImg(next, e)} />
+            <MdNavigateNext size={40} className={styles.next} onMouseDown={(e) => toImg(next, e)} />
         }
     </div>
 }

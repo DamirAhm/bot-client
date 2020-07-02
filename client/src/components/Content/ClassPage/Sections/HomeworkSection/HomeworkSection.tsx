@@ -8,7 +8,7 @@ import Suspender from '../../../../Common/Suspender';
 import { parseDate } from '../../../../../utils/date';
 import Accordion from "../../../../Common/Accordion";
 import { GoTriangleRight } from "react-icons/go";
-import OpenableImg, { ImgStab, OpenableImgProps } from '../../../../Common/OpenableImage';
+import OpenableImg, { ImgStab, OpenableImgProps } from '../../../../Common/OpenableImage/OpenableImage';
 import { FaPen } from 'react-icons/fa';
 import { MdClose, MdCheck, MdAdd } from "react-icons/md";
 import { useParams } from "react-router-dom";
@@ -16,6 +16,7 @@ import ReactDOM from "react-dom";
 import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
 import { GET_SCHEDULE, GET_LESSONS } from "../ScheduleSection/ScheduleSection";
 import ConfirmReject from "../../../../Common/ConfirmReject";
+import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -87,17 +88,6 @@ const ADD_HOMEWORK = gql`
 const HomeworkSection: React.FC<Props> = ({ className }) => {
     const [homeworkCreating, setHomeworkCreating] = useState(false);
     const homeworkQuery = useQuery<{ homework: homework[] }>(GET_HOMEWORK, { variables: { className } });
-
-    const t = useApolloClient();
-
-    (async () => {
-        try {
-            console.log(t.readQuery({
-                query: GET_HOMEWORK, variables: { className }
-            }, true))
-        }
-        catch (e) { }
-    })()
 
     const [removeHomework] = useMutation<
         WithTypename<{
@@ -265,8 +255,6 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
 const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework }) => {
     const [changing, setChanging] = useState(false);
 
-    const parsedAttachments = addNextPrev(homework.attachments);
-
     return (
         <div className={`${styles.container} ${homework.attachments.length === 2 ? styles.pair : ""}`}>
             <div key={homework._id}
@@ -274,18 +262,15 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
                 {homework.attachments.length > 0 &&
                     <> {homework.attachments.length <= 2
                         ? <div className={styles.attachments}>
-                            {homework.attachments.map(
-                                (at, i) => <OpenableImg key={at.url + i} className={styles.attach} alt="Фото дз" {...parsedAttachments[i]} />
-                            )}
+                            <ImgAlbum images={homework.attachments} />
                         </div>
-                        : <ImgStab
-                            {...parsedAttachments[0]}
+                        : <ImgAlbum images={homework.attachments} 
                             Stab={({ onClick }) => (
-                                <div className={styles.imgStab} onClick={onClick}>
+                                <div className={styles.stab} onClick={onClick}>
                                     <span>{homework.attachments.length}</span>
                                     <span> Photos </span>
                                 </div>
-                            )} />
+                            )}/>
                     } </>
                 }
                 {homework.text &&
@@ -348,7 +333,7 @@ const CreateHomeworkModal: React.FC<{ returnHomework: (hw: Omit<homework, "_id">
                                             Выберите предмет
                                     </option>
                                         {possibleLessons
-                                            .map((lesson, i) => <option key={`possibleLesson${i + lesson}`} value={lesson}>
+                                            .map((lesson, i) => <option key={`possibleLesson${lesson}`} value={lesson}>
                                                 {lesson}
                                             </option>)
                                         }
@@ -399,27 +384,4 @@ const parseHomeworkByDate = (homework: WithTypename<homework>[]): { [day: string
 
     return parsedHw;
 }
-const addNextPrev: (atts: attachment[]) => OpenableImgProps[] = (attachments) => {
-    const parsedAttachments: OpenableImgProps[] = [];
-
-    for (let i = 0; i < attachments.length; i++) {
-        const newImgProps: OpenableImgProps = {} as OpenableImgProps;
-        newImgProps.src = attachments[i].url;
-        parsedAttachments.push(newImgProps);
-    }
-    for (let i = 0; i < parsedAttachments.length; i++) {
-        if (i + 1 < parsedAttachments.length) {
-            parsedAttachments[i].nextImg = parsedAttachments[i + 1];
-        } else {
-            parsedAttachments[i].nextImg = parsedAttachments[0];
-        }
-        if (i - 1 >= 0) {
-            parsedAttachments[i].prevImg = parsedAttachments[i - 1];
-        } else {
-            parsedAttachments[i].prevImg = parsedAttachments[parsedAttachments.length - 1];
-        }
-    }
-    return parsedAttachments;
-}
-
 export default HomeworkSection

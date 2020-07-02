@@ -5,7 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { content, attachment, WithTypename, vkPhoto } from '../../../types';
 
 import styles from './ChangeContent.module.css'
-import OpenableImg from "../OpenableImage";
+import OpenableImg from "../OpenableImage/OpenableImage";
 import FileUploader from "../FileUploader";
 import { useParams } from "react-router-dom";
 import ConfirmReject from "../ConfirmReject";

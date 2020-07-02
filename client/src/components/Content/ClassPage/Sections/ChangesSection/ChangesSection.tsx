@@ -8,7 +8,7 @@ import Suspender from '../../../../Common/Suspender';
 import { parseDate } from '../../../../../utils/date';
 import Accordion from "../../../../Common/Accordion";
 import { GoTriangleRight } from "react-icons/go";
-import OpenableImg, { ImgStab, OpenableImgProps } from '../../../../Common/OpenableImage';
+import OpenableImg, { ImgStab, OpenableImgProps } from '../../../../Common/OpenableImage/OpenableImage';
 import { FaPen } from 'react-icons/fa';
 import { MdClose, MdAdd } from "react-icons/md";
 import { useParams } from "react-router-dom";
@@ -16,6 +16,7 @@ import ReactDOM from "react-dom";
 import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
 import { GET_SCHEDULE, GET_LESSONS } from "../ScheduleSection/ScheduleSection";
 import ConfirmReject from "../../../../Common/ConfirmReject";
+import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -237,8 +238,6 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
 const Change: React.FC<changeProps> = ({ change, removeChange, updateChange }) => {
     const [updating, setUpdating] = useState(false);
 
-    const parsedAttachments = addNextPrev(change.attachments);
-
     return (
         <div className={`${styles.container} ${change.attachments.length === 2 ? styles.pair : ""}`}>
             <div key={change._id}
@@ -246,18 +245,15 @@ const Change: React.FC<changeProps> = ({ change, removeChange, updateChange }) =
                 {change.attachments.length > 0 &&
                     <> {change.attachments.length <= 2
                         ? <div className={styles.attachments}>
-                            {change.attachments.map(
-                                (at, i) => <OpenableImg key={at.url + i} className={styles.attach} alt="Фото дз" {...parsedAttachments[i]} />
-                            )}
+                            <ImgAlbum images={change.attachments} />
                         </div>
-                        : <ImgStab
-                            {...parsedAttachments[0]}
+                        : <ImgAlbum images={change.attachments} 
                             Stab={({ onClick }) => (
-                                <div className={styles.imgStab} onClick={onClick}>
+                                <div className={styles.stab} onClick={onClick}>
                                     <span>{change.attachments.length}</span>
                                     <span> Photos </span>
                                 </div>
-                            )} />
+                            )}/>
                     } </>
                 }
                 {change.text &&
@@ -323,28 +319,6 @@ const parseChangesByDate = (changes: WithTypename<change>[]): { [day: string]: c
     }
 
     return parsedChanges;
-}
-const addNextPrev: (atts: attachment[]) => OpenableImgProps[] = (attachments) => {
-    const parsedAttachments: OpenableImgProps[] = [];
-
-    for (let i = 0; i < attachments.length; i++) {
-        const newImgProps: OpenableImgProps = {} as OpenableImgProps;
-        newImgProps.src = attachments[i].url;
-        parsedAttachments.push(newImgProps);
-    }
-    for (let i = 0; i < parsedAttachments.length; i++) {
-        if (i + 1 < parsedAttachments.length) {
-            parsedAttachments[i].nextImg = parsedAttachments[i + 1];
-        } else {
-            parsedAttachments[i].nextImg = parsedAttachments[0];
-        }
-        if (i - 1 >= 0) {
-            parsedAttachments[i].prevImg = parsedAttachments[i - 1];
-        } else {
-            parsedAttachments[i].prevImg = parsedAttachments[parsedAttachments.length - 1];
-        }
-    }
-    return parsedAttachments;
 }
 
 export default ChangesSection
