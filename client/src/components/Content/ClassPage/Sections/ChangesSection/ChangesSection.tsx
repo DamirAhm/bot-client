@@ -335,12 +335,15 @@ const addNextPrev: (atts: attachment[]) => OpenableImgProps[] = (attachments) =>
     for (let i = 0; i < parsedAttachments.length; i++) {
         if (i + 1 < parsedAttachments.length) {
             parsedAttachments[i].nextImg = parsedAttachments[i + 1];
+        } else {
+            parsedAttachments[i].nextImg = parsedAttachments[0];
         }
         if (i - 1 >= 0) {
             parsedAttachments[i].prevImg = parsedAttachments[i - 1];
+        } else {
+            parsedAttachments[i].prevImg = parsedAttachments[parsedAttachments.length - 1];
         }
     }
-
     return parsedAttachments;
 }
 
