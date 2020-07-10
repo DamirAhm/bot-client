@@ -2,12 +2,12 @@ const app = require( 'express' )();
 const { ApolloServer } = require( 'apollo-server-express' );
 const mongoose = require( 'mongoose' );
 const { graphqlSchema } = require( './schema' );
-const VK_API = require( 'bot-database/VkAPI/VK_API' );
+const VK_API = require( './DataBase/VkAPI/VK_API' );
 const config = require( 'config' );
 const cors = require( "cors" );
 const multer = require( "multer" );
 const fs = require( "fs" );
-const { DataBase: DB } = require( "bot-database/DataBase" );
+const { DataBase: DB } = require( "./DataBase/DataBase" );
 
 const DataBase = new DB( config.get( "MONGODB_URI" ) );
 const vk = new VK_API( config.get( "VK_API_KEY" ), config.get( "GROUP_ID" ), config.get( "ALBUM_ID" ) );
