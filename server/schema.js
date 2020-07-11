@@ -1,11 +1,11 @@
 // @ts-nocheck
 const { composeWithMongoose } = require( 'graphql-compose-mongoose' );
 const { schemaComposer } = require( 'graphql-compose' );
-const { Roles, Lessons } = require( "./DataBase/Models/utils" );
-const StudentModel = require( "./DataBase/Models/StudentModel" );
-const ClassModel = require( "./DataBase/Models/ClassModel" );
-const { DataBase: DB } = require( "./DataBase/DataBase" );
-const VK_API = require( "./DataBase/VkAPI/VK_API" );
+const { Roles, Lessons } = require( "bot-database/Models/utils" );
+const StudentModel = require( "bot-database/Models/StudentModel" );
+const ClassModel = require( "bot-database/Models/ClassModel" );
+const { DataBase: DB } = require( "bot-database/DataBase" );
+const VK_API = require( "bot-database/VkAPI/VK_API" );
 const config = require( "config" );
 
 const DataBase = new DB( config.get( "MONGODB_URI" ) );
