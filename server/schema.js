@@ -172,15 +172,7 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 type: `[${ClassTC.get( "homework" ).getType()}]`,
                 args: { className: "String!", date: "Date" },
                 resolve: async ( { source, args, context, info } ) => {
-                    let result = await DataBase.getHomework( args.className, args.date );
-                    if ( result !== null ) {
-                        const homework = []
-                        for ( const hw of result ) {
-                            homework.push( hw.attachments.map( at => ( { url: vk.getPhotoUrl( at.value, at.album_id ), value: at } ) ) );
-                        }
-                        return result;
-                    }
-                    return [];
+                    return await DataBase.getHomework( args.className, args.date ) || [];
                 }
             } );
             //? remove
