@@ -6,7 +6,8 @@
   "scripts": {
     "start": "npm run start --prefix ./server",
     "build": "npm run build --prefix ./client",
-    "install": "npm install --prefix ./server && npm install --prefix ./client"
+    "install": "npm install --prefix ./server",
+    "postinstall": "npm install --prefix ./client"
   },
   "repository": {
     "type": "git",
