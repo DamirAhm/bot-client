@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index",
     "start:debug": "supervisor --inspect index",
-    "start:dev": "supervisor index"
+    "start:dev": "supervisor index",
+    "postinstall": "mkdir uploads -p"
   },
   "author": "",
   "license": "ISC",
