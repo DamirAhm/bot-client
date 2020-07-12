@@ -8,6 +8,7 @@ const cors = require( "cors" );
 const multer = require( "multer" );
 const fs = require( "fs" );
 const { DataBase: DB } = require( "bot-database/DataBase" );
+const serveHandler = require( "serve-handler" );
 
 const DataBase = new DB( config.get( "MONGODB_URI" ) );
 const vk = new VK_API( config.get( "VK_API_KEY" ), config.get( "GROUP_ID" ), config.get( "ALBUM_ID" ) );
@@ -74,8 +75,11 @@ app.post( "/saveAttachment", upload.array( 'newAttachment' ), async ( req, res )
     }
 } )
 
-app.listen( { port: 4000 }, () =>
-    console.log( `🚀 Server ready at http://localhost:4000${server.graphqlPath}` )
+app.get( "/*", ( req, res ) => res.sendFile( __dirname + "/build/index.html" ) );
+app.get( "/*", ( req, res ) => serveHandler( req, res, { public: "./build" } ) );
+
+app.listen( { port: process.env.PORT || 4000 }, () =>
+    console.log( `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${server.graphqlPath}` )
 );
 
 // console.log( __dirname + "/uploads/0bc92e03aab64a270f9741a03f415417.png" );
