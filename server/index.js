@@ -75,7 +75,7 @@ app.post( "/saveAttachment", upload.array( 'newAttachment' ), async ( req, res )
     }
 } )
 
-app.get( "/*", ( req, res ) => res.sendFile( __dirname + "/build/index.html" ) );
+app.get( "/", ( req, res ) => res.sendFile( __dirname + "/build/index.html" ) );
 app.get( "/*", ( req, res ) => serveHandler( req, res, { public: "./build" } ) );
 
 app.listen( { port: process.env.PORT || 4000 }, () =>
