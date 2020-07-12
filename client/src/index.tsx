@@ -94,7 +94,7 @@ const typeDefs = gql`
 
 
 const client = new ApolloClient({
-    uri: "http://localhost:4000/graphql",
+    uri: document.location.hostname === "localhost" ? "http://localhost:4000/graphql" : "/graphql",
     cache: new InMemoryCache({
         dataIdFromObject: (obj: any) => {
             if (obj._id) {
