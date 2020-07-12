@@ -93,7 +93,7 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onCha
 
                 const { photos }: { photos: vkPhoto[] } = await fetch(
                     document.location.hostname === "localhost"
-                        ? "http://localhost:4000/saveAttachment"
+                        ? "http://localhost:8080/saveAttachment"
                         : document.location.origin.endsWith("/")
                             ? document.location.origin + `saveAttachment?className=${className}&type=homework&id=${content._id}`
                             : document.location.origin + `/saveAttachment?className=${className}&type=homework&id=${content._id}`,

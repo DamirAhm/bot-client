@@ -75,13 +75,14 @@ app.post( "/saveAttachment", upload.array( 'newAttachment' ), async ( req, res )
     }
 } )
 
-app.get( "/*", ( req, res ) => res.sendFile( __dirname + "/build/index.html" ) );
-app.get( "/*", ( req, res ) => serveHandler( req, res, { public: "./build" } ) );
+app.get( "/*", ( req, res ) => {
+    if ( /\.(js|css|html|svg|ico|png|jpg|webp)$/i.test( req.url ) ) {
+        serveHandler( req, res, { public: "./build" } )
+    } else {
+        res.sendFile( __dirname + "/build/index.html" )
+    }
+} );
 
-app.listen( { port: process.env.PORT || 4000 }, () =>
-    console.log( `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${server.graphqlPath}` )
+app.listen( { port: process.env.PORT || 8080 }, () =>
+    console.log( `🚀 Server ready at http://localhost:${process.env.PORT || 8080}${server.graphqlPath}` )
 );
-
-// console.log( __dirname + "/uploads/0bc92e03aab64a270f9741a03f415417.png" );
-
-// console.log( fs.createReadStream( "D:/Users/Damir/Desktop/Programmin/bot-stuff/bot-client/server/uploads/0bc92e03aab64a270f9741a03f415417.png" ) )

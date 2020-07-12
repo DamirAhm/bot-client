@@ -10,6 +10,6 @@ COPY ./config /app/config
 RUN mkdir uploads
 RUN npm i
 
-EXPOSE 80:4000
+EXPOSE 80:8080
 
 CMD ["node", "index.js"]
