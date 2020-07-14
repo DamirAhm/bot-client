@@ -27,7 +27,7 @@ const convertValue = (value: string | boolean | object | Date | number) => {
 };
 
 const StudentInfo: React.FC<Props> = ({ name, value, changeHandler, isChanging }) => {
-    if (name !== "__typename" && value !== null) {
+    if (!["__typename", null, "_id"].includes(name)) {
         const text = convertValue(value);
         return (
             <div className={styles.info}>
