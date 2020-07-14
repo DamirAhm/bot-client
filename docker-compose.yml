@@ -1,4 +1,0 @@
-services
-    api
-        build ./server/Dockerfile
-        ports 

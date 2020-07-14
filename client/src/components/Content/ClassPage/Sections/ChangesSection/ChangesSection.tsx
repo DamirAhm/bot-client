@@ -17,6 +17,7 @@ import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
 import { GET_SCHEDULE, GET_LESSONS } from "../ScheduleSection/ScheduleSection";
 import ConfirmReject from "../../../../Common/ConfirmReject";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
+import { parseContentByDate } from "../../../../../utils/functions";
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -200,7 +201,7 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
                     </div>}>
                 <Suspender query={changesQuery}>
                     {(data: { changes: WithTypename<change>[] }) => {
-                        const parsedChanges = parseChangesByDate(data.changes);
+                        const parsedChanges = parseContentByDate(data.changes);
                         return <div className={styles.changes}>
                             {Object.keys(parsedChanges).map(changeDate =>
                                 <Accordion
@@ -297,28 +298,6 @@ const CreateChangeModal: React.FC<{ returnChange: (hw: Omit<change, "_id">) => v
             , changeContentModalRoot)
     }
     return null;
-}
-
-const parseChangesByDate = (changes: WithTypename<change>[]): { [day: string]: change[] } => {
-    const parsedChanges: { [day: string]: change[] } = {};
-
-    const sortedChanges = changes.sort((a, b) => Date.parse(a.to) - Date.parse(b.to));
-
-    for (let change of sortedChanges) {
-        delete change.__typename;
-        const changeDate = parseDate(change.to, "dd MM");
-        if (parsedChanges.hasOwnProperty(changeDate)) {
-            if (parsedChanges[changeDate]) {
-                parsedChanges[changeDate].push(change);
-            } else {
-                parsedChanges[changeDate] = [change];
-            }
-        } else {
-            parsedChanges[changeDate] = [change];
-        }
-    }
-
-    return parsedChanges;
 }
 
 export default ChangesSection

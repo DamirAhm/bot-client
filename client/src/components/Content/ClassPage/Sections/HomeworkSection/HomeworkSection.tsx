@@ -17,6 +17,7 @@ import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
 import { GET_SCHEDULE, GET_LESSONS } from "../ScheduleSection/ScheduleSection";
 import ConfirmReject from "../../../../Common/ConfirmReject";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
+import { parseContentByDate, objectForEach } from "../../../../../utils/functions";
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -202,10 +203,10 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                         <MdAdd size={30} onClick={(e) => (e.stopPropagation(), setHomeworkCreating(true))} />
                     </div>}>
                 <Suspender query={homeworkQuery}>
-                    {(data: { homework: WithTypename<homework>[] }) => {
-                        const parsedHw = parseHomeworkByDate(data.homework);
+                    {(data: { homework: homework[] }) => {
+                        const parsedHw = objectForEach(parseContentByDate(data.homework), parseHomeworkByLesson);
                         return <div className={styles.homework}>
-                            {Object.keys(parsedHw).map(hwDate =>
+                            {Object.keys(parsedHw).map(hwDate => 
                                 <Accordion
                                     key={hwDate}
                                     Head={({ onClick, opened }) =>
@@ -363,25 +364,19 @@ const CreateHomeworkModal: React.FC<{ returnHomework: (hw: Omit<homework, "_id">
     return null;
 }
 
-const parseHomeworkByDate = (homework: WithTypename<homework>[]): { [day: string]: { [lesson: string]: homework[] } } => {
-    const parsedHw = {} as { [day: string]: { [lesson: string]: homework[] } } & object;
-
-    const sortedHomework = homework.sort((a, b) => Date.parse(a.to) - Date.parse(b.to));
+const parseHomeworkByLesson = (homework: homework[]): { [lesson: string]: homework[] } => {
+    const parsedHomework = {} as { [lesson: string]: homework[] } & object;
 
     for (let hw of homework) {
-        delete hw.__typename;
-        const hwDate = parseDate(hw.to, "dd MM");
-        if (parsedHw.hasOwnProperty(hwDate)) {
-            if (parsedHw[hwDate][hw.lesson]) {
-                parsedHw[hwDate][hw.lesson].push(hw);
-            } else {
-                parsedHw[hwDate][hw.lesson] = [hw];
-            }
+        const lesson = hw.lesson;
+        if (parsedHomework.hasOwnProperty(lesson)) {
+                parsedHomework[lesson].push(hw);
         } else {
-            parsedHw[hwDate] = { [hw.lesson]: [hw] };
+            parsedHomework[lesson] = [hw];
         }
     }
 
-    return parsedHw;
+    return parsedHomework;
 }
+
 export default HomeworkSection
