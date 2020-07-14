@@ -204,8 +204,53 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                     </div>}>
                 <Suspender query={homeworkQuery}>
                     {(data: { homework: homework[] }) => {
-                        const parsedHw = objectForEach(parseContentByDate(data.homework), parseHomeworkByLesson);
+                        const [oldHw, newHw] = parseContentByDate(data.homework);
+                        const parsedHw = objectForEach(newHw, parseHomeworkByLesson);
+                        const parsedOldHw = objectForEach(oldHw, parseHomeworkByLesson);
                         return <div className={styles.homework}>
+                            <Accordion
+                                initiallyOpened={false}
+                                Head={({ opened, onClick }) =>
+                                    <p className={`${styles.date} ${styles.accordion}`} onClick={onClick}>
+                                            Старое дз
+                                            <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} />
+                                    </p>
+                                } 
+                                Body={() =>
+                                    <>{Object.keys(parsedOldHw).map(hwDate => 
+                                        <Accordion
+                                            initiallyOpened={false}
+                                            className={styles.offseted}
+                                            key={hwDate} 
+                                            Head={({ onClick, opened }) =>
+                                                <p className={`${styles.date} ${styles.accordion}`} onClick={onClick}>
+                                                    {hwDate}
+                                                    <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} />
+                                                </p>}
+                                            Body={() =>
+                                                <>
+                                                    {Object.keys(parsedOldHw[hwDate]).map(lesson =>
+                                                        <Accordion
+                                                            className={styles.offseted} key={hwDate + lesson}
+                                                            Head={({ onClick, opened }) =>
+                                                                <p className={`${styles.lesson} ${styles.accordion}`} onClick={onClick}>
+                                                                    {lesson}
+                                                                    <GoTriangleRight
+                                                                        className={opened ? styles.triangle_opened : ""} size={10} />
+                                                                </p>}
+                                                            Body={() =>
+                                                                <div className={`${styles.tasks} ${styles.offseted}`}>
+                                                                    {parsedOldHw[hwDate][lesson].map((hw, i) => <Task updateHomework={update} key={hw._id} removeHomework={remove} homework={hw} />)}
+                                                                </div>
+                                                            }
+                                                        />
+                                                    )}
+                                                </>
+                                            }
+                                        />
+                                    )}</>
+                                }
+                            />
                             {Object.keys(parsedHw).map(hwDate => 
                                 <Accordion
                                     key={hwDate}

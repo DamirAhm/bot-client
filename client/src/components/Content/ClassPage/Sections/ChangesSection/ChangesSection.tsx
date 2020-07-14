@@ -201,7 +201,7 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
                     </div>}>
                 <Suspender query={changesQuery}>
                     {(data: { changes: WithTypename<change>[] }) => {
-                        const parsedChanges = parseContentByDate(data.changes);
+                        const [_,parsedChanges] = parseContentByDate(data.changes);
                         return <div className={styles.changes}>
                             {Object.keys(parsedChanges).map(changeDate =>
                                 <Accordion
