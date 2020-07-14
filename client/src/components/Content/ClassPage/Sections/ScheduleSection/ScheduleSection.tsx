@@ -124,7 +124,7 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(({ index, lessons, lessonsL
         setChanges(changes.concat([(changes[changes.length - 1] || lessonsList[0])]));
     }
 
-    return <div className={styles.day}>
+    return <div className={styles.day} onDoubleClick={() => setChanging(true)}>
         {!changing && <FaPen className={styles.pen} size={iconSize} onClick={() => setChanging(true)} />}
         <div className={styles.value}>
             <div className={styles.dayName} onClick={() => setChanging(true)}> {days[index]} </div>
