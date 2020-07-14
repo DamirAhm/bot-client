@@ -5,7 +5,7 @@ import { gql } from 'apollo-boost';
 import { useQuery, useMutation, useApolloClient } from '@apollo/react-hooks';
 import { content, attachment, WithTypename, homework } from '../../../../../types';
 import Suspender from '../../../../Common/Suspender';
-import { parseDate } from '../../../../../utils/date';
+import { parseDate, months } from '../../../../../utils/date';
 import Accordion from "../../../../Common/Accordion";
 import { GoTriangleRight } from "react-icons/go";
 import OpenableImg, { ImgStab, OpenableImgProps } from '../../../../Common/OpenableImage/OpenableImage';
@@ -88,6 +88,7 @@ const ADD_HOMEWORK = gql`
 
 const HomeworkSection: React.FC<Props> = ({ className }) => {
     const [homeworkCreating, setHomeworkCreating] = useState(false);
+    const [initContent, setInitContent] = useState({});
     const homeworkQuery = useQuery<{ homework: homework[] }>(GET_HOMEWORK, { variables: { className } });
 
     const [removeHomework] = useMutation<
@@ -191,6 +192,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                 variables: { className }
             }]
         })
+        setInitContent({});
     }
 
     return (
@@ -198,9 +200,15 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
             <InfoSection
                 name='Домашняя работа'
                 Header={({ opened, onClick }) =>
-                    <div className={styles.sectionHeader} onClick={onClick}>
-                        <div className={styles.title}>Домашняя работа <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} /></div>
-                        <MdAdd size={30} onClick={(e) => (e.stopPropagation(), setHomeworkCreating(true))} />
+                    <div className={`${styles.sectionHeader} ${styles.homeworkHeader}`} onClick={onClick}>
+                        <div className={styles.title}>
+                            Домашняя работа 
+                            <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
+                        </div>
+                        <MdAdd size={30} onClick={(e) => (
+                            e.stopPropagation(), 
+                            setHomeworkCreating(true)
+                        )} />
                     </div>}>
                 <Suspender query={homeworkQuery}>
                     {(data: { homework: homework[] }) => {
@@ -255,21 +263,36 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                 <Accordion
                                     key={hwDate}
                                     Head={({ onClick, opened }) =>
-                                        <p className={`${styles.date} ${styles.accordion}`} onClick={onClick}>
-                                            {hwDate}
-                                            <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} />
-                                        </p>}
+                                        <div className={styles.sectionHeader} onClick={onClick}>
+                                            <div className={`${styles.date} ${styles.accordion}`}>
+                                                {hwDate}
+                                                <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
+                                            </div>
+                                            <MdAdd size={30} onClick={(e) => (
+                                                e.stopPropagation(), 
+                                                setHomeworkCreating(true), 
+                                                setInitContent({to: getDateStrFromDayMonthStr(hwDate)}) 
+                                            )} />
+                                        </div>
+                                    }
                                     Body={() =>
                                         <>
                                             {Object.keys(parsedHw[hwDate]).map(lesson =>
                                                 <Accordion
                                                     className={styles.offseted} key={hwDate + lesson}
                                                     Head={({ onClick, opened }) =>
-                                                        <p className={`${styles.lesson} ${styles.accordion}`} onClick={onClick}>
-                                                            {lesson}
-                                                            <GoTriangleRight
-                                                                className={opened ? styles.triangle_opened : ""} size={10} />
-                                                        </p>}
+                                                        <div className={styles.sectionHeader} onClick={onClick}>
+                                                            <div className={`${styles.lesson} ${styles.accordion}`}>
+                                                                {lesson}
+                                                                <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
+                                                            </div>
+                                                            <MdAdd size={30} onClick={(e) => (
+                                                                e.stopPropagation(), 
+                                                                setHomeworkCreating(true), 
+                                                                setInitContent({to: getDateStrFromDayMonthStr(hwDate), lesson})
+                                                            )} />
+                                                        </div>
+                                                    }
                                                     Body={() =>
                                                         <div className={`${styles.tasks} ${styles.offseted}`}>
                                                             {parsedHw[hwDate][lesson].map((hw, i) => <Task updateHomework={update} key={hw._id} removeHomework={remove} homework={hw} />)}
@@ -290,7 +313,8 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                 ReactDOM.createPortal(
                     <CreateHomeworkModal
                         returnHomework={add}
-                        close={() => setHomeworkCreating(false)}
+                        close={() => (setHomeworkCreating(false), setInitContent({}))}
+                        initContent={initContent}
                     />,
                     changeContentModalRoot
                 )}
@@ -342,7 +366,13 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
         </div>
     )
 }
-const CreateHomeworkModal: React.FC<{ returnHomework: (hw: Omit<homework, "_id">) => void, close: () => void }> = ({ returnHomework, close }) => {
+
+type CreateHomeworkModalProps = { 
+    returnHomework: (hw: Omit<homework, "_id">) => void, 
+    close: () => void, 
+    initContent?: Partial<homework> 
+}
+const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({ returnHomework, close, initContent = {} }) => {
     const { className } = useParams();
 
     const scheduleQuery = useQuery<{ schedule: string[][] }>(GET_SCHEDULE, { variables: { className } });
@@ -352,7 +382,8 @@ const CreateHomeworkModal: React.FC<{ returnHomework: (hw: Omit<homework, "_id">
         attachments: [] as WithTypename<attachment>[],
         text: "",
         to: String(new Date()),
-        lesson: ""
+        lesson: "", 
+        ...initContent
     });
 
     const checkUnEmptyContent = () => {
@@ -374,10 +405,13 @@ const CreateHomeworkModal: React.FC<{ returnHomework: (hw: Omit<homework, "_id">
                                     <select
                                         className={styles.selectLesson}
                                         onChange={e => setNewHomework({ ...newHomework, lesson: e.target.value })}
+                                        value={newHomework.lesson}
                                     >
+                                        {!newHomework.lesson &&
                                         <option key={`possibleLessonNothing`} value={""}>
                                             Выберите предмет
-                                    </option>
+                                        </option>
+                                        }
                                         {possibleLessons
                                             .map((lesson, i) => <option key={`possibleLesson${lesson}`} value={lesson}>
                                                 {lesson}
@@ -422,6 +456,19 @@ const parseHomeworkByLesson = (homework: homework[]): { [lesson: string]: homewo
     }
 
     return parsedHomework;
+}
+const getDateStrFromDayMonthStr = (dayMonthStr: string): string => {
+    if (new RegExp(`\\d\\s(${Object.values(months).join("|")})`,"i").test(dayMonthStr)) {
+        const [day, month] = dayMonthStr.split(" ");
+        if (months.indexOf(month) !== -1 && !isNaN(Number(day))) {
+            const monthIndex = months.indexOf(month);
+
+            const date = new Date(new Date().getFullYear(),monthIndex, Number(day));
+
+            return date.toISOString();
+        } 
+    } 
+    return "";
 }
 
 export default HomeworkSection

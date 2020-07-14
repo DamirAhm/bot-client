@@ -1,44 +1,44 @@
 .section {
-    padding-top: 20px;
-    width: 100%;
+  padding-top: 20px;
+  width: 100%;
 }
 
 .header {
-    width: 100%;
-    border-bottom: 2px solid var(--main);
-    display: flex;
-    justify-content: space-between;
-    cursor: pointer;
-    padding: 10px;
-    box-sizing:border-box;
+  width: 100%;
+  border-bottom: 2px solid var(--main);
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 .name {
-    font-size: 2rem;
-    display: flex;
-    align-items: center;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
 }
 
 .name * {
-    color: var(--main);
+  color: var(--main);
 }
 
 .triangle_opened {
-    transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 
 .content {
-    padding: 30px;
-    box-sizing: border-box;
-    overflow: auto;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
 }
 
 .search {
-    border-radius: 10px;
+  border-radius: 10px;
 }
 
 @media screen and (max-width: 776px) {
-    .content {
-        padding: 20px 0;
-    }
+  .content {
+    padding: 20px 0;
+  }
 }
