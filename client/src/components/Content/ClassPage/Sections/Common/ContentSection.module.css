@@ -1,28 +1,28 @@
-.homework {
+.content {
   width: 100%;
 }
 
-.homeworkCreator {
+.contentCreator {
   background-color: var(--secondary);
   padding: 10px 0 0 0;
 }
-.homeworkCreator .confirmReject {
+.contentCreator .confirmReject {
   margin-bottom: 10px;
 }
-.homeworkCreator .title {
+.contentCreator .title {
   color: var(--main);
   display: block;
   margin-right: 30px;
   font-size: 1.8rem;
 }
-.homeworkCreator .lessonPicker {
+.contentCreator .lessonPicker {
   display: flex;
   margin-bottom: 10px;
 }
-.homeworkCreator .lessonPicker select {
+.contentCreator .lessonPicker select {
   border-radius: 5px;
 }
-.homeworkCreator .addition {
+.contentCreator .addition {
   padding: 0 20px;
 }
 
@@ -30,7 +30,7 @@
   margin-left: 30px;
 }
 
-.homework *:not(.text) {
+.content *:not(.text) {
   color: var(--main);
 }
 
@@ -54,7 +54,14 @@
   font-size: 2rem;
 }
 
-.homeworkHeader {
+.sectionHeader .addContent {
+  visibility: hidden;
+}
+.sectionHeader:hover .addContent {
+  visibility: visible;
+}
+
+.contentHeader {
   border-bottom: 2px solid var(--main);
   padding: 10px;
 }
@@ -83,12 +90,13 @@
   transform: rotate(90deg);
 }
 
-.tasks {
+.elements {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(calc(100% / 4 - 10px), 1fr));
   row-gap: 25px;
   column-gap: 10px;
   justify-items: center;
+  margin-bottom: 7px;
 }
 
 .container {
@@ -101,7 +109,7 @@
   grid-column-end: span 2;
 }
 
-.task {
+.element {
   background-color: var(--main);
   padding: 10px;
   border-radius: 10px;
@@ -114,7 +122,7 @@
   width: 100%;
 }
 
-.task img {
+.element img {
   border-radius: 10px;
 }
 
@@ -186,7 +194,7 @@
   visibility: visible;
 }
 
-.homeworkContentChanger {
+.contentContentChanger {
   position: fixed;
 }
 
@@ -201,7 +209,7 @@
     justify-content: space-between;
   }
 
-  .tasks {
+  .elements {
     gap: 10px 25px;
   }
 

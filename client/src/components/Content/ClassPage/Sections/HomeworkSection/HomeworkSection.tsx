@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import styles from './HomeworkSection.module.css'
+import styles from '../Common/ContentSection.module.css'
 import InfoSection from '../../InfoSection/InfoSection';
 import { gql } from 'apollo-boost';
 import { useQuery, useMutation, useApolloClient } from '@apollo/react-hooks';
@@ -17,7 +17,7 @@ import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
 import { GET_SCHEDULE, GET_LESSONS } from "../ScheduleSection/ScheduleSection";
 import ConfirmReject from "../../../../Common/ConfirmReject";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
-import { parseContentByDate, objectForEach } from "../../../../../utils/functions";
+import { parseContentByDate, objectForEach, getDateStrFromDayMonthStr } from "../../../../../utils/functions";
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -200,12 +200,12 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
             <InfoSection
                 name='Домашняя работа'
                 Header={({ opened, onClick }) =>
-                    <div className={`${styles.sectionHeader} ${styles.homeworkHeader}`} onClick={onClick}>
+                    <div className={`${styles.sectionHeader} ${styles.contentHeader}`} onClick={onClick}>
                         <div className={styles.title}>
                             Домашняя работа 
                             <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                         </div>
-                        <MdAdd size={30} onClick={(e) => (
+                        <MdAdd className={styles.addContent} size={30} onClick={(e) => (
                             e.stopPropagation(), 
                             setHomeworkCreating(true)
                         )} />
@@ -215,7 +215,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                         const [oldHw, newHw] = parseContentByDate(data.homework);
                         const parsedHw = objectForEach(newHw, parseHomeworkByLesson);
                         const parsedOldHw = objectForEach(oldHw, parseHomeworkByLesson);
-                        return <div className={styles.homework}>
+                        return <div className={styles.content}>
                             <Accordion
                                 initiallyOpened={false}
                                 Head={({ opened, onClick }) =>
@@ -247,8 +247,10 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                                                         className={opened ? styles.triangle_opened : ""} size={10} />
                                                                 </p>}
                                                             Body={() =>
-                                                                <div className={`${styles.tasks} ${styles.offseted}`}>
-                                                                    {parsedOldHw[hwDate][lesson].map((hw, i) => <Task updateHomework={update} key={hw._id} removeHomework={remove} homework={hw} />)}
+                                                                <div className={`${styles.elements} ${styles.offseted}`}>
+                                                                    {parsedOldHw[hwDate][lesson].map((hw, i) => 
+                                                                        <Task updateHomework={update} key={hw._id} removeHomework={remove} homework={hw} />)
+                                                                    }
                                                                 </div>
                                                             }
                                                         />
@@ -268,7 +270,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                                 {hwDate}
                                                 <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                                             </div>
-                                            <MdAdd size={30} onClick={(e) => (
+                                            <MdAdd className={styles.addContent} size={30} onClick={(e) => (
                                                 e.stopPropagation(), 
                                                 setHomeworkCreating(true), 
                                                 setInitContent({to: getDateStrFromDayMonthStr(hwDate)}) 
@@ -286,7 +288,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                                                 {lesson}
                                                                 <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                                                             </div>
-                                                            <MdAdd size={30} onClick={(e) => (
+                                                            <MdAdd className={styles.addContent} size={30} onClick={(e) => (
                                                                 e.stopPropagation(), 
                                                                 setHomeworkCreating(true), 
                                                                 setInitContent({to: getDateStrFromDayMonthStr(hwDate), lesson})
@@ -294,7 +296,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                                         </div>
                                                     }
                                                     Body={() =>
-                                                        <div className={`${styles.tasks} ${styles.offseted}`}>
+                                                        <div className={`${styles.elements} ${styles.offseted}`}>
                                                             {parsedHw[hwDate][lesson].map((hw, i) => <Task updateHomework={update} key={hw._id} removeHomework={remove} homework={hw} />)}
                                                         </div>
                                                     }
@@ -328,7 +330,7 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
     return (
         <div className={`${styles.container} ${homework.attachments.length === 2 ? styles.pair : ""}`}>
             <div key={homework._id}
-                className={styles.task}>
+                className={styles.element}>
                 {homework.attachments.length > 0 &&
                     <> {homework.attachments.length <= 2
                         ? <div className={styles.attachments}>
@@ -397,7 +399,7 @@ const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({ returnHomewor
                     {({ schedule }: ({ schedule: string[][] }), { lessons }: { lessons: string[] }) => {
                         const possibleLessons = lessons.filter(lesson => schedule.some(day => day.includes(lesson)));
 
-                        return <div className={styles.homeworkCreator} onMouseDown={e => e.stopPropagation()}>
+                        return <div className={styles.contentCreator} onMouseDown={e => e.stopPropagation()}>
                             <div className={styles.addition}>
                                 <ConfirmReject className={styles.confirmReject} confirm={() => checkUnEmptyContent() && (returnHomework(newHomework), close())} reject={close} />
                                 <label className={styles.lessonPicker}>
@@ -456,19 +458,6 @@ const parseHomeworkByLesson = (homework: homework[]): { [lesson: string]: homewo
     }
 
     return parsedHomework;
-}
-const getDateStrFromDayMonthStr = (dayMonthStr: string): string => {
-    if (new RegExp(`\\d\\s(${Object.values(months).join("|")})`,"i").test(dayMonthStr)) {
-        const [day, month] = dayMonthStr.split(" ");
-        if (months.indexOf(month) !== -1 && !isNaN(Number(day))) {
-            const monthIndex = months.indexOf(month);
-
-            const date = new Date(new Date().getFullYear(),monthIndex, Number(day));
-
-            return date.toISOString();
-        } 
-    } 
-    return "";
 }
 
 export default HomeworkSection

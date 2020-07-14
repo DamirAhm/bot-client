@@ -1,24 +1,19 @@
 import React, { useState } from 'react'
-import styles from './ChangesSection.module.css'
+import styles from '../Common/ContentSection.module.css'
 import InfoSection from '../../InfoSection/InfoSection';
 import { gql } from 'apollo-boost';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { content, attachment, WithTypename, homework, change } from '../../../../../types';
+import { content, attachment, WithTypename, change } from '../../../../../types';
 import Suspender from '../../../../Common/Suspender';
-import { parseDate } from '../../../../../utils/date';
 import Accordion from "../../../../Common/Accordion";
-import { GoTriangleRight } from "react-icons/go";
-import OpenableImg, { ImgStab, OpenableImgProps } from '../../../../Common/OpenableImage/OpenableImage';
+import { GoTriangleRight } from "react-icons/go"; 
 import { FaPen } from 'react-icons/fa';
 import { MdClose, MdAdd } from "react-icons/md";
-import { useParams } from "react-router-dom";
 import ReactDOM from "react-dom";
 import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
-import { GET_SCHEDULE, GET_LESSONS } from "../ScheduleSection/ScheduleSection";
-import ConfirmReject from "../../../../Common/ConfirmReject";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
-import { parseContentByDate } from "../../../../../utils/functions";
-
+import { parseContentByDate, getDateStrFromDayMonthStr } from "../../../../../utils/functions";
+ 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
 type Props = {
@@ -85,6 +80,7 @@ const ADD_CHANGE = gql`
 
 const ChangesSection: React.FC<Props> = ({ className }) => {
     const [changeCreating, setChangeCreating] = useState(false);
+    const [initContent, setInitContent] = useState({});
     const changesQuery = useQuery<{ changes: change[] }>(GET_CHANGES, { variables: { className } });
 
     const [removeChange] = useMutation<
@@ -195,25 +191,36 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
             <InfoSection
                 name='Домашняя работа'
                 Header={({ opened, onClick }) =>
-                    <div className={styles.sectionHeader} onClick={onClick}>
-                        <div className={styles.title}>Изменения в расписании <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} /></div>
-                        <MdAdd size={30} onClick={(e) => (e.stopPropagation(), setChangeCreating(true))} />
+                    <div className={`${styles.sectionHeader} ${styles.contentHeader}`} onClick={onClick}>
+                        <div className={styles.title}>
+                            Изменения в расписании 
+                            <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
+                        </div>
+                        <MdAdd  className={styles.addContent} size={30} onClick={(e) => (e.stopPropagation(), setChangeCreating(true))} />
                     </div>}>
                 <Suspender query={changesQuery}>
                     {(data: { changes: WithTypename<change>[] }) => {
                         const [_,parsedChanges] = parseContentByDate(data.changes);
-                        return <div className={styles.changes}>
+                        return <div className={styles.content}>
                             {Object.keys(parsedChanges).map(changeDate =>
                                 <Accordion
                                     key={changeDate}
-                                    Head={({ onClick, opened }) =>
-                                        <p className={`${styles.date} ${styles.accordion}`} onClick={onClick}>
-                                            {changeDate}
-                                            <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} />
-                                        </p>}
+                                    Head={({ onClick, opened }) => 
+                                        <div className={styles.sectionHeader} onClick={onClick}>
+                                            <div className={styles.title}>
+                                                {changeDate}
+                                                <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
+                                            </div>
+                                            <MdAdd className={styles.addContent} size={30} onClick={(e) => (
+                                                e.stopPropagation(), 
+                                                setChangeCreating(true),
+                                                setInitContent({to: getDateStrFromDayMonthStr(changeDate)})
+                                            )} />
+                                        </div>
+                                    }
                                     Body={() =>
                                         <>
-                                            <div className={`${styles.tasks} ${styles.offseted}`}>
+                                            <div className={`${styles.elements} ${styles.offseted}`}>
                                                 {parsedChanges[changeDate].map((change, i) => <Change updateChange={update} key={change._id} removeChange={remove} change={change} />)}
                                             </div>
                                         </>
@@ -230,6 +237,7 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
                     <CreateChangeModal
                         returnChange={add}
                         close={() => setChangeCreating(false)}
+                        initContent={initContent}
                     />,
                     changeContentModalRoot
                 )}
@@ -242,7 +250,7 @@ const Change: React.FC<changeProps> = ({ change, removeChange, updateChange }) =
     return (
         <div className={`${styles.container} ${change.attachments.length === 2 ? styles.pair : ""}`}>
             <div key={change._id}
-                className={styles.task}>
+                className={styles.element}>
                 {change.attachments.length > 0 &&
                     <> {change.attachments.length <= 2
                         ? <div className={styles.attachments}>
@@ -280,7 +288,13 @@ const Change: React.FC<changeProps> = ({ change, removeChange, updateChange }) =
         </div>
     )
 }
-const CreateChangeModal: React.FC<{ returnChange: (hw: Omit<change, "_id">) => void, close: () => void }> = ({ returnChange, close }) => {
+
+type CreateChangeModalProps = {
+    initContent?: Partial<change>
+    returnChange: (hw: Omit<change, "_id">) => void
+    close: () => void
+}
+const CreateChangeModal: React.FC<CreateChangeModalProps> = ({ returnChange, close, initContent = {} }) => {
     if (changeContentModalRoot) {
         return ReactDOM.createPortal(
             <div className={"modal"} onMouseDown={close}>
@@ -288,7 +302,8 @@ const CreateChangeModal: React.FC<{ returnChange: (hw: Omit<change, "_id">) => v
                     content={{
                         attachments: [],
                         text: "",
-                        to: String(new Date())
+                        to: String(new Date()),
+                        ...initContent
                     }}
                     contentChanger={content => returnChange(content)}
                     withConfirm={true}

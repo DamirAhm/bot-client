@@ -1,7 +1,7 @@
 import styles from "../components/Content/Students/StudentPreview/StudentPreview.module.css";
 import React from "react";
 import { content } from "../types";
-import { parseDate } from "./date";
+import { parseDate, months } from "./date";
 import { MdDateRange } from "react-icons/md";
 
 export const highlightSearch = (str: string, searchString: string, highlightClass = styles.highlight) => {
@@ -40,4 +40,18 @@ export const objectForEach = <T extends {[key: string]: ValueType}, ValueType, O
     const mappedEntries = entries.map(([key, value]) => [key, fn(value)]);
 
     return Object.fromEntries(mappedEntries);
+}
+
+export const getDateStrFromDayMonthStr = (dayMonthStr: string): string => {
+    if (new RegExp(`\\d\\s(${Object.values(months).join("|")})`,"i").test(dayMonthStr)) {
+        const [day, month] = dayMonthStr.split(" ");
+        if (months.indexOf(month) !== -1 && !isNaN(Number(day))) {
+            const monthIndex = months.indexOf(month);
+
+            const date = new Date(new Date().getFullYear(),monthIndex, Number(day));
+
+            return date.toISOString();
+        } 
+    } 
+    return "";
 }
