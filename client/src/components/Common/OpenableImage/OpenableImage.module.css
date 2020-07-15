@@ -1,18 +1,26 @@
 .next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    right: 30px;
-    padding: 500px 20px;
-    box-sizing: content-box
-
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 30px;
+  padding: 500px 20px;
+  box-sizing: content-box;
 }
 
 .prev {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    left: 30px;
-    padding: 500px 20px;
-    box-sizing: content-box
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 30px;
+  padding: 500px 20px;
+  box-sizing: content-box;
+}
+
+@media screen and (max-width: 900px) {
+  .next {
+    right: 10px;
+  }
+  .prev {
+    left: 10px;
+  }
 }

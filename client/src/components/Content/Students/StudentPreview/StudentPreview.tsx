@@ -21,7 +21,7 @@ export const BAN = gql`
     mutation BanStudent($vkId: Int!, $isBan: Boolean){
         banStudent(vkId: $vkId, isBan: $isBan) {
             banned
-            vkId
+            _id
         }
     }
 `;

@@ -66,6 +66,7 @@ export const CHANGE_CLASS = gql`
         changeClass(vkId: $vkId, newClassName: $className) {
             __typename
             vkId
+            _id
             className
         }
     }
