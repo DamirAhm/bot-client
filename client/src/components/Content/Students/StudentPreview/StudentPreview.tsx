@@ -14,7 +14,8 @@ type Props = {
     banned: boolean
     role: roles,
     searchText?: string
-    fullName: string
+    fullName: string, 
+    _id: string
 }
 
 export const BAN = gql`
@@ -22,13 +23,14 @@ export const BAN = gql`
         banStudent(vkId: $vkId, isBan: $isBan) {
             banned
             _id
+            __typename
         }
     }
 `;
 
-const StudentPreview: React.FC<Props> = ({ vkId, role, banned, className, searchText, fullName: name }) => {
+const StudentPreview: React.FC<Props> = ({ vkId, role, banned, className, searchText, fullName: name, _id }) => {
     const [banStudent] = useMutation<
-        { banStudent: { banned: boolean, vkId: number, __typename: string }, __typename: string }, { vkId: number, isBan?: boolean }
+        { banStudent: { banned: boolean, _id: string, __typename: string }, __typename: string }, { vkId: number, isBan?: boolean }
     >(BAN, {
         variables: {
             vkId,
@@ -38,7 +40,7 @@ const StudentPreview: React.FC<Props> = ({ vkId, role, banned, className, search
             __typename: "Mutation",
             banStudent: {
                 banned: !banned,
-                vkId,
+                _id,
                 __typename: "Student"
             }
         }

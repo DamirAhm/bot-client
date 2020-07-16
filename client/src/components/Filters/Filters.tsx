@@ -15,7 +15,7 @@ const Filters: React.FC<Props> = ({sortsList, setSearchText, setSort, ...props})
     const [text, setText] = useState("");
 
     return (
-        <div {...props}>
+        <div {...props} className={props.className || styles.filterContainer}>
             <div className={styles.filters}>
                 {setSearchText &&
                 <div className={styles.search}>

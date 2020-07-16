@@ -63,6 +63,12 @@ html {
 .ban * {
   color: var(--negative);
 }
+.negative,
+.trash,
+.remove,
+.ban {
+  cursor: pointer;
+}
 
 .positive *,
 .confirm *,

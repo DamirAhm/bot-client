@@ -11,7 +11,9 @@
     "start": "npm run start --prefix ./server",
     "build": "npm run build --prefix ./client",
     "install": "npm install --prefix ./server",
-    "postinstall": "npm install --prefix ./client"
+    "postinstall": "npm install --prefix ./client",
+    "start:server": "supervisor index --prefix ./server",
+    "start:client": "npm start --prefix ./client"
   },
   "repository": {
     "type": "git",

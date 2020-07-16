@@ -1,48 +1,54 @@
+.filterContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .filters {
-    display: flex;
-    justify-content: space-between;
-    box-sizing: border-box;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: 90%;
 }
 
 .filters input,
 .filters select {
-    border-radius: 10px;
-    padding: 5px 10px;
-    height: 100%;
+  border-radius: 10px;
+  padding: 5px 10px;
+  height: 100%;
 }
 
 .filters .search {
-    color: var(--main);
-    width: 60%;
-    max-width: 130px;
+  color: var(--main);
+  width: 60%;
+  max-width: 130px;
 }
 
 .filters .sorts {
-    width: 40%;
-    display: flex;
-    flex-direction: row-reverse;
+  width: 40%;
+  display: flex;
+  flex-direction: row-reverse;
 }
 
 .sorts * {
-    color: var(--main) !important;
-    font-size: 1.2rem;
+  color: var(--main) !important;
+  font-size: 1.2rem;
 }
 
 @media screen and (max-width: 776px) {
-    .filters input,
-    .filters select {
-        padding: 3px 5px;
-        background-color: #fff;
-        width: 100%;
-        color: var(--main) !important;
-    }
+  .filters input,
+  .filters select {
+    padding: 3px 5px;
+    background-color: #fff;
+    width: 100%;
+    color: var(--main) !important;
+  }
 
-    .filters .search {
-        /*width: 60px;*/
-    }
+  .filters .search {
+    /*width: 60px;*/
+  }
 
-    .filters {
-        padding: 0 15px;
-    }
+  .filters {
+    padding: 0 15px;
+  }
 }

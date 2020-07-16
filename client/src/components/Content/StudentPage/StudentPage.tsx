@@ -104,10 +104,7 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
         { removed: { vkId: number, __typename: string }, __typename: string },
         { vkId: number }>(DELETE_STUDENT);
 
-    const banStudent = (isBan: boolean) => {
-        const content = document.querySelector(".content");
-        content?.classList.remove("unbanned", "banned");
-        content?.classList.add(!isBan ? "unbanned" : "banned");
+    const banStudent = (isBan: boolean, _id: string) => {
         ban({
             variables: {
                 vkId,
@@ -117,7 +114,7 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
                 __typename: "Mutation",
                 banStudent: {
                     banned: isBan,
-                    vkId,
+                    _id,
                     __typename: "Student"
                 }
             }
@@ -228,7 +225,7 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
     return (
         <Suspender query={{ data, loading, error }}>
             {(data: ({ studentOne: Student & { __typename: string } })) => {
-                const { fullName, banned, __typename, ...info } = data.studentOne;
+                const { fullName, banned, __typename, _id, ...info } = data.studentOne;
                 info.className = info.className;
                 info.lastHomeworkCheck = info.lastHomeworkCheck === "1970-01-01T00:00:00.000Z" ? "Никогда" : parseDate(info.lastHomeworkCheck, "YYYY.MMn.dd hh:mm");
 
@@ -248,8 +245,8 @@ const StudentPage: React.FC<Props> = ({ vkId }) => {
                             {!changing &&
                                 <>
                                     {banned ?
-                                        <FaRegCheckCircle onClick={() => banStudent(false)} className={`${styles.icon} unban`} size={iconSize} /> :
-                                        <FaRegTimesCircle onClick={() => banStudent(true)} className={`${styles.icon} ban`} size={iconSize} />
+                                        <FaRegCheckCircle onClick={() => banStudent(false, _id)} className={`${styles.icon} unban`} size={iconSize} /> :
+                                        <FaRegTimesCircle onClick={() => banStudent(true, _id)} className={`${styles.icon} ban`} size={iconSize} />
                                     }
                                     <IoIosTrash onClick={deleteStudent} className={`${styles.icon} remove`} size={iconSize} />
                                 </>

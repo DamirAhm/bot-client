@@ -16,6 +16,7 @@ export const GET_STUDENTS = gql`
             role
             banned
             fullName
+            _id
         }
     }
 `;
@@ -26,6 +27,7 @@ export type studentPreview = {
     role: roles
     banned: boolean
     fullName: string
+    _id: string
 }
 
 export type sort<T = any> = {
