@@ -28,7 +28,7 @@ const Searcher: React.FC<Props> = ({ changeHandler }) => {
     const [text, setText] = useState("");
 
     return (
-        <div style={divStyle}>
+        <div style={divStyle} onClick={e => e.stopPropagation()}>
             <input style={inputStyle} type="text" value={text} onChange={e => (setText(e.target.value), changeHandler(e.target.value))} />
             <MdClose onClick={() => (setText(""), changeHandler(""))} style={closeStyle} className={"negative"} size={15} />
         </div>
