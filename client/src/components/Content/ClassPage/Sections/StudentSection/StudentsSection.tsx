@@ -26,9 +26,11 @@ const GET_STUDENTS_FOR_CLASS = gql`
     fragment StudentPreview on Student {
         vkId
         className
-        role,
-        banned,
+        banned
+        role
         fullName
+        _id
+        __typename
     }
     query GetStudents($className: String!){
         students: studentsForClass(className: $className) {
@@ -43,6 +45,7 @@ const ADD_STUDENT_TO_CLASS = gql`
         banned
         role
         fullName
+        _id
         __typename
     }
     mutation AddStudentToClass($vkId: Int!, $className: String!) {
@@ -56,7 +59,12 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
     const { data, loading, error } = useQuery<{ students: studentPreview[] }>(GET_STUDENTS_FOR_CLASS, { variables: { className } });
 
     const [remove] = useMutation<{ removed: boolean }, { vkId: number }>(REMOVE_STUDENT_FROM_CLASS);
-    const [changeClass] = useMutation<WithTypename<{ student: WithTypename<studentPreview> }>, { vkId: number, className: string }>(ADD_STUDENT_TO_CLASS)
+    const [changeClass] = useMutation<WithTypename<{ 
+        student: WithTypename<studentPreview> 
+    }>, { 
+        vkId: number, 
+        className: string 
+    }>(ADD_STUDENT_TO_CLASS)
 
     const [modalOpened, setModalOpened] = useState(false);
     const { items, setFilter, setItems } = useList<studentPreview>([]);

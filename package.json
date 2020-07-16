@@ -12,7 +12,7 @@
     "build": "npm run build --prefix ./client",
     "install": "npm install --prefix ./server",
     "postinstall": "npm install --prefix ./client",
-    "start:server": "supervisor index --prefix ./server",
+    "start:server": "npm run start:dev --prefix ./server",
     "start:client": "npm start --prefix ./client"
   },
   "repository": {
