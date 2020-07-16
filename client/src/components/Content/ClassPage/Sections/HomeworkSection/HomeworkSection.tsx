@@ -209,23 +209,26 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                             e.stopPropagation(), 
                             setHomeworkCreating(true)
                         )} />
-                    </div>}>
+                    </div>
+                }
+            >
                 <Suspender query={homeworkQuery}>
                     {(data: { homework: homework[] }) => {
                         const [oldHw, newHw] = parseContentByDate(data.homework);
                         const parsedHw = objectForEach(newHw, parseHomeworkByLesson);
                         const parsedOldHw = objectForEach(oldHw, parseHomeworkByLesson);
                         return <div className={styles.content}>
-                            <Accordion
-                                initiallyOpened={false}
-                                Head={({ opened, onClick }) =>
-                                    <p className={`${styles.date} ${styles.accordion}`} onClick={onClick}>
-                                            Старое дз
-                                            <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} />
-                                    </p>
-                                } 
-                                Body={() =>
-                                    <>{Object.keys(parsedOldHw).map(hwDate => 
+                            {Object.keys(parsedOldHw).length > 0 &&
+                                <Accordion
+                                    initiallyOpened={false}
+                                    Head={({ opened, onClick }) =>
+                                        <p className={`${styles.date} ${styles.accordion}`} onClick={onClick}>
+                                                Старое дз
+                                                <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} />
+                                        </p>
+                                    } 
+                                    Body={() =>
+                                        <>{Object.keys(parsedOldHw).map(hwDate => 
                                         <Accordion
                                             initiallyOpened={false}
                                             className={styles.offseted}
@@ -259,8 +262,9 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                             }
                                         />
                                     )}</>
-                                }
-                            />
+                                    }
+                                />
+                            }
                             {Object.keys(parsedHw).map(hwDate => 
                                 <Accordion
                                     key={hwDate}
