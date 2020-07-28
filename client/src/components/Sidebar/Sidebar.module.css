@@ -1,15 +1,12 @@
 .sidebar {
   height: 100vh;
   background-color: var(--main);
-  display: flex;
   flex-direction: column;
   align-items: center;
   width: fit-content;
   padding-top: 20px;
   min-width: 50px;
-  position: fixed;
   display: flex;
-  z-index: 99;
   transition: 1s;
 }
 
@@ -27,10 +24,10 @@
   font-size: 3rem;
   line-height: 35px;
   text-align: center;
-  padding: 40px 0 40px 0;
+  padding: 40px 0;
   text-decoration: none;
   width: 150px;
-  box-sizing: content-box;
+  max-width: 100%;
 }
 
 .active {
