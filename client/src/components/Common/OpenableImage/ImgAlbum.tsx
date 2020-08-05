@@ -7,13 +7,18 @@ type Props = {
   Stab?: React.FC<React.HTMLAttributes<HTMLDivElement> & { onClick: () => void }> 
 }
 
-const connectImages: (atts: attachment[]) => (OpenableImgProps & {_id: string})[] = (attachments) => {
+interface Image {
+    url: string
+    _id?: string
+}
+
+export const connectImages: (atts: Image[]) => (OpenableImgProps & {_id: string})[] = (attachments) => {
     const parsedAttachments: (OpenableImgProps & {_id: string})[] = [];
 
     for (let i = 0; i < attachments.length; i++) {
         const newImgProps: (OpenableImgProps & {_id: string}) = {} as (OpenableImgProps & {_id: string});
         newImgProps.src = attachments[i].url;
-        newImgProps._id = attachments[i]._id;
+        newImgProps._id = attachments[i]._id || i.toString();
         parsedAttachments.push(newImgProps);
     }
     if (parsedAttachments.length > 1) {
