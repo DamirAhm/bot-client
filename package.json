@@ -1,28 +1,28 @@
 {
-  "name": "homework-bot-client",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "engines": {
-    "node": "14.*",
-    "npm": "6.*"
-  },
-  "scripts": {
-    "start": "npm run start --prefix ./server",
-    "build": "npm run build --prefix ./client",
-    "install": "npm install --production --prefix ./server",
-    "postinstall": "npm install --production --prefix ./client",
-    "start:server": "npm run start:dev --prefix ./server",
-    "start:client": "npm start --prefix ./client"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/Proger3228/bot-client.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Proger3228/bot-client/issues"
-  },
-  "homepage": "https://github.com/Proger3228/bot-client#readme"
+    "name": "homework-bot-client",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "engines": {
+        "node": "14.*",
+        "npm": "6.*"
+    },
+    "scripts": {
+        "start": "npm run start --prefix ./server",
+        "build": "npm run build --prefix ./client",
+        "install": "npm install --prefix ./server",
+        "postinstall": "npm install --prefix ./client",
+        "start:server": "npm run start:dev --prefix ./server",
+        "start:client": "npm start --prefix ./client"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/Proger3228/bot-client.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/Proger3228/bot-client/issues"
+    },
+    "homepage": "https://github.com/Proger3228/bot-client#readme"
 }
