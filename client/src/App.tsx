@@ -9,7 +9,7 @@ const Students = lazy(() => import("./components/Content/Students/Students"));
 
 function App() {
     return (
-        <div className={`wrapper`} onClick={() => document.querySelector(`.wrapper`)?.classList.remove("sidebarOpened")}>
+        <div className={`wrapper`}>
             <div className={`app`}>
                 <Sidebar />
                 <div className="content">

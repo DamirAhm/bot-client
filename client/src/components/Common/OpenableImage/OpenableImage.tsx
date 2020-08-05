@@ -56,11 +56,11 @@ export const ModalImg: React.FC<ModalImgProps> = ({ close, nextImg, prevImg, ...
 
     return <div className="modal" onMouseDown={close}>
         {prev &&
-            <MdNavigateBefore size={40} className={styles.prev} onMouseDown={(e) => toImg(prev, e)} />
+            <MdNavigateBefore data-testid="prevImg" size={40} className={styles.prev} onMouseDown={(e) => toImg(prev, e)} />
         }
         <img style={{ width: "100%", maxWidth: "80vh" }} {...props} src={src} onMouseDown={e => e.stopPropagation()} />
         {next &&
-            <MdNavigateNext size={40} className={styles.next} onMouseDown={(e) => toImg(next, e)} />
+            <MdNavigateNext data-testid="nextImg" size={40} className={styles.next} onMouseDown={(e) => toImg(next, e)} />
         }
     </div>
 }
