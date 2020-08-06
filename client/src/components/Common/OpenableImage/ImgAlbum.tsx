@@ -3,11 +3,11 @@ import { attachment } from "../../../types";
 import OpenableImg, { OpenableImgProps, ImgStab } from "./OpenableImage";
 import styles from "./OpenableImage.module.css";
 type Props = {
-  images: attachment[]
+  images: (attachment & React.ImgHTMLAttributes<HTMLImageElement>)[]
   Stab?: React.FC<React.HTMLAttributes<HTMLDivElement> & { onClick: () => void }> 
 }
 
-interface Image {
+export interface Image {
     url: string
     _id?: string
 }
@@ -16,9 +16,13 @@ export const connectImages: (atts: Image[]) => (OpenableImgProps & {_id: string}
     const parsedAttachments: (OpenableImgProps & {_id: string})[] = [];
 
     for (let i = 0; i < attachments.length; i++) {
+        const attachment = {...attachments[i]};
         const newImgProps: (OpenableImgProps & {_id: string}) = {} as (OpenableImgProps & {_id: string});
-        newImgProps.src = attachments[i].url;
-        newImgProps._id = attachments[i]._id || i.toString();
+        newImgProps.src = attachment.url;
+        newImgProps._id = attachment._id || i.toString();
+        delete attachment.url;
+        delete attachment._id;
+        Object.assign(newImgProps, attachment);
         parsedAttachments.push(newImgProps);
     }
     if (parsedAttachments.length > 1) {
@@ -48,7 +52,7 @@ const ImgAlbum: React.FC<Props> = ({images, Stab}) => {
                 Stab={Stab} />
             : <>{
                 parsedImages.map(
-                    (at, i) => <OpenableImg key={at._id} className={styles.attach} alt="Фото дз" {...parsedImages[i]} />
+                    (at) => <OpenableImg key={at._id} className={styles.attach} alt="Фото дз" {...at} />
                 )}
             </>
         }</>
