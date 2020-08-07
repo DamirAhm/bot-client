@@ -17,15 +17,14 @@ test("returns right search params", () => {
         return <div></div>;
     };
 
-    render(
-        <Router history={history}>
-            <TestComp />
-        </Router>
-    );
-
     act(() => {
-        history.push({ pathname: "/", search: "?vkId=0&index=-1" });
+        render(
+            <Router history={history}>
+                <TestComp />
+            </Router>
+        );
     });
+
     expect(params).toEqual({ vkId: "0", index: "-1" });
     act(() => {
         history.push({ pathname: "/", search: "?a=b&b=c" });
@@ -35,6 +34,32 @@ test("returns right search params", () => {
         history.push({ pathname: "/", search: "?" });
     });
     expect(params).toEqual({});
+});
+test("param maps works", () => {
+    const history = createMemoryHistory({
+        initialEntries: ["/?vkId=0&index=-1&plus1=0"],
+    });
+
+    let params;
+
+    const TestComp = () => {
+        params = useQueryParams([
+            ["vkId", Number],
+            ["plus1", (v) => +v + 1],
+        ]);
+
+        return <div></div>;
+    };
+
+    act(() => {
+        render(
+            <Router history={history}>
+                <TestComp />
+            </Router>
+        );
+    });
+
+    expect(params).toEqual({ vkId: 0, index: "-1", plus1: 1 });
 });
 
 test("parseQueryString parses string in the right way", () => {
