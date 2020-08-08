@@ -4,16 +4,11 @@ import { useState, useEffect, useMemo } from "react";
 type map = [string, (val: string) => Object];
 export const parseQueryString = (qs: string): { [key: string]: string } => {
     if (qs != undefined) {
+        if (qs.trim() === "" || qs.trim() === "?") return {};
         if (/\?(.+=.+&)*(.+=.+)?/.test(qs)) {
             qs = qs.slice(1);
-
-            if (qs.trim() !== "") {
-                const entries = qs.split("&");
-
-                return Object.fromEntries(entries.map((en) => en.split("=")));
-            } else {
-                return {};
-            }
+            const entries = qs.split("&");
+            return Object.fromEntries(entries.map((en) => en.split("=")));
         } else {
             throw new Error(
                 "Query string does not match search string format, you passed: " +
@@ -44,12 +39,16 @@ export const mapParams = (
     return Object.fromEntries(mappedEntries);
 };
 
-const useQueryParams = (maps: map[] = []) => {
+const useQueryParams = <T extends { [key: string]: any } = {}>(
+    maps: map[] = []
+): T => {
     const location = useLocation();
 
     //@ts-ignore after making push to history location get replaced by {action, location}
     const { search } = location.action ? location.location : location;
-    const [queryParams, setQueryParams] = useState({});
+    const [queryParams, setQueryParams] = useState<T>(
+        parseQueryString(search) as T
+    );
 
     useEffect(() => {
         const newParams = parseQueryString(search);
