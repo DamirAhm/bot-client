@@ -3,6 +3,8 @@ import { useState, useEffect, useMemo } from "react";
 
 type map = [string, (val: string) => Object];
 export const parseQueryString = (qs: string): { [key: string]: string } => {
+    if (qs.trim() === "" || qs.trim() === "?") return {};
+
     if (qs != undefined) {
         if (qs.trim() === "" || qs.trim() === "?") return {};
         if (/\?(.+=.+&)*(.+=.+)?/.test(qs)) {
