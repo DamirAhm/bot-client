@@ -22,7 +22,7 @@
         "react-router-dom": "^5.1.2",
         "react-scripts": "^3.4.1",
         "reset.css": "^2.0.2",
-        "typescript": "3.8.3"
+        "typescript": "^4.0.1-rc"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "^4.2.4",
@@ -30,7 +30,8 @@
         "@testing-library/user-event": "^7.1.2"
     },
     "scripts": {
-        "start": "react-scripts start",
+        "start": "env HTTPS=true react-scripts start",
+        "vk-tunnel": "vk-tunnel --insecure=1 --http-protocol=https --ws-protocol=wss --host=localhost --port=3000",
         "build": "react-scripts build",
         "test": "env CI=true react-scripts test --no-watchman --all",
         "test:dev": "react-scripts test",

@@ -81,3 +81,11 @@ export type Class = {
 
 export type change = content;
 export type WithTypename<T> = T & { __typename: string };
+
+export type User = {
+    last_name: string;
+    first_name: string;
+    uid: string;
+    photo: string;
+    photo_rec: string;
+};

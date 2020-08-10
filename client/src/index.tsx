@@ -69,7 +69,7 @@ const resolvers = {
             return null;
         }
     }
-};
+}; 
 
 const typeDefs = gql`
     fragment StudentPreview on Student {
@@ -92,9 +92,8 @@ const typeDefs = gql`
     }
 `;
 
-
 const client = new ApolloClient({
-    uri: document.location.hostname === "localhost" ? "http://localhost:8080/graphql" : "/graphql",
+    uri: process.env.NODE_ENV === "development" ? "http://localhost:8080/graphql" : "/graphql",
     cache: new InMemoryCache({
         dataIdFromObject: (obj: any) => {
             if (obj._id) {

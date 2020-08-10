@@ -379,7 +379,7 @@ type CreateHomeworkModalProps = {
     initContent?: Partial<homework> 
 }
 const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({ returnHomework, close, initContent = {} }) => {
-    const { className } = useParams();
+    const { className } = useParams<{className: string}>();
 
     const scheduleQuery = useQuery<{ schedule: string[][] }>(GET_SCHEDULE, { variables: { className } });
     const lessonsQuery = useQuery<{ lessons: string[] }>(GET_LESSONS);

@@ -12,10 +12,7 @@ import { BAN } from "../Students/StudentPreview/StudentPreview";
 import { Redirect } from 'react-router';
 import { GET_STUDENTS } from "../Students/Students";
 import Suspender from "../../Common/Suspender";
-
-interface Props {
-    vkId: number
-}
+import { useParams } from "react-router-dom";
 
 export const GET_STUDENT = gql`
     query GetStudent($vkId: Float){
@@ -81,7 +78,8 @@ export const DELETE_STUDENT = gql`
 `
 
 const token = "0c44f72c9eb8568cdc477605a807a03b5f924e7cf0a18121eff5b8ba1b886f3789496034c2cc75bc83924";
-const StudentPage: React.FC<Props> = ({ vkId }) => {
+const StudentPage: React.FC = ({}) => {
+    const {vkId} = useParams<{vkId: string}>();
     const [changing, setChanging] = useState(false);
     const [diff, setDiff] = useState<{ [key: string]: any }>({});
     const [removed, setRemoved] = useState(false);

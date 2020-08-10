@@ -9,11 +9,7 @@ import { gql } from 'apollo-boost';
 import { useMutation } from '@apollo/react-hooks';
 import { WithTypename, Class } from '../../../types';
 import { GET_CLASSES } from "../Classes/Classes";
-import { RouterProps } from 'react-router';
-
-type Props = {
-    className: string
-} & RouterProps
+import { Redirect, useParams } from "react-router-dom";
 
 const REMOVE_CLASS = gql`
     mutation RemoveClass($className: String!) {
@@ -23,8 +19,9 @@ const REMOVE_CLASS = gql`
     } 
 `
 
-const ClassPage: React.FC<Props> = ({ className, history }) => {
+const ClassPage: React.FC = ({ }) => {
     const [removeClass] = useMutation<WithTypename<{ classRemoveOne: WithTypename<{ name: string }> }>, { className: string }>(REMOVE_CLASS);
+    const {className} = useParams<{className: string}>();
 
     const remove = () => {
         removeClass({
@@ -44,7 +41,7 @@ const ClassPage: React.FC<Props> = ({ className, history }) => {
                         }
                     });
 
-                    history.push("/classes");
+                    return <Redirect to="/classes" />;
                 }
             }
         })

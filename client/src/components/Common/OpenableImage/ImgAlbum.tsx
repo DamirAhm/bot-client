@@ -10,6 +10,7 @@ type Props = {
 export interface Image {
     url: string
     _id?: string
+    
 }
 
 export const connectImages: (atts: Image[]) => (OpenableImgProps & {_id: string})[] = (attachments) => {
@@ -20,9 +21,10 @@ export const connectImages: (atts: Image[]) => (OpenableImgProps & {_id: string}
         const newImgProps: (OpenableImgProps & {_id: string}) = {} as (OpenableImgProps & {_id: string});
         newImgProps.src = attachment.url;
         newImgProps._id = attachment._id || i.toString();
-        delete attachment.url;
-        delete attachment._id;
-        Object.assign(newImgProps, attachment);
+        
+        const {url, _id, ...rest} = attachment;
+
+        Object.assign(newImgProps, rest);
         parsedAttachments.push(newImgProps);
     }
     if (parsedAttachments.length > 1) {

@@ -80,7 +80,7 @@ const findMaxPhotoResolution = (photo: vkPhoto) => photo.sizes.reduce<{ url: str
 const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onChangeTo, onChangeText, onAddAttachment, onRemoveAttachment, withConfirm = true }) => {
     const [newContent, dispatch] = useReducer(reducer, content);
 
-    const { className } = useParams();
+    const { className } = useParams<{className: string}>();
 
     const onPhotoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
         try {
