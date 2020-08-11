@@ -1,17 +1,21 @@
 import React from "react"
 import { Redirect } from "react-router-dom"
-import { IsAuthContext } from "../App";
+import { RedirectContext } from "../App";
+import { roles } from "../types";
 
-const withAuth = (Component: React.FC): JSX.Element => {
-    return <IsAuthContext.Consumer>
-        {(isAuth) =>
-            <> {isAuth ?
-                <Component /> : 
-                <Redirect to="/auth" />
+const withRedirect = (Component: React.FC): JSX.Element => {
+    return <RedirectContext.Consumer>
+        {({isAuth, role, className}) =>
+            <> {isAuth ? 
+                <>{role === roles.admin 
+                    ? <Component /> 
+                    : <Redirect to={`/classes/${className}`}/>
+                }</>
+                : <Redirect to="/auth" />
             }
             </>
         }
-    </IsAuthContext.Consumer>
+    </RedirectContext.Consumer>
 }
 
-export default withAuth;
+export default withRedirect;

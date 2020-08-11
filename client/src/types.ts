@@ -85,7 +85,9 @@ export type WithTypename<T> = T & { __typename: string };
 export type User = {
     last_name: string;
     first_name: string;
-    uid: string;
+    uid: number;
     photo: string;
     photo_rec: string;
+    role: roles;
+    className: string;
 };

@@ -3,7 +3,7 @@ import { User } from "../../../types"
 import styles from './Auth.module.css'
 
 type Props = {
-    setUser: (user: User) => void
+    setUser: (user: Omit<User, "role">) => void
 }
 
 const Auth: React.FC<Props> = ({setUser}) => {
