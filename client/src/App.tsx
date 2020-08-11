@@ -38,19 +38,25 @@ function App() {
         <IsAuthContext.Provider value={user !== null}>
             <div className={`wrapper`}>
                 <div className={`app`}>
-                    <Sidebar user={user} setUser={setUser}/>
-                    <div className="content">
-                        <Suspense fallback={<div> Loading... </div>}>
-                        <Switch>
-                            <Route exact path="/classes" component={() => withAuth(Classes)} />
-                            <Route path="/classes/:className" component={() => withAuth(ClassPage)} />
-                            <Route exact path="/students" component={() => withAuth(Students)} />
-                            <Route path="/students/:vkId" component={() => withAuth(StudentPage)} />
-                            <Route exact path="/auth" render={() => user === null ? <Auth setUser={onUser}/> : <Redirect to="/classes" />} />
-                            <Route path="*" render={() => <Redirect to={user === null ? "/auth" : "/classes"} />} />
-                        </Switch>
+                    {user === null 
+                        ? <Suspense fallback={<div>loading...</div>}>
+                            <Auth setUser={onUser}/>
                         </Suspense>
-                    </div>
+                        : <>
+                            <Sidebar user={user} setUser={setUser}/>
+                            <div className="content">
+                                <Suspense fallback={<div> Loading... </div>}>
+                                <Switch>
+                                    <Route exact path="/classes" component={() => withAuth(Classes)} />
+                                    <Route path="/classes/:className" component={() => withAuth(ClassPage)} />
+                                    <Route exact path="/students" component={() => withAuth(Students)} />
+                                    <Route path="/students/:vkId" component={() => withAuth(StudentPage)} />
+                                    <Route path="*" render={() => <Redirect to={"/classes"} />} />
+                                </Switch>
+                                </Suspense>
+                            </div>
+                        </> 
+                    }
                 </div>
             </div>
         </IsAuthContext.Provider>
