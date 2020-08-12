@@ -2,10 +2,7 @@ import React, { useState } from "react";
 import styles from "./StudentPage.module.css";
 import { gql } from "apollo-boost";
 import { useQuery, useMutation } from "@apollo/react-hooks";
-import { Student } from "../../../types";
-import { FaPen, FaRegCheckCircle, FaRegTimesCircle } from "react-icons/fa";
-import { MdClose, MdCheck } from "react-icons/md";
-import { IoIosTrash } from "react-icons/io";
+import { redactorOptions, Student } from "../../../types";
 import StudentInfo from "./StudentInfo/StudentInfo";
 import { parseDate } from "../../../utils/date";
 import { BAN } from "../Students/StudentPreview/StudentPreview";
@@ -13,6 +10,7 @@ import { Redirect } from 'react-router';
 import { GET_STUDENTS } from "../Students/Students";
 import Suspender from "../../Common/Suspender";
 import { useParams } from "react-router-dom";
+import Options from "../../Common/Options/Options";
 
 export const GET_STUDENT = gql`
     query GetStudent($vkId: Float){
@@ -232,21 +230,39 @@ const StudentPage: React.FC = ({}) => {
                             <div className={styles.name}> {fullName} </div>
                         </div>
                         <div className={styles.icons}>
-                            {changing ?
-                                <>
-                                    <MdClose onClick={() => (setDiff({}), setChanging(false))} className={`negative ${styles.icon}`} size={iconSize} />
-                                    <MdCheck onClick={() => { updateStudent(); setChanging(false) }} className={`positive ${styles.icon}`} size={iconSize} />
-                                </> :
-                                <FaPen onClick={() => setChanging(true)} className={`${styles.icon} ${styles.pen}`} size={iconSize * 0.9} />
-                            }
-                            {!changing &&
-                                <>
-                                    {banned ?
-                                        <FaRegCheckCircle onClick={() => banStudent(false, _id)} className={`${styles.icon} unban`} size={iconSize} /> :
-                                        <FaRegTimesCircle onClick={() => banStudent(true, _id)} className={`${styles.icon} ban`} size={iconSize} />
-                                    }
-                                    <IoIosTrash onClick={deleteStudent} className={`${styles.icon} remove`} size={iconSize} />
-                                </>
+                            {changing 
+                                ? <Options 
+                                    include={[redactorOptions.reject, redactorOptions.confirm]} 
+                                    props={{
+                                        [redactorOptions.reject]: {
+                                            className: styles.icon + " negative",
+                                            onClick: () => (setDiff({}), setChanging(false)),
+                                        },
+                                        [redactorOptions.confirm]: {
+                                            className: styles.icon + " positive",
+                                            onClick: () => { updateStudent(); setChanging(false) },
+                                            allowOnlyAdmin: true,
+                                        }
+                                    }}
+                                    size={iconSize}
+                                />
+                                : <Options 
+                                    include={[redactorOptions.change, redactorOptions.delete]}
+                                    props={{ 
+                                        [redactorOptions.change]: {
+                                            onClick: () => setChanging(true),
+                                            className: `${styles.icon} ${styles.pen}`, 
+                                            size: iconSize * 0.8
+                                        },
+                                        [redactorOptions.delete]: {
+                                            onClick: deleteStudent,
+                                            className: `${styles.icon} remove`,
+                                        }
+                                    }}
+                                    size={iconSize}
+                                    withRoleControl
+                                    allowOnlyAdmin
+                                />
                             }
                         </div>
                     </div>

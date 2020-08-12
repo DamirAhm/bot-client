@@ -2,16 +2,20 @@
     background-color: var(--secondary);
     padding: 20px;
 }
- 
+
 .header {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
+    width: 100%;
 }
 .header label {
     width: fit-content;
     display: flex;
     align-items: center;
+}
+.header * {
+    cursor: pointer;
 }
 
 .contentChanger section:not(:last-of-type) {
@@ -28,7 +32,7 @@
 }
 
 .title {
-    margin-bottom: 5px; 
+    margin-bottom: 5px;
     font-size: 1.8rem;
 }
 
@@ -83,4 +87,3 @@
     box-sizing: border-box;
     width: 100%;
 }
-

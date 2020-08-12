@@ -2,22 +2,18 @@ import React, { useState } from 'react'
 import styles from '../Common/ContentSection.module.css'
 import InfoSection from '../../InfoSection/InfoSection';
 import { gql } from 'apollo-boost';
-import { useQuery, useMutation, useApolloClient } from '@apollo/react-hooks';
-import { content, attachment, WithTypename, homework } from '../../../../../types';
+import { useQuery, useMutation } from '@apollo/react-hooks';
+import { content, attachment, WithTypename, homework, redactorOptions } from '../../../../../types';
 import Suspender from '../../../../Common/Suspender';
-import { parseDate, months } from '../../../../../utils/date';
 import Accordion from "../../../../Common/Accordion";
 import { GoTriangleRight } from "react-icons/go";
-import OpenableImg, { ImgStab, OpenableImgProps } from '../../../../Common/OpenableImage/OpenableImage';
-import { FaPen } from 'react-icons/fa';
-import { MdClose, MdCheck, MdAdd } from "react-icons/md";
 import { useParams } from "react-router-dom";
 import ReactDOM from "react-dom";
 import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
 import { GET_SCHEDULE, GET_LESSONS } from "../ScheduleSection/ScheduleSection";
-import ConfirmReject from "../../../../Common/ConfirmReject";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
 import { parseContentByDate, objectForEach, getDateStrFromDayMonthStr } from "../../../../../utils/functions";
+import Options from "../../../../Common/Options/Options";
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -147,10 +143,12 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
             })
         }
     }
-    const update = (homeworkId: string | undefined, updates: Partial<homework>) => {
+    const update = (homeworkId: string | undefined, updates: Partial<WithTypename<homework>>) => {
+        const {__typename, ...updatesWithoutTypename} = updates; 
+
         if (homeworkId) {
             updateHomework({
-                variables: { className, homeworkId, updates: { ...updates, attachments: updates.attachments?.map(({ __typename, ...att }) => att) } },
+                variables: { className, homeworkId, updates: { ...updatesWithoutTypename, attachments: updates.attachments?.map(({ __typename, ...att }) => att) } },
                 optimisticResponse: {
                     __typename: "Mutation",
                     updateHomework: {
@@ -194,8 +192,8 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
         })
         setInitContent({});
     }
-
-    return (
+ 
+    return ( 
         <>
             <InfoSection
                 name='Домашняя работа'
@@ -205,9 +203,9 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                             Домашняя работа 
                             <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                         </div>
-                        <MdAdd className={styles.addContent} size={30} onClick={(e) => (
-                            e.stopPropagation(), 
-                            setHomeworkCreating(true)
+                        <Add onClick={(e) => (
+                                    e.stopPropagation(), 
+                                    setHomeworkCreating(true)
                         )} />
                     </div>
                 }
@@ -274,7 +272,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                                 {hwDate}
                                                 <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                                             </div>
-                                            <MdAdd className={styles.addContent} size={30} onClick={(e) => (
+                                            <Add onClick={(e) => (
                                                 e.stopPropagation(), 
                                                 setHomeworkCreating(true), 
                                                 setInitContent({to: getDateStrFromDayMonthStr(hwDate)}) 
@@ -292,7 +290,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                                                 {lesson}
                                                                 <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                                                             </div>
-                                                            <MdAdd className={styles.addContent} size={30} onClick={(e) => (
+                                                            <Add onClick={(e) => (
                                                                 e.stopPropagation(), 
                                                                 setHomeworkCreating(true), 
                                                                 setInitContent({to: getDateStrFromDayMonthStr(hwDate), lesson})
@@ -366,8 +364,21 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
                 }
             </div>
             <div className={styles.controls}>
-                <FaPen onClick={() => setChanging(true)} className={`${styles.pen}`} size={15} />
-                <MdClose className={`${styles.remove}`} onClick={() => removeHomework(homework._id)} size={20} />
+                <Options 
+                    include={[redactorOptions.change, redactorOptions.delete]}
+                    props={{ 
+                        [redactorOptions.change]: {
+                            onClick: () => setChanging(true),
+                            className: `${styles.pen}`, 
+                            size: 15,
+                        },
+                        [redactorOptions.delete]: {
+                            onClick: () => removeHomework(homework._id),
+                            className: `${styles.remove}`, 
+                            size: 20,
+                        }
+                    }}
+                />
             </div>
         </div>
     )
@@ -405,7 +416,24 @@ const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({ returnHomewor
 
                         return <div className={styles.contentCreator} onMouseDown={e => e.stopPropagation()}>
                             <div className={styles.addition}>
-                                <ConfirmReject className={styles.confirmReject} confirm={() => checkUnEmptyContent() && (returnHomework(newHomework), close())} reject={close} />
+                                <div className={styles.confirmReject}>
+                                    <Options
+                                        include={[redactorOptions.reject, redactorOptions.confirm]}
+                                        props={{
+                                            [redactorOptions.confirm]: {
+                                                onClick: () => checkUnEmptyContent() && (returnHomework(newHomework), close()),
+                                                className: "positive",
+                                                allowOnlyRedactor: true
+                                            },
+                                            [redactorOptions.reject]: {
+                                                onClick: close,
+                                                className: "negative"
+                                            }
+                                        }}
+                                        style={{cursor: "pointer"}}
+                                        size={25}
+                                    />
+                                </div>
                                 <label className={styles.lessonPicker}>
                                     <h1 className={styles.title}>Урок </h1>
                                     <select
@@ -447,6 +475,19 @@ const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({ returnHomewor
             , changeContentModalRoot)
     }
     return null;
+}
+
+const Add: React.FC<{onClick: (e: React.MouseEvent<SVGElement, MouseEvent>) => void}> = ({onClick}) => {
+    return <Options 
+        include={redactorOptions.add} 
+        props={{
+            [redactorOptions.add]: {
+            className: styles.addContent,
+            size: 30,
+            onClick,
+            allowOnlyRedactor: true
+        }}}
+    />
 }
 
 const parseHomeworkByLesson = (homework: homework[]): { [lesson: string]: homework[] } => {

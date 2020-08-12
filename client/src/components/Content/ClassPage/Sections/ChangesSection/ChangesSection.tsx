@@ -3,16 +3,15 @@ import styles from '../Common/ContentSection.module.css'
 import InfoSection from '../../InfoSection/InfoSection';
 import { gql } from 'apollo-boost';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { content, attachment, WithTypename, change } from '../../../../../types';
+import { content, attachment, WithTypename, change, redactorOptions } from '../../../../../types';
 import Suspender from '../../../../Common/Suspender';
 import Accordion from "../../../../Common/Accordion";
 import { GoTriangleRight } from "react-icons/go"; 
-import { FaPen } from 'react-icons/fa';
-import { MdClose, MdAdd } from "react-icons/md";
 import ReactDOM from "react-dom";
 import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
 import { parseContentByDate, getDateStrFromDayMonthStr } from "../../../../../utils/functions";
+import Options from "../../../../Common/Options/Options";
  
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -138,10 +137,12 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
             })
         }
     }
-    const update = (changeId: string | undefined, updates: Partial<change>) => {
+    const update = (changeId: string | undefined, updates: Partial<WithTypename<change>>) => {
+        const {__typename, ...changeWithoutTypename} = updates;
+
         if (changeId) {
             updateChange({
-                variables: { className, changeId, updates: { ...updates, attachments: updates.attachments?.map(({ __typename, ...att }) => att) } },
+                variables: { className, changeId, updates: { ...changeWithoutTypename, attachments: updates.attachments?.map(({ __typename, ...att }) => att) } },
                 optimisticResponse: {
                     __typename: "Mutation",
                     updateChange: {
@@ -196,7 +197,7 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
                             Изменения в расписании 
                             <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                         </div>
-                        <MdAdd  className={styles.addContent} size={30} onClick={(e) => (e.stopPropagation(), setChangeCreating(true))} />
+                        <Add onClick={(e) => (e.stopPropagation(), setChangeCreating(true))} />
                     </div>}>
                 <Suspender query={changesQuery}>
                     {(data: { changes: WithTypename<change>[] }) => {
@@ -211,7 +212,7 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
                                                 {changeDate}
                                                 <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                                             </div>
-                                            <MdAdd className={styles.addContent} size={30} onClick={(e) => (
+                                            <Add onClick={(e) => (
                                                 e.stopPropagation(), 
                                                 setChangeCreating(true),
                                                 setInitContent({to: getDateStrFromDayMonthStr(changeDate)})
@@ -282,8 +283,21 @@ const Change: React.FC<changeProps> = ({ change, removeChange, updateChange }) =
                 }
             </div>
             <div className={styles.controls}>
-                <FaPen onClick={() => setUpdating(true)} className={`${styles.pen}`} size={15} />
-                <MdClose className={`${styles.remove}`} onClick={() => removeChange(change._id)} size={20} />
+                <Options 
+                    include={[redactorOptions.change, redactorOptions.delete]}
+                    props={{ 
+                        [redactorOptions.change]: {
+                            onClick: () => setUpdating(true),
+                            className: `${styles.pen}`, 
+                            size: 15,
+                        },
+                        [redactorOptions.delete]: {
+                            onClick: () => removeChange(change._id),
+                            className: `${styles.remove}`, 
+                            size: 20,
+                        }
+                    }}
+                />
             </div>
         </div>
     )
@@ -313,6 +327,19 @@ const CreateChangeModal: React.FC<CreateChangeModalProps> = ({ returnChange, clo
             , changeContentModalRoot)
     }
     return null;
+}
+
+const Add: React.FC<{onClick: (e: React.MouseEvent<SVGElement, MouseEvent>) => void}> = ({onClick}) => {
+    return <Options 
+        include={redactorOptions.add} 
+        props={{
+            [redactorOptions.add]: {
+            className: styles.addContent,
+            size: 30,
+            onClick,
+            allowOnlyRedactor: true
+        }}}
+    />
 }
 
 export default ChangesSection

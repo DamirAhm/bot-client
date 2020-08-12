@@ -66,7 +66,7 @@ function App() {
                         ? <Suspense fallback={<div>loading...</div>}>
                             <Auth setUser={onUser}/>
                         </Suspense>
-                        : <>
+                        : <> 
                             {user.role === roles.admin && 
                                 <Sidebar user={user} setUser={setUser}/>
                             }

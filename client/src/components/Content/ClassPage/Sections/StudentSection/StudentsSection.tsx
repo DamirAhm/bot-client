@@ -2,15 +2,14 @@ import React, { useState, useEffect } from 'react'
 import InfoSection from "../../InfoSection/InfoSection"
 import Suspender from '../../../../Common/Suspender';
 import StudentPreview from "../../../Students/StudentPreview/StudentPreview"
-import { MdClose } from "react-icons/md"
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
 import { studentPreview } from '../../../Students/Students';
-import { Student, WithTypename } from '../../../../../types';
+import { redactorOptions, Student, WithTypename } from '../../../../../types';
 import ReactDOM from "react-dom"
 import useList from "../../../../../hooks/useList";
-import { changeHandler } from '../../../StudentPage/StudentInfo/Changer';
 import styles from "./StudentSection.module.css";
+import Options from "../../../../Common/Options/Options";
 
 const modalEl = document.getElementById("chooseStudentModal");
 type Props = {
@@ -141,7 +140,14 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
                             {data.map(e =>
                                 <div className={styles.student} key={e.vkId}>
                                     <StudentPreview searchText={str}  {...e} />
-                                    <MdClose onClick={() => removeStudent(e.vkId)} size={30} className={`${styles.remove} remove`} />
+                                    <Options 
+                                        include={redactorOptions.reject}
+                                        props={{
+                                            onClick: () => removeStudent(e.vkId),
+                                            size: 30, 
+                                            className: `${styles.remove} remove`,
+                                        }}
+                                    />
                                 </div>
                             )}
                         </div>

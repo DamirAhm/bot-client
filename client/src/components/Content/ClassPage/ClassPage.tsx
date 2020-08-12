@@ -1,15 +1,15 @@
 import React from 'react'
 import styles from './ClassPage.module.css'
-import { IoIosTrash } from "react-icons/io";
 import StudentsSection from "./Sections/StudentSection/StudentsSection";
 import ScheduleSection from "./Sections/ScheduleSection/ScheduleSection";
 import HomeworkSection from "./Sections/HomeworkSection/HomeworkSection";
 import ChangesSection from "./Sections/ChangesSection/ChangesSection";
 import { gql } from 'apollo-boost';
 import { useMutation } from '@apollo/react-hooks';
-import { WithTypename, Class } from '../../../types';
+import { WithTypename, Class, redactorOptions } from '../../../types';
 import { GET_CLASSES } from "../Classes/Classes";
 import { Redirect, useParams } from "react-router-dom";
+import Options from "../../Common/Options/Options";
 
 const REMOVE_CLASS = gql`
     mutation RemoveClass($className: String!) {
@@ -51,7 +51,15 @@ const ClassPage: React.FC = ({ }) => {
         <div className={styles.class}>
             <div className={styles.header}>
                 <div className={styles.className}> {className} </div>
-                <IoIosTrash size={30} className="remove" onClick={remove} style={{ cursor: "pointer" }} />
+                <Options 
+                    include={redactorOptions.delete}
+                    props={{
+                        onClick: remove,
+                        size: 30,
+                        className: "remove",
+                        style: {cursor: "pointer"}
+                    }}
+                />
             </div>
             <div className={styles.content}>
                 <StudentsSection className={className} />

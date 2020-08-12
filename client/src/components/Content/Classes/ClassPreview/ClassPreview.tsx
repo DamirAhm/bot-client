@@ -1,10 +1,11 @@
 import React, { memo } from "react";
 import styles from "./ClassPreview.module.css";
-import { IoIosTrash } from "react-icons/io";
 import { gql } from "apollo-boost";
 import { useMutation } from "@apollo/react-hooks";
 import { highlightSearch } from "../../../../utils/functions";
 import { Link } from "react-router-dom";
+import { redactorOptions } from "../../../../types";
+import Options from "../../../Common/Options/Options";
 
 type Props = {
     className: string,
@@ -51,7 +52,14 @@ const ClassPreview: React.FC<Props> = ({ className, studentsCount, searchText })
                 <div className={styles.count}> Учеников: {highlighter(String(studentsCount))} </div>
                 <div></div>
             </Link>
-            <IoIosTrash onClick={() => deleteClass()} size={20} className={"remove"} />
+            <Options 
+                include={redactorOptions.delete}
+                props={{
+                    onClick: () => deleteClass(),
+                    size: 20,
+                    className: "remove"
+                }}
+            />
         </div>
     )
 };

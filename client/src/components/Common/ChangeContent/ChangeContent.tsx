@@ -1,14 +1,14 @@
 import React, { useReducer, ChangeEvent, useState } from 'react'
-import { MdClose, MdCheck, MdFileUpload } from "react-icons/md";
+import { MdClose, MdFileUpload } from "react-icons/md";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { content, attachment, WithTypename, vkPhoto } from '../../../types';
+import { content, attachment, WithTypename, vkPhoto, redactorOptions } from '../../../types';
 
 import styles from './ChangeContent.module.css'
 import OpenableImg from "../OpenableImage/OpenableImage";
 import FileUploader from "../FileUploader";
 import { useParams } from "react-router-dom";
-import ConfirmReject from "../ConfirmReject";
+import Options from "../Options/Options";
 
 type Props = {
     content: content
@@ -79,7 +79,7 @@ const findMaxPhotoResolution = (photo: vkPhoto) => photo.sizes.reduce<{ url: str
 
 const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onChangeTo, onChangeText, onAddAttachment, onRemoveAttachment, withConfirm = true }) => {
     const [newContent, dispatch] = useReducer(reducer, content);
-
+    
     const { className } = useParams<{className: string}>();
 
     const onPhotoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -131,17 +131,29 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onCha
         <div className={styles.contentChanger} onMouseDown={e => e.stopPropagation()}>
             {withConfirm 
             ? <>{ contentChanger && closer && checkUnEmptyContent()
-                ? <ConfirmReject
-                    confirm={
-                        JSON.stringify(content) === JSON.stringify(newContent)
-                            ? closer
-                            : () => (contentChanger(newContent), closer())}
-                    reject={closer}
-                    className={styles.header}
-                />
-                    : <div style={{ width: "100%", height: "25px", marginBottom: "10px" }}></div> 
+                ? <div className={styles.header}>
+                    <Options
+                        include={[redactorOptions.reject, redactorOptions.confirm]}
+                        props={{
+                            [redactorOptions.confirm]: {
+                                onClick: JSON.stringify(content) === JSON.stringify(newContent)
+                                    ? closer
+                                    : () => (contentChanger(newContent), closer()),
+                                className: "positive",
+                                allowOnlyRedactor: true
+                            },
+                            [redactorOptions.reject]: {
+                                onClick: closer,
+                                className: "negative"
+                            }
+                        }}
+                        style={{cursor: "pointer"}}
+                        size={25}
+                    />
+                </div>
+                : <div style={{ width: "100%", height: "25px", marginBottom: "10px" }}></div> 
                 }</>
-                : <div></div> 
+            : <div></div> 
             }
             <section className={styles.date}>
                 <h1 className={styles.title}> Дата </h1>

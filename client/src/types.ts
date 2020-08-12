@@ -3,6 +3,14 @@ export enum roles {
     admin = "ADMIN",
     contributor = "CONTRIBUTOR",
 }
+export enum redactorOptions {
+    delete = "DELETE",
+    change = "CHANGE",
+    confirm = "CONFIRM",
+    reject = "REJECT",
+    add = "ADD",
+}
+
 export const lessons = [
     "Математика",
     "Английский",
