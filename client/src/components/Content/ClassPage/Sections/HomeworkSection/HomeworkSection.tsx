@@ -13,7 +13,7 @@ import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
 import { GET_SCHEDULE, GET_LESSONS } from "../ScheduleSection/ScheduleSection";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
 import { parseContentByDate, objectForEach, getDateStrFromDayMonthStr } from "../../../../../utils/functions";
-import Options from "../../../../Common/Options/Options";
+import Options from "../../../../Common/Options";
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -330,7 +330,7 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
     const [changing, setChanging] = useState(false);
 
     return (
-        <div className={`${styles.container} ${homework.attachments.length === 2 ? styles.pair : ""}`}>
+        <div className={`${styles.container} ${homework.attachments.length === 2 ? styles.pair : ""}`} onDoubleClick={() => setChanging(true)}>
             <div key={homework._id}
                 className={styles.element}>
                 {homework.attachments.length > 0 &&

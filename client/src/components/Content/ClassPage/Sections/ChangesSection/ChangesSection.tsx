@@ -11,7 +11,7 @@ import ReactDOM from "react-dom";
 import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
 import { parseContentByDate, getDateStrFromDayMonthStr } from "../../../../../utils/functions";
-import Options from "../../../../Common/Options/Options";
+import Options from "../../../../Common/Options";
  
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -249,7 +249,7 @@ const Change: React.FC<changeProps> = ({ change, removeChange, updateChange }) =
     const [updating, setUpdating] = useState(false);
 
     return (
-        <div className={`${styles.container} ${change.attachments.length === 2 ? styles.pair : ""}`}>
+        <div className={`${styles.container} ${change.attachments.length === 2 ? styles.pair : ""}`} onDoubleClick={() => setUpdating(true)}>
             <div key={change._id}
                 className={styles.element}>
                 {change.attachments.length > 0 &&

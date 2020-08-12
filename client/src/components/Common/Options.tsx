@@ -1,12 +1,12 @@
 import React, { useContext } from 'react'
-import { RedirectContext } from "../../../App";
+import { RedirectContext } from "../../App";
 
 import { FaPen } from "react-icons/fa";
 import { MdClose, MdCheck, MdAdd } from "react-icons/md";
 import { IoIosTrash } from "react-icons/io";
 
 import { IconBaseProps } from "react-icons/lib";
-import { redactorOptions, roles } from "../../../types"
+import { redactorOptions, roles } from "../../types"
 
 type Props = {
     include: redactorOptions[] | redactorOptions

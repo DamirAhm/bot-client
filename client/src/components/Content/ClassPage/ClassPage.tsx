@@ -9,7 +9,7 @@ import { useMutation } from '@apollo/react-hooks';
 import { WithTypename, Class, redactorOptions } from '../../../types';
 import { GET_CLASSES } from "../Classes/Classes";
 import { Redirect, useParams } from "react-router-dom";
-import Options from "../../Common/Options/Options";
+import Options from "../../Common/Options";
 
 const REMOVE_CLASS = gql`
     mutation RemoveClass($className: String!) {

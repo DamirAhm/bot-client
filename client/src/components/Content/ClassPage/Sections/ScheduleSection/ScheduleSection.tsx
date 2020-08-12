@@ -6,7 +6,7 @@ import Suspender from '../../../../Common/Suspender';
 import styles from "./ScheduleSection.module.css";
 import { MdClose, MdCheck } from "react-icons/md";
 import { redactorOptions, WithTypename } from '../../../../../types';
-import Options from "../../../../Common/Options/Options";
+import Options from "../../../../Common/Options";
 
 const days = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"]
 type Props = {

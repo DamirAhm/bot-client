@@ -8,7 +8,7 @@ import styles from './ChangeContent.module.css'
 import OpenableImg from "../OpenableImage/OpenableImage";
 import FileUploader from "../FileUploader";
 import { useParams } from "react-router-dom";
-import Options from "../Options/Options";
+import Options from "../Options";
 
 type Props = {
     content: content

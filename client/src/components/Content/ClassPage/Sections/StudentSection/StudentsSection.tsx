@@ -9,7 +9,7 @@ import { redactorOptions, Student, WithTypename } from '../../../../../types';
 import ReactDOM from "react-dom"
 import useList from "../../../../../hooks/useList";
 import styles from "./StudentSection.module.css";
-import Options from "../../../../Common/Options/Options";
+import Options from "../../../../Common/Options";
 
 const modalEl = document.getElementById("chooseStudentModal");
 type Props = {

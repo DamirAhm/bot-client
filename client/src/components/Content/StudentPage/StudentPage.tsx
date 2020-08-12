@@ -10,7 +10,7 @@ import { Redirect } from 'react-router';
 import { GET_STUDENTS } from "../Students/Students";
 import Suspender from "../../Common/Suspender";
 import { useParams } from "react-router-dom";
-import Options from "../../Common/Options/Options";
+import Options from "../../Common/Options";
 
 export const GET_STUDENT = gql`
     query GetStudent($vkId: Float){
