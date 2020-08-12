@@ -1,10 +1,9 @@
-import styles from "../components/Content/Students/StudentPreview/StudentPreview.module.css";
 import React from "react";
 import { content } from "../types";
 import { parseDate, months } from "./date";
 import { MdDateRange } from "react-icons/md";
 
-export const highlightSearch = (str: string, searchString: string, highlightClass = styles.highlight) => {
+export const highlightSearch = (str: string, searchString: string, highlightClass = "highlight") => {
     if (searchString.trim() !== "") {
         const string = str.toLowerCase();
         searchString = searchString.toLowerCase();
