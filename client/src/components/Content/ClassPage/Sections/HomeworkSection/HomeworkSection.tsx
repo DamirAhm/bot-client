@@ -82,10 +82,27 @@ const ADD_HOMEWORK = gql`
     }
 `
 
+const REMOVE_OLD_HOMEWORK = gql`
+    mutation RemoveOldHomework($className: String!) {
+        removeOldHomework(className: $className) {
+            to
+            text
+            attachments {
+                url
+                value
+                _id
+            }
+            lesson
+            _id
+            createdBy
+        }
+    }
+`
+
 const HomeworkSection: React.FC<Props> = ({ className }) => {
     const [homeworkCreating, setHomeworkCreating] = useState(false);
     const [initContent, setInitContent] = useState({});
-    const homeworkQuery = useQuery<{ homework: homework[] }>(GET_HOMEWORK, { variables: { className } });
+    const homeworkQuery = useQuery<{ homework: homework[] }, {className: string}>(GET_HOMEWORK, { variables: { className } });
 
     const [removeHomework] = useMutation<
         WithTypename<{
@@ -118,6 +135,26 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
             to: string
         }
     >(ADD_HOMEWORK)
+    const [removeOldHomework] = useMutation<
+        {removeOldHomework: homework[]},
+        {className: string}
+    >(REMOVE_OLD_HOMEWORK, {
+        variables: { className },
+        optimisticResponse: {
+            removeOldHomework: homeworkQuery.data?.homework.filter(({to}) => Date.now() - Date.parse(to) <= 24 * 60 * 60 * 1000) || []
+        },
+        update: (proxy, mutation) => {
+            if (mutation && mutation.data?.removeOldHomework) {
+                proxy.writeQuery({
+                    query: GET_HOMEWORK,
+                    variables: { className },
+                    data: {
+                        homework: mutation.data.removeOldHomework
+                    }
+                })
+            }
+        }
+    } );
 
     const remove = (homeworkId: string | undefined) => {
         if (homeworkId) {
@@ -220,10 +257,22 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                 <Accordion
                                     initiallyOpened={false}
                                     Head={({ opened, onClick }) =>
-                                        <p className={`${styles.date} ${styles.accordion}`} onClick={onClick}>
-                                                Старое дз
-                                                <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} />
-                                        </p>
+                                        <div className={styles.oldContentHeader}>
+                                            <p className={`${styles.date} ${styles.accordion}`} onClick={onClick}>
+                                                    Старое дз
+                                                    <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} />
+                                            </p>
+
+                                            <Options 
+                                                include={redactorOptions.delete}
+                                                props={{
+                                                    allowOnlyRedactor: true,
+                                                    className: `remove ${styles.removeOldContent}`,
+                                                    size: 20,
+                                                    onClick: () => removeOldHomework()
+                                                }}
+                                            />
+                                        </div>
                                     } 
                                     Body={() =>
                                         <>{Object.keys(parsedOldHw).map(hwDate => 

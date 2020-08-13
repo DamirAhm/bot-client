@@ -11,6 +11,7 @@ import useList from "../../../../../hooks/useList";
 import styles from "./StudentSection.module.css";
 import Options from "../../../../Common/Options";
 import { UserContext } from "../../../../../App";
+import { useContext } from "react";
 
 const modalEl = document.getElementById("chooseStudentModal");
 type Props = {
@@ -68,6 +69,7 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
 
     const [modalOpened, setModalOpened] = useState(false);
     const { items, setFilter, setItems } = useList<studentPreview>([]);
+    const {role} = useContext(UserContext);
 
     const removeStudent = (vkId: number) => {
         remove({
@@ -132,40 +134,36 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
     }
 
     return (
-        <UserContext.Consumer>
-            {({role}) => 
-            <InfoSection name="Ученики" updateSearchString={changeHandler} className={styles.studentsSection}>
-                {str => <>
-                    <Suspender query={{ data: items, loading, error }}>
-                        {(data: Student[]) =>
-                            <div className={`${styles.students}`}>
-                                {role === roles.contributor && 
-                                    <div className={styles.creator} onClick={() => setModalOpened(true)}> Добавить ученика </div>
-                                }
-                                {data.map(e =>
-                                    <div className={styles.student} key={e.vkId}>
-                                        <StudentPreview searchText={str}  {...e} />
-                                        <Options 
-                                            include={redactorOptions.reject}
-                                            props={{
-                                                onClick: () => removeStudent(e.vkId),
-                                                size: 30, 
-                                                className: `${styles.remove} remove`,
-                                                allowOnlyRedactor: true
-                                            }}
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        }
-                    </Suspender>
-                    {modalOpened &&
-                        <StudentModal className={className} styles={styles} addStudent={addToClass} closeModal={() => setModalOpened(false)} />
-                    }</>
-                }
-            </InfoSection>
+        <InfoSection name="Ученики" updateSearchString={changeHandler} className={styles.studentsSection}>
+            {str => <>
+                <Suspender query={{ data: items, loading, error }}>
+                    {(data: Student[]) =>
+                        <div className={`${styles.students}`}>
+                            {role === roles.contributor && 
+                                <div className={styles.creator} onClick={() => setModalOpened(true)}> Добавить ученика </div>
+                            }
+                            {data.map(e =>
+                                <div className={styles.student} key={e.vkId}>
+                                    <StudentPreview searchText={str}  {...e} />
+                                    <Options 
+                                        include={redactorOptions.reject}
+                                        props={{
+                                            onClick: () => removeStudent(e.vkId),
+                                            size: 30, 
+                                            className: `${styles.remove} remove`,
+                                            allowOnlyRedactor: true
+                                        }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    }
+                </Suspender>
+                {modalOpened &&
+                    <StudentModal className={className} styles={styles} addStudent={addToClass} closeModal={() => setModalOpened(false)} />
+                }</>
             }
-        </UserContext.Consumer>
+        </InfoSection>
     )
 }
 

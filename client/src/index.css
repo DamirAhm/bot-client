@@ -57,11 +57,11 @@ html {
     opacity: 0.5;
 }
 
-.negative *,
-.trash *,
-.remove *,
-.ban * {
-    color: var(--negative);
+.negative,
+.trash,
+.remove,
+.ban {
+    fill: var(--negative);
 }
 .negative,
 .trash,
@@ -70,10 +70,10 @@ html {
     cursor: pointer;
 }
 
-.positive *,
-.confirm *,
-.unban * {
-    color: var(--positive);
+.positive,
+.confirm,
+.unban {
+    fill: var(--positive);
 }
 
 .modal {

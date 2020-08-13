@@ -106,7 +106,7 @@ const client = new ApolloClient({
     resolvers,
     typeDefs,
     //@ts-ignore
-    connectToDevToolsL: true
+    connectToDevTools: true
 });
 
 ReactDOM.render(
