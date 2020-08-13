@@ -378,6 +378,7 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
                             size: 20,
                         }
                     }}
+                    withRoleControl
                 />
             </div>
         </div>

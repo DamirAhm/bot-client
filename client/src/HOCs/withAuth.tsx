@@ -1,13 +1,13 @@
 import React from "react"
 import { Redirect } from "react-router-dom"
-import { RedirectContext } from "../App";
+import { UserContext } from "../App";
 import { roles } from "../types";
 
-const withRedirect = (Component: React.FC): JSX.Element => {
-    return <RedirectContext.Consumer>
+const withRedirect = (Component: React.FC, allowStudent: boolean = false): JSX.Element => {
+    return <UserContext.Consumer>
         {({isAuth, role, className}) =>
             <> {isAuth ? 
-                <>{role === roles.admin 
+                <>{role === roles.admin || allowStudent 
                     ? <Component /> 
                     : <Redirect to={`/classes/${className}`}/>
                 }</>
@@ -15,7 +15,7 @@ const withRedirect = (Component: React.FC): JSX.Element => {
             }
             </>
         }
-    </RedirectContext.Consumer>
+    </UserContext.Consumer>
 }
 
 export default withRedirect;

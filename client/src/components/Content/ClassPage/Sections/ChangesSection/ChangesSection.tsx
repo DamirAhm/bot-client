@@ -297,6 +297,7 @@ const Change: React.FC<changeProps> = ({ change, removeChange, updateChange }) =
                             size: 20,
                         }
                     }}
+                    withRoleControl
                 />
             </div>
         </div>

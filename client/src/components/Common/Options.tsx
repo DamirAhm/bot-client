@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { RedirectContext } from "../../App";
+import { UserContext } from "../../App";
 
 import { FaPen } from "react-icons/fa";
 import { MdClose, MdCheck, MdAdd } from "react-icons/md";
@@ -51,7 +51,7 @@ const Options: React.FC<Props> = ({
     if (isSoloIconProps(props) && typeof include === 'string') props = {[include]: props};
     if (typeof include === "string") include = [include];
 
-    const {role = roles.student} = useContext(RedirectContext); 
+    const {role = roles.student} = useContext(UserContext); 
  
     if (withRoleControl && role !== roles.admin && (allowOnlyAdmin || role !== roles.contributor)) {
         return null

@@ -12,7 +12,7 @@ const Classes = lazy(() => import("./components/Content/Classes/Classes"));
 const Students = lazy(() => import("./components/Content/Students/Students"));
 const Auth = lazy(() => import("./components/Content/Auth/Auth"));
 
-export const RedirectContext = React.createContext<
+export const UserContext = React.createContext<
     {
         role?: roles, 
         className?: string
@@ -31,8 +31,21 @@ const GET_STUDENT = gql`
 
 function App() {
     const ApolloClient = useApolloClient();
-    const [user, setUser] = useState<User | null>(null);
-
+    const [user, setUser] = useState<User | null>(
+        process.env.NODE_ENV === "production"
+            ? null
+            : JSON.parse(process.env.REACT_APP_USER || "null") as User || 
+            {
+                role: (process.env.REACT_APP_ROLE || "ADMIN") as roles,
+                className: process.env.REACT_APP_CLASS_NAME || "10Б",
+                first_name: process.env.REACT_APP_FIRST_NAME || "Дамир",
+                last_name: process.env.REACT_APP_LAST_NAME || "Ахметзянов",
+                photo: process.env.REACT_APP_PHOTO || "/images/camera_200.png?ava=1",
+                photo_rec: process.env.REACT_APP_PHOTO_REC || "/images/camera_50.png?ava=1",
+                uid: process.env.REACT_APP_UID || 227667805,
+            }
+    );
+    
     const onUser = async (user: Omit<User, "role">) => {
         const { data: { student: { role, className } } } = await ApolloClient.query<
             {student: {role: roles, className: string}}, 
@@ -46,20 +59,22 @@ function App() {
     }
 
     useEffect(() => {
-        const userItem = localStorage.getItem("user");
+        if (!user) {
+            const userItem = localStorage.getItem("user");
 
-        if (userItem) { 
-            const parsedUser = JSON.parse(userItem);
-            if (typeof parsedUser === "object") {
-                setUser(parsedUser);
-            } else {
-                localStorage.removeItem("user");
+            if (userItem) { 
+                const parsedUser = JSON.parse(userItem);
+                if (typeof parsedUser === "object") {
+                    setUser(parsedUser);
+                } else {
+                    localStorage.removeItem("user");
+                }
             }
         }
     }, [])
 
     return (
-        <RedirectContext.Provider value={{isAuth: user !== null, role: user?.role, className: user?.className}}>
+        <UserContext.Provider value={{isAuth: user !== null, role: user?.role, className: user?.className}}>
             <div className={`wrapper`}>
                 <div className={`app`}>
                     {user === null 
@@ -81,7 +96,7 @@ function App() {
                                         : withRedirect(ClassPage)
                                     } />
                                     <Route exact path="/students" component={() => withRedirect(Students)} />
-                                    <Route path="/students/:vkId" component={() => withRedirect(StudentPage)} />
+                                    <Route path="/students/:vkId" component={() => withRedirect(StudentPage, true)} />
                                     <Route path="*" render={() => <Redirect to={"/classes"} />} />
                                 </Switch>
                                 </Suspense>
@@ -90,7 +105,7 @@ function App() {
                     }
                 </div>
             </div>
-        </RedirectContext.Provider>
+        </UserContext.Provider>
     );
 }
 

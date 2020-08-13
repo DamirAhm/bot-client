@@ -57,7 +57,8 @@ const ClassPage: React.FC = ({ }) => {
                         onClick: remove,
                         size: 30,
                         className: "remove",
-                        style: {cursor: "pointer"}
+                        style: {cursor: "pointer"},
+                        allowOnlyAdmin: true
                     }}
                 />
             </div>
