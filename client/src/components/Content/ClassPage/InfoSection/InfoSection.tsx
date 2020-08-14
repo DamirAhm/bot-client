@@ -12,15 +12,19 @@ type Props = {
     updateSearchString?: (str: string) => void
     children: ((str: string) => (JSX.Element | false)) | JSX.Element
     Header?: React.FC<{ opened: boolean, onClick: () => void }>
+    defaultSearchString?: string
 }
 
-const InfoSection: React.FC<Props> = ({ name, children, className = "", updateSearchString, Header }) => {
-    const [text, setText] = useState("");
+const InfoSection: React.FC<Props> = ({ name, children, className = "", updateSearchString, Header, defaultSearchString: text = "" }) => {
+    const [opened, setOpened] = useState(true);
+
+    const onClick = () => setOpened(!opened);
 
     return (
         <div className={styles.section}>
             <Accordion
-                Head={({ onClick, opened }) =>
+                isOpened={opened}
+                Head={
                     <>{Header
                         ? <Header onClick={onClick} opened={opened} />
                         : <div onClick={onClick} className={styles.header}>
@@ -29,7 +33,7 @@ const InfoSection: React.FC<Props> = ({ name, children, className = "", updateSe
                                 <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                             </div>
                             {updateSearchString &&
-                                <Searcher changeHandler={str => (setText(str), updateSearchString(str))} />
+                                <Searcher text={text} changeHandler={str => updateSearchString(str)} />
                             }
                         </div>
                     } </>
@@ -42,4 +46,4 @@ const InfoSection: React.FC<Props> = ({ name, children, className = "", updateSe
     )
 }
 
-export default InfoSection
+export default React.memo(InfoSection);

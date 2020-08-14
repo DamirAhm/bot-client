@@ -77,4 +77,4 @@ const Options: React.FC<Props> = ({
     )
 }
 
-export default Options
+export default React.memo(Options)

@@ -68,8 +68,11 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
     }>(ADD_STUDENT_TO_CLASS)
 
     const [modalOpened, setModalOpened] = useState(false);
+    const [searchString, setSearchString] = useState("");
+
     const { items, setFilter, setItems } = useList<studentPreview>([]);
-    const {role} = useContext(UserContext);
+
+    const { role } = useContext(UserContext);
 
     const removeStudent = (vkId: number) => {
         remove({
@@ -130,21 +133,22 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
 
     const changeHandler = (str: string) => {
         str = str.toLowerCase();
+        setSearchString(str);
         setFilter(st => st.fullName.toLowerCase().search(str) !== -1 || st.role.toLocaleLowerCase().search(str) !== -1)
     }
 
     return (
-        <InfoSection name="Ученики" updateSearchString={changeHandler} className={styles.studentsSection}>
-            {str => <>
+        <InfoSection name="Ученики" defaultSearchString={searchString} updateSearchString={changeHandler} className={styles.studentsSection}>
+            <>
                 <Suspender query={{ data: items, loading, error }}>
                     {(data: Student[]) =>
                         <div className={`${styles.students}`}>
-                            {role === roles.contributor && 
+                            {role === roles.contributor || role === roles.admin && 
                                 <div className={styles.creator} onClick={() => setModalOpened(true)}> Добавить ученика </div>
                             }
                             {data.map(e =>
                                 <div className={styles.student} key={e.vkId}>
-                                    <StudentPreview searchText={str}  {...e} />
+                                    <StudentPreview searchText={searchString}  {...e} />
                                     <Options 
                                         include={redactorOptions.reject}
                                         props={{
@@ -161,8 +165,7 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
                 </Suspender>
                 {modalOpened &&
                     <StudentModal className={className} styles={styles} addStudent={addToClass} closeModal={() => setModalOpened(false)} />
-                }</>
-            }
+            }</>
         </InfoSection>
     )
 }
@@ -225,4 +228,4 @@ const StudentModal: React.FC<StudentModalProps> = ({ closeModal, addStudent, sty
     }
     return null;
 }
-export default StudentsSection
+export default React.memo(StudentsSection)

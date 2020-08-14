@@ -6,6 +6,11 @@
     background-color: var(--secondary);
     padding: 10px 0 0 0;
 }
+.confirmReject {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
 .contentCreator .confirmReject {
     margin-bottom: 10px;
 }

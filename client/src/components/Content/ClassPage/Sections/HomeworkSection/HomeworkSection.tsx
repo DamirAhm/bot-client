@@ -149,8 +149,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                     query: GET_HOMEWORK,
                     variables: { className },
                     data: {
-                        homework: mutation.data.removeOldHomework
-                    }
+                        homework: mutation.data.removeOldHomework}
                 })
             }
         }
@@ -465,7 +464,7 @@ const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({ returnHomewor
                         const possibleLessons = lessons.filter(lesson => schedule.some(day => day.includes(lesson)));
 
                         return <div className={styles.contentCreator} onMouseDown={e => e.stopPropagation()}>
-                            <div className={styles.addition}>
+                            <div className={`${styles.header} ${styles.addition}`}>
                                 <div className={styles.confirmReject}>
                                     <Options
                                         include={[redactorOptions.reject, redactorOptions.confirm]}

@@ -1,8 +1,9 @@
 import React, { useState, StyleHTMLAttributes } from 'react'
+import { useEffect } from "react"
 import { MdClose } from "react-icons/md"
 type Props = {
     changeHandler: (str: string) => void,
-    text?: string
+    text: string
 }
 
 const divStyle: React.CSSProperties = {
@@ -24,15 +25,13 @@ const inputStyle: React.CSSProperties = {
     boxSizing: "border-box"
 }
 
-const Searcher: React.FC<Props> = ({ changeHandler }) => {
-    const [text, setText] = useState("");
-
+const Searcher: React.FC<Props> = ({ changeHandler, text }) => {
     return (
         <div style={divStyle} onClick={e => e.stopPropagation()}>
-            <input style={inputStyle} type="text" value={text} onChange={e => (setText(e.target.value), changeHandler(e.target.value))} />
-            <MdClose onClick={() => (setText(""), changeHandler(""))} style={closeStyle} className={"negative"} size={15} />
+            <input style={inputStyle} type="text" value={text} onChange={e => changeHandler(e.target.value)} />
+            <MdClose onClick={() =>changeHandler("")} style={closeStyle} className={"negative"} size={15} />
         </div>
     )
 }
 
-export default Searcher
+export default React.memo(Searcher)
