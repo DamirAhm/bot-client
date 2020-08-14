@@ -20,4 +20,4 @@ const Accordion: React.FC<Props> = ({ Body, Head, children, initiallyOpened, ...
     )
 }
 
-export default Accordion
+export default React.memo(Accordion)

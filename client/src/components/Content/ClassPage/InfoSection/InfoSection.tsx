@@ -29,7 +29,7 @@ const InfoSection: React.FC<Props> = ({ name, children, className = "", updateSe
                                 <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                             </div>
                             {updateSearchString &&
-                                <Searcher changeHandler={str => (setText(str), updateSearchString(str))} />
+                                <Searcher text={text} changeHandler={str => (setText(str), updateSearchString(str))} />
                             }
                         </div>
                     } </>
@@ -42,4 +42,4 @@ const InfoSection: React.FC<Props> = ({ name, children, className = "", updateSe
     )
 }
 
-export default InfoSection
+export default React.memo(InfoSection);

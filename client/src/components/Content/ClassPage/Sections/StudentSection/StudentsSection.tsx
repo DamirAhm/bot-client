@@ -69,7 +69,7 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
 
     const [modalOpened, setModalOpened] = useState(false);
     const { items, setFilter, setItems } = useList<studentPreview>([]);
-    const {role} = useContext(UserContext);
+    const { role } = useContext(UserContext);
 
     const removeStudent = (vkId: number) => {
         remove({
@@ -225,4 +225,4 @@ const StudentModal: React.FC<StudentModalProps> = ({ closeModal, addStudent, sty
     }
     return null;
 }
-export default StudentsSection
+export default React.memo(StudentsSection)
