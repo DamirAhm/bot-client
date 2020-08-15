@@ -6,6 +6,8 @@ import { highlightSearch } from "../../../../utils/functions";
 import { Link } from "react-router-dom";
 import { redactorOptions } from "../../../../types";
 import Options from "../../../Common/Options";
+import Confirm from "../../../Common/Confirm/Confirm";
+import { useState } from "react";
 
 type Props = {
     className: string,
@@ -32,6 +34,8 @@ const ClassPreview: React.FC<Props> = ({ className, studentsCount, searchText })
         }
         );
 
+    const [waitForConfirm, setWaitForConfirm] = useState(false);
+
     const highlighter = (str: string) => {
         return highlightSearch(str, searchText);
     };
@@ -45,22 +49,28 @@ const ClassPreview: React.FC<Props> = ({ className, studentsCount, searchText })
             </div>
         )
     }
+
     return (
-        <div className={styles.preview}>
-            <Link to={`/classes/${className}`} className={styles.link}>
-                <p className={styles.name}> {highlighter(className)} </p>
-                <div className={styles.count}> Учеников: {highlighter(String(studentsCount))} </div>
-                <div></div>
-            </Link>
-            <Options 
-                include={redactorOptions.delete}
-                props={{
-                    onClick: () => deleteClass(),
-                    size: 20,
-                    className: "remove"
-                }}
-            />
-        </div>
+        <>
+            <div className={styles.preview}>
+                <Link to={`/classes/${className}`} className={styles.link}>
+                    <p className={styles.name}> {highlighter(className)} </p>
+                    <div className={styles.count}> Учеников: {highlighter(String(studentsCount))} </div>
+                    <div></div>
+                </Link>
+                <Options 
+                    include={redactorOptions.delete}
+                    props={{
+                        onClick: () => setWaitForConfirm(true),
+                        size: 20,
+                        className: "remove"
+                    }}
+                />
+            </div>
+            {waitForConfirm &&
+                <Confirm text={`Вы уверены что хотите удалить ${className} класс`} onConfirm={() => deleteClass()} returnRes={() => setWaitForConfirm(false)} />
+            }
+        </>
     )
 };
 

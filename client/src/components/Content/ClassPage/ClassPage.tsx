@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import styles from './ClassPage.module.css'
 import StudentsSection from "./Sections/StudentSection/StudentsSection";
 import ScheduleSection from "./Sections/ScheduleSection/ScheduleSection";
@@ -10,6 +10,7 @@ import { WithTypename, Class, redactorOptions } from '../../../types';
 import { GET_CLASSES } from "../Classes/Classes";
 import { Redirect, useParams } from "react-router-dom";
 import Options from "../../Common/Options";
+import Confirm from "../../Common/Confirm/Confirm";
 
 const REMOVE_CLASS = gql`
     mutation RemoveClass($className: String!) {
@@ -22,6 +23,7 @@ const REMOVE_CLASS = gql`
 const ClassPage: React.FC = ({ }) => {
     const [removeClass] = useMutation<WithTypename<{ classRemoveOne: WithTypename<{ name: string }> }>, { className: string }>(REMOVE_CLASS);
     const {className} = useParams<{className: string}>();
+    const [waitForConfirm, setWaitForConfirm] = useState(false);
 
     const remove = () => {
         removeClass({
@@ -46,29 +48,34 @@ const ClassPage: React.FC = ({ }) => {
             }
         })
     }
-
+    
     return (
-        <div className={styles.class}>
-            <div className={styles.header}>
-                <div className={styles.className}> {className} </div>
-                <Options 
-                    include={redactorOptions.delete}
-                    props={{
-                        onClick: remove,
-                        size: 30,
-                        className: "remove",
-                        style: {cursor: "pointer"},
-                        allowOnlyAdmin: true
-                    }}
-                />
+        <>
+            <div className={styles.class}>
+                <div className={styles.header}>
+                    <div className={styles.className}> {className} </div>
+                    <Options 
+                        include={redactorOptions.delete}
+                        props={{
+                            onClick: () => setWaitForConfirm(true),
+                            size: 30,
+                            className: "remove",
+                            style: {cursor: "pointer"},
+                            allowOnlyAdmin: true
+                        }}
+                    />
+                </div>
+                <div className={styles.content}>
+                    <StudentsSection className={className} />
+                    <ScheduleSection className={className} />
+                    <HomeworkSection className={className} />
+                    <ChangesSection className={className} />
+                </div>
             </div>
-            <div className={styles.content}>
-                <StudentsSection className={className} />
-                <ScheduleSection className={className} />
-                <HomeworkSection className={className} />
-                <ChangesSection className={className} />
-            </div>
-        </div>
+            {waitForConfirm &&
+                <Confirm text={`Вы уверены что хотите удалить ${className} класс`} onConfirm={remove} returnRes={() => setWaitForConfirm(false)} />
+            }
+        </>
     )
 }
 

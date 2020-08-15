@@ -63,6 +63,7 @@ html {
 .remove,
 .ban {
     fill: var(--negative);
+    color: var(--negative);
 }
 .negative,
 .trash,
@@ -75,6 +76,7 @@ html {
 .confirm,
 .unban {
     fill: var(--positive);
+    color: var(--positive);
 }
 
 .modal {
