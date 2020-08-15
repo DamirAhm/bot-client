@@ -71,7 +71,6 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
     const [searchString, setSearchString] = useState("");
 
     const { items, setFilter, setItems } = useList<studentPreview>([]);
-
     const { role } = useContext(UserContext);
 
     const removeStudent = (vkId: number) => {

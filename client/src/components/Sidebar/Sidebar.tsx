@@ -47,7 +47,9 @@ const Sidebar: React.FC<{setUser: (user: User | null) => void}> = ({setUser}) =>
                 </>    
             }
             {first_name && last_name && photo_rec &&
-                <UserInfo userInfo={{first_name, last_name, photo_rec}} resetUser={() => setUser(null)}/>
+                <NavLink to={`/students/${uid}`} className={styles.userInfo}>
+                    <UserInfo userInfo={{first_name, last_name, photo_rec}} resetUser={() => setUser(null)}/>
+                </NavLink>
             }
         </div>
     )
