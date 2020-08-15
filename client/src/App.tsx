@@ -13,12 +13,17 @@ const Students = lazy(() => import("./components/Content/Students/Students"));
 const Auth = lazy(() => import("./components/Content/Auth/Auth"));
 
 export const UserContext = React.createContext<
-    {
-        role?: roles, 
-        className?: string
-        isAuth: boolean, 
-    }
->({isAuth: false, role: roles.student, className: "Нету"});
+    {isAuth: boolean} & Partial<User>
+>({
+    isAuth: false,
+    role: roles.student,
+    className: "Нету",
+    photo: "", 
+    photo_rec: "",
+    last_name: "",
+    first_name: "",
+    uid: NaN
+});
 
 const GET_STUDENT = gql`
     query GET_STUDENT($filter: FilterFindOneStudentInput!) {
@@ -74,17 +79,15 @@ function App() {
     }, [])
 
     return (
-        <UserContext.Provider value={{isAuth: user !== null, role: user?.role, className: user?.className}}>
+        <UserContext.Provider value={{isAuth: user !== null, ...user}}>
             <div className={`wrapper`}>
                 <div className={`app`}>
                     {user === null 
                         ? <Suspense fallback={<div>loading...</div>}>
                             <Auth setUser={onUser}/>
                         </Suspense>
-                        : <> 
-                            {user.role === roles.admin && 
-                                <Sidebar user={user} setUser={setUser}/>
-                            }
+                        : <>
+                            <Sidebar setUser={setUser}/>
                             <div className="content">
                                 <Suspense fallback={<div> Loading... </div>}>
                                 <Switch>
