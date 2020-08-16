@@ -58,29 +58,6 @@
     cursor: pointer;
 }
 
-.deletableAttachment {
-    position: relative;
-    height: 300px;
-    display: flex;
-    margin: 0 10px;
-}
-.deletableAttachment img {
-    /* width: 100%; */
-    /* object-fit: cover; */
-    height: 300px;
-}
-.deletableAttachment:hover .removeAttachment {
-    visibility: visible;
-}
-
-.removeAttachment {
-    cursor: pointer;
-    position: absolute;
-    top: 0;
-    right: 0px;
-    visibility: hidden;
-}
-
 .text textarea {
     resize: none;
     padding: 10px;

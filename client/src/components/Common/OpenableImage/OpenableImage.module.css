@@ -1,26 +1,49 @@
 .next {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  right: 30px;
-  padding: 500px 20px;
-  box-sizing: content-box;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 30px;
+    padding: 500px 20px;
+    box-sizing: content-box;
 }
 
 .prev {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  left: 30px;
-  padding: 500px 20px;
-  box-sizing: content-box;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 30px;
+    padding: 500px 20px;
+    box-sizing: content-box;
+}
+
+.deletableAttachment {
+    position: relative;
+    height: 300px;
+    display: flex;
+    margin: 0 10px;
+}
+.deletableAttachment img {
+    /* width: 100%; */
+    /* object-fit: cover; */
+    height: 300px;
+}
+.deletableAttachment:hover .removeAttachment {
+    visibility: visible;
+}
+
+.removeAttachment {
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    right: 0px;
+    visibility: hidden;
 }
 
 @media screen and (max-width: 900px) {
-  .next {
-    right: 10px;
-  }
-  .prev {
-    left: 10px;
-  }
+    .next {
+        right: 10px;
+    }
+    .prev {
+        left: 10px;
+    }
 }

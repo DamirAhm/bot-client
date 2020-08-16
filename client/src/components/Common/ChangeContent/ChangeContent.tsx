@@ -9,6 +9,7 @@ import OpenableImg from "../OpenableImage/OpenableImage";
 import FileUploader from "../FileUploader";
 import { useParams } from "react-router-dom";
 import Options from "../Options";
+import DeletableAttachment from "../OpenableImage/DeletableAttachment";
 
 type Props = {
     content: content
@@ -77,7 +78,12 @@ const parseAttachment = (photo: vkPhoto) => {
 };
 const findMaxPhotoResolution = (photo: vkPhoto) => photo.sizes.reduce<{ url: string, height: number }>((acc, c) => c.height > acc.height ? c : acc, { height: 0, url: "" }).url;
 
-const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onChangeTo, onChangeText, onAddAttachment, onRemoveAttachment, withConfirm = true }) => {
+
+const ChangeContent: React.FC<Props> = ({ 
+    content, contentChanger, closer, 
+    onChangeTo, onChangeText, onAddAttachment, 
+    onRemoveAttachment, withConfirm = true 
+}) => {
     const [newContent, dispatch] = useReducer(reducer, content);
     
     const { className } = useParams<{className: string}>();
@@ -183,7 +189,12 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onCha
                             <DeletableAttachment
                                 key={att._id}
                                 attachment={att.url}
-                                remove={() => (dispatch(actions.removeAttachment(att._id)), onRemoveAttachment && onRemoveAttachment(att._id))} />)
+                                remove={() => (
+                                    dispatch(
+                                        actions.removeAttachment(att._id)), 
+                                        onRemoveAttachment && onRemoveAttachment(att._id)
+                                )} 
+                        />)
                     }
                 </div>
             </section>
@@ -191,21 +202,16 @@ const ChangeContent: React.FC<Props> = ({ content, contentChanger, closer, onCha
                 <h1 className={styles.title}> Домашняя работа </h1>
                 <textarea
                     name="text" value={newContent.text}
-                    className={styles.text} onChange={e => (dispatch(actions.changeText(e.target.value)), onChangeText && onChangeText(e.target.value))}
+                    className={styles.text} 
+                    onChange={e => (
+                        dispatch(actions.changeText(e.target.value)), 
+                        onChangeText && onChangeText(e.target.value)
+                    )}
                     cols={60} rows={5}
                 >
                     {content.text}
                 </textarea>
             </section>
-        </div>
-    )
-}
-
-export const DeletableAttachment: React.FC<{ attachment: string, remove: () => void }> = ({ attachment, remove }) => {
-    return (
-        <div className={styles.deletableAttachment}>
-            <OpenableImg src={attachment} alt="вложение" />
-            <MdClose size={20} onClick={remove} className={styles.removeAttachment + " negative"} />
         </div>
     )
 }
