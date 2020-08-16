@@ -509,7 +509,7 @@ const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({ returnHomewor
                                 withConfirm={false}
                                 onChangeText={(newText) => setNewHomework({ ...newHomework, text: newText })}
                                 onChangeTo={(newTo) => setNewHomework({ ...newHomework, to: newTo.toISOString() })}
-                                onAddAttachment={(newAttachment) => setNewHomework({ ...newHomework, attachments: [...newHomework.attachments, newAttachment] })}
+                                onAddAttachment={(newAttachments) => setNewHomework({ ...newHomework, attachments: [...newHomework.attachments, ...newAttachments] })}
                                 onRemoveAttachment={(attachmentId) => setNewHomework(
                                     {
                                         ...newHomework,

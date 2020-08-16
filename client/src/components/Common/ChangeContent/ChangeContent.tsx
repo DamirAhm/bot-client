@@ -16,7 +16,7 @@ type Props = {
     contentChanger?: (newContent: content) => void
     closer?: () => void
     onChangeText?: (newText: string) => void
-    onAddAttachment?: (newAttachments: WithTypename<attachment>) => void
+    onAddAttachment?: (newAttachments: WithTypename<attachment>[]) => void
     onRemoveAttachment?: (attachmentId: string) => void
     onChangeTo?: (newTo: Date) => void
     withConfirm?: boolean
@@ -74,7 +74,8 @@ const ChangeContent: React.FC<Props> = ({
                         ...content.attachments, 
                         ...newAttachments
                     ]
-                })
+                });
+                onAddAttachment(newAttachments)
             }
         } catch (e) {
             console.error(e);
