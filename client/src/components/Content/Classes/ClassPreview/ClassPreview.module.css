@@ -50,6 +50,8 @@
     align-self: center;
     width: 35%;
     margin: 25px 0;
+}
+.creator_stab {
     cursor: pointer;
 }
 
@@ -59,8 +61,7 @@
     justify-content: space-between;
 }
 
-.creator > *,
-.creator form > buttons{
+.creator form > button {
     cursor: pointer;
 }
 
@@ -70,13 +71,12 @@
     padding: 5px;
     border-radius: 8px;
 }
-
-.reject > * {
-    color: var(--negative);
+.creator .with_error {
+    outline-color: var(--negative);
 }
-
-.confirm > * {
-    color: var(--positive);
+.creator .with_error::placeholder,
+.creator .with_error::-webkit-input-placeholder {
+    color: var(--negative);
 }
 
 @media screen and (max-width: 776px) {

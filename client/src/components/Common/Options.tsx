@@ -70,7 +70,7 @@ const Options: React.FC<Props> = ({
                     (allowOnlyAdmin && role !== roles.admin) ||
                      renderIf && !renderIf()
                 ) return null;
-                return React.createElement(OptionsElements[e], {...iconProps, ...restProps, key: i})
+                return <button key={i}> {React.createElement(OptionsElements[e], {...iconProps, ...restProps})} </button>
             }
             )}
         </>

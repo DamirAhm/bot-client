@@ -15,6 +15,9 @@
     border: none;
     text-decoration: none;
 }
+button {
+    background: none;
+}
 
 html {
     font-size: 10px;
@@ -61,7 +64,8 @@ html {
 .negative,
 .trash,
 .remove,
-.ban {
+.ban,
+.reject {
     fill: var(--negative);
     color: var(--negative);
 }
