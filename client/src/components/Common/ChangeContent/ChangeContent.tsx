@@ -22,57 +22,6 @@ type Props = {
     withConfirm?: boolean
 };
 
-const CHANGE_TEXT = "CHANGE_TEXT";
-const REMOVE_ATTACHMENT = "REMOVE_ATTACHMENT";
-const ADD_ATTACHMENT = "ADD_ATTACHMENT";
-const CHANGE_TO = "CHANGE_TO";
-
-const reducer = (state: content, action: ActionType): content => {
-    switch (action.type) {
-        case CHANGE_TEXT: {
-            return {
-                ...state,
-                text: action.payload
-            }
-        }
-        case REMOVE_ATTACHMENT: {
-            return {
-                ...state,
-                attachments: state.attachments.filter(att => att._id !== action.payload)
-            }
-        }
-        case ADD_ATTACHMENT: {
-            return {
-                ...state,
-                attachments: [...state.attachments, action.payload]
-            }
-        }
-        case CHANGE_TO: {
-            return {
-                ...state,
-                to: action.payload.toISOString()
-            }
-        }
-        default: {
-            return state;
-        }
-    }
-}
-
-const actions = {
-    changeText: (newText: string): { type: typeof CHANGE_TEXT, payload: string } => ({ type: CHANGE_TEXT, payload: newText }),
-    removeAttachment: (attachmentIndex: string): { type: typeof REMOVE_ATTACHMENT, payload: string } => ({ type: REMOVE_ATTACHMENT, payload: attachmentIndex }),
-    addAttachment: (attachment: WithTypename<attachment>): { type: typeof ADD_ATTACHMENT, payload: WithTypename<attachment> } => ({ type: ADD_ATTACHMENT, payload: attachment }),
-    changeTo: (newTo: Date): { type: typeof CHANGE_TO, payload: Date } => ({ type: CHANGE_TO, payload: newTo })
-}
-
-type ActionType =
-    | { type: typeof CHANGE_TEXT, payload: string }
-    | { type: typeof REMOVE_ATTACHMENT, payload: string }
-    | { type: typeof ADD_ATTACHMENT, payload: WithTypename<attachment> }
-    | { type: typeof CHANGE_TO, payload: Date }
-
-
 const parseAttachment = (photo: vkPhoto) => {
     return `photo${photo.owner_id}_${photo.id}`;
 };
@@ -84,7 +33,7 @@ const ChangeContent: React.FC<Props> = ({
     onChangeTo, onChangeText, onAddAttachment, 
     onRemoveAttachment, withConfirm = true 
 }) => {
-    const [newContent, dispatch] = useReducer(reducer, content);
+    const [newContent, setNewContent] = useState<content>({...content});
     
     const { className } = useParams<{className: string}>();
 
@@ -111,7 +60,7 @@ const ChangeContent: React.FC<Props> = ({
                         }
                     }
                 ).then(res => res.json());
-
+                console.log(photos);
                 const newAttachments: WithTypename<attachment>[] = photos.map((photo, i) => ({
                     url: findMaxPhotoResolution(photo),
                     value: parseAttachment(photo),
@@ -119,10 +68,13 @@ const ChangeContent: React.FC<Props> = ({
                     __typename: "ClassHomeworkAttachment"
                 }));
 
-                for (const attachment of newAttachments) {
-                    dispatch(actions.addAttachment(attachment))
-                    if (onAddAttachment) onAddAttachment(attachment);
-                }
+                setNewContent({
+                    ...newContent, 
+                    attachments: [
+                        ...content.attachments, 
+                        ...newAttachments
+                    ]
+                })
             }
         } catch (e) {
             console.error(e);
@@ -132,7 +84,7 @@ const ChangeContent: React.FC<Props> = ({
     const checkUnEmptyContent = () => {
         return newContent.attachments.length > 0 || newContent.text.trim() !== "";
     }
-
+    
     return (
         <div className={styles.contentChanger} onMouseDown={e => e.stopPropagation()}>
             {withConfirm 
@@ -167,7 +119,10 @@ const ChangeContent: React.FC<Props> = ({
                     selected={new Date(Date.parse(newContent.to))}
                     onChange={date => {
                         if (date !== null) {
-                            dispatch(actions.changeTo(date))
+                            setNewContent({
+                                ...newContent,
+                                to: date.toISOString()
+                            })
                             if (onChangeTo) onChangeTo(date)
                         }
                     }}
@@ -189,11 +144,13 @@ const ChangeContent: React.FC<Props> = ({
                             <DeletableAttachment
                                 key={att._id}
                                 attachment={att.url}
-                                remove={() => (
-                                    dispatch(
-                                        actions.removeAttachment(att._id)), 
-                                        onRemoveAttachment && onRemoveAttachment(att._id)
-                                )} 
+                                remove={() => {
+                                    setNewContent({
+                                        ...newContent,
+                                        attachments: newContent.attachments.filter(({_id}) => _id !== att._id)
+                                    });
+                                    onRemoveAttachment?.(att._id);
+                                }} 
                         />)
                     }
                 </div>
@@ -203,10 +160,13 @@ const ChangeContent: React.FC<Props> = ({
                 <textarea
                     name="text" value={newContent.text}
                     className={styles.text} 
-                    onChange={e => (
-                        dispatch(actions.changeText(e.target.value)), 
-                        onChangeText && onChangeText(e.target.value)
-                    )}
+                    onChange={e => {
+                        setNewContent({
+                            ...newContent,
+                            text: e.target.value
+                        });
+                        onChangeText?.(e.target.value)
+                    }}
                     cols={60} rows={5}
                 >
                     {content.text}
