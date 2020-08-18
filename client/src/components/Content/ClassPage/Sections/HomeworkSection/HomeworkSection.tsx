@@ -14,6 +14,7 @@ import { GET_SCHEDULE, GET_LESSONS } from "../ScheduleSection/ScheduleSection";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
 import { parseContentByDate, objectForEach, getDateStrFromDayMonthStr } from "../../../../../utils/functions";
 import Options from "../../../../Common/Options";
+import ChangeHomework from "../../../../Common/ChangeContent/ChangeHomework";
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -401,11 +402,10 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
                 {changing && changeContentModalRoot &&
                     ReactDOM.createPortal(
                         <div className="modal" onMouseDown={() => setChanging(false)}>
-                            <ChangeContent
-                                contentChanger={(newContent: content) => updateHomework(homework._id, newContent)}
-                                content={homework}
-                                closer={() => setChanging(false)}
-                                withConfirm={true}
+                            <ChangeHomework
+                                initState={homework}
+                                confirm={(newHomework) => (updateHomework(homework._id, newHomework), setChanging(false))}
+                                reject={() => setChanging(false)}
                             />
                         </div>,
                         changeContentModalRoot)
@@ -439,87 +439,14 @@ type CreateHomeworkModalProps = {
     initContent?: Partial<homework> 
 }
 const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({ returnHomework, close, initContent = {} }) => {
-    const { className } = useParams<{className: string}>();
-
-    const scheduleQuery = useQuery<{ schedule: string[][] }>(GET_SCHEDULE, { variables: { className } });
-    const lessonsQuery = useQuery<{ lessons: string[] }>(GET_LESSONS);
-
-    const [newHomework, setNewHomework] = useState<Omit<homework, "_id">>({
-        attachments: [] as WithTypename<attachment>[],
-        text: "",
-        to: String(new Date()),
-        lesson: "", 
-        ...initContent
-    });
-
-    const checkUnEmptyContent = () => {
-        return (newHomework.attachments.length > 0 || newHomework.text.trim() !== "") && newHomework.lesson !== "";
-    }
-
     if (changeContentModalRoot) {
         return ReactDOM.createPortal(
             <div className={"modal"} onMouseDown={close}>
-                <Suspender queries={[scheduleQuery, lessonsQuery]}>
-                    {({ schedule }: ({ schedule: string[][] }), { lessons }: { lessons: string[] }) => {
-                        const possibleLessons = lessons.filter(lesson => schedule.some(day => day.includes(lesson)));
-
-                        return <div className={styles.contentCreator} onMouseDown={e => e.stopPropagation()}>
-                            <div className={`${styles.header} ${styles.addition}`}>
-                                <div className={styles.confirmReject}>
-                                    <Options
-                                        include={[redactorOptions.reject, redactorOptions.confirm]}
-                                        props={{
-                                            [redactorOptions.confirm]: {
-                                                onClick: () => checkUnEmptyContent() && (returnHomework(newHomework), close()),
-                                                className: "positive",
-                                                allowOnlyRedactor: true
-                                            },
-                                            [redactorOptions.reject]: {
-                                                onClick: close,
-                                                className: "negative"
-                                            }
-                                        }}
-                                        style={{cursor: "pointer"}}
-                                        size={25}
-                                    />
-                                </div>
-                                <label className={styles.lessonPicker}>
-                                    <h1 className={styles.title}>Урок </h1>
-                                    <select
-                                        className={styles.selectLesson}
-                                        onChange={e => setNewHomework({ ...newHomework, lesson: e.target.value })}
-                                        value={newHomework.lesson}
-                                    >
-                                        {!newHomework.lesson &&
-                                        <option key={`possibleLessonNothing`} value={""}>
-                                            Выберите предмет
-                                        </option>
-                                        }
-                                        {possibleLessons
-                                            .map((lesson, i) => <option key={`possibleLesson${lesson}`} value={lesson}>
-                                                {lesson}
-                                            </option>)
-                                        }
-                                    </select>
-                                </label>
-                            </div>
-                            <ChangeContent
-                                content={newHomework}
-                                contentChanger={content => setNewHomework({ ...newHomework, ...content })}
-                                withConfirm={false}
-                                onChangeText={(newText) => setNewHomework({ ...newHomework, text: newText })}
-                                onChangeTo={(newTo) => setNewHomework({ ...newHomework, to: newTo.toISOString() })}
-                                onAddAttachment={(newAttachments) => setNewHomework({ ...newHomework, attachments: [...newHomework.attachments, ...newAttachments] })}
-                                onRemoveAttachment={(attachmentId) => setNewHomework(
-                                    {
-                                        ...newHomework,
-                                        attachments: newHomework.attachments.filter(({ _id }) => _id !== attachmentId)
-                                    })}
-                            />
-                        </div>
-                    }
-                    }
-                </Suspender>
+                <ChangeHomework
+                    initState={initContent}
+                    confirm={(homework) => (returnHomework(homework), close())}
+                    reject={close}
+                />
             </div>
             , changeContentModalRoot)
     }

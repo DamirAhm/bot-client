@@ -11,7 +11,7 @@ import Options from "../../../../Common/Options";
 const days = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"]
 type Props = {
     className: string,
-}
+} 
 
 export const GET_SCHEDULE = gql`
     query GetSchedule($className: String!){

@@ -1,181 +1,129 @@
-import React, { useReducer, ChangeEvent, useState } from 'react'
-import { MdClose, MdFileUpload } from "react-icons/md";
+import React, { ChangeEvent } from 'react'
+import { MdFileUpload } from "react-icons/md";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { content, attachment, WithTypename, vkPhoto, redactorOptions } from '../../../types';
+import { content, attachment, WithTypename, vkPhoto } from '../../../types';
 
 import styles from './ChangeContent.module.css'
-import OpenableImg from "../OpenableImage/OpenableImage";
 import FileUploader from "../FileUploader";
-import { useParams } from "react-router-dom";
-import Options from "../Options";
 import DeletableAttachment from "../OpenableImage/DeletableAttachment";
-
-type Props = {
-    content: content
-    contentChanger?: (newContent: content) => void
-    closer?: () => void
-    onChangeText?: (newText: string) => void
-    onAddAttachment?: (newAttachments: WithTypename<attachment>[]) => void
-    onRemoveAttachment?: (attachmentId: string) => void
-    onChangeTo?: (newTo: Date) => void
-    withConfirm?: boolean
-};
+import createContentFiller, { ContentSectionProps } from "../../../utils/createContentChanger/createContentChanger";
 
 const parseAttachment = (photo: vkPhoto) => {
     return `photo${photo.owner_id}_${photo.id}`;
 };
-const findMaxPhotoResolution = (photo: vkPhoto) => photo.sizes.reduce<{ url: string, height: number }>((acc, c) => c.height > acc.height ? c : acc, { height: 0, url: "" }).url;
+const findMaxPhotoResolution = (photo: vkPhoto) => 
+    photo.sizes.reduce<
+        { url: string, height: number }
+    >((acc, c) => 
+        (c.height > acc.height) ? c : acc, 
+        { height: 0, url: "" }
+    ).url;
 
+type changableContent = Pick<content, "to" | "attachments" | "text">
+type ChangeContentPropsType = {
+    [K in keyof changableContent]: ContentSectionProps<changableContent[K]>
+}
 
-const ChangeContent: React.FC<Props> = ({ 
-    content, contentChanger, closer, 
-    onChangeTo, onChangeText, onAddAttachment, 
-    onRemoveAttachment, withConfirm = true 
-}) => {
-    const [newContent, setNewContent] = useState<content>({...content});
-    
-    const { className } = useParams<{className: string}>();
-
-    const onPhotoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-        try {
-            const files = e.target.files
-            if (files) {
-                const fd = new FormData();
-                for (let i = 0; i < files.length; i++) {
-                    fd.append("newAttachment", files[i]);
+export const ChangeContentProps: ChangeContentPropsType = {
+    to: {
+        title: "Дата",
+        ContentComponent: ({ changeHandler, value }) => <DatePicker
+            selected={new Date(value)}
+            onChange={date => {
+                if (date !== null) {
+                    changeHandler(date.toISOString());
                 }
-
-                const { photos }: { photos: vkPhoto[] } = await fetch(
-                    document.location.hostname === "localhost"
-                        ? "http://localhost:8080/saveAttachment"
-                        : document.location.origin.endsWith("/")
-                            ? document.location.origin + `saveAttachment?className=${className}&type=homework&id=${content._id}`
-                            : document.location.origin + `/saveAttachment?className=${className}&type=homework&id=${content._id}`,
-                    {
-                        method: "POST",
-                        body: fd,
-                        headers: {
-                            "accepts": "application/json"
+            } }
+            minDate={new Date()}
+            dateFormat={"dd/MM/yyyy"}
+            className={styles.datePickerInput}
+            showPopperArrow={false}
+            calendarClassName={styles.datePickerCalendar} />,
+        defaultValue: new Date().toISOString(),
+    },
+    attachments: {
+        Header: ({ changeHandler, value }) => {
+            const onPhotoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+                try {
+                    const files = e.target.files;
+                    if (files) {
+                        const fd = new FormData();
+                        for (let i = 0; i < files.length; i++) {
+                            fd.append("newAttachment", files[i]);
                         }
-                    }
-                ).then(res => res.json());
-                console.log(photos);
-                const newAttachments: WithTypename<attachment>[] = photos.map((photo, i) => ({
-                    url: findMaxPhotoResolution(photo),
-                    value: parseAttachment(photo),
-                    _id: i + Date.now().toString(),
-                    __typename: "ClassHomeworkAttachment"
-                }));
 
-                setNewContent({
-                    ...newContent, 
-                    attachments: [
-                        ...content.attachments, 
-                        ...newAttachments
-                    ]
-                });
-                onAddAttachment?.(newAttachments)
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    };
-
-    const checkUnEmptyContent = () => {
-        return newContent.attachments.length > 0 || newContent.text.trim() !== "";
-    }
-    
-    return (
-        <div className={styles.contentChanger} onMouseDown={e => e.stopPropagation()}>
-            {withConfirm 
-            ? <>{ contentChanger && closer && checkUnEmptyContent()
-                ? <div className={styles.header}>
-                    <Options
-                        include={[redactorOptions.reject, redactorOptions.confirm]}
-                        props={{
-                            [redactorOptions.confirm]: {
-                                onClick: JSON.stringify(content) === JSON.stringify(newContent)
-                                    ? closer
-                                    : () => (contentChanger(newContent), closer()),
-                                className: "positive",
-                                allowOnlyRedactor: true
-                            },
-                            [redactorOptions.reject]: {
-                                onClick: closer,
-                                className: "negative"
+                        const { photos }: { photos: vkPhoto[]; } = await fetch(
+                            document.location.hostname === "localhost"
+                                ? "http://localhost:8080/saveAttachment"
+                                : document.location.origin.endsWith("/")
+                                    ? document.location.origin + `saveAttachment`
+                                    : document.location.origin + `/saveAttachment`,
+                            {
+                                method: "POST",
+                                body: fd,
+                                headers: {
+                                    "accepts": "application/json"
+                                }
                             }
-                        }}
-                        style={{cursor: "pointer"}}
-                        size={25}
-                    />
-                </div>
-                : <div style={{ width: "100%", height: "25px", marginBottom: "10px" }}></div> 
-                }</>
-            : <div></div> 
-            }
-            <section className={styles.date}>
-                <h1 className={styles.title}> Дата </h1>
-                <DatePicker
-                    selected={new Date(Date.parse(newContent.to))}
-                    onChange={date => {
-                        if (date !== null) {
-                            setNewContent({
-                                ...newContent,
-                                to: date.toISOString()
-                            })
-                            if (onChangeTo) onChangeTo(date)
-                        }
-                    }}
-                    minDate={new Date()}
-                    dateFormat={"dd/MM/yyyy"}
-                    className={styles.datePickerInput}
-                    showPopperArrow={false}
-                    calendarClassName={styles.datePickerCalendar}
-                />
-            </section>
-            <section className={styles.attachments}>
-                <div className={styles.header}>
-                    <h1 className={styles.title}> Вложения </h1>
-                    <FileUploader View={() => <MdFileUpload size={25} className={styles.uploaderIcon} />} onChange={onPhotoUpload} />
-                </div>
-                <div className={styles.attachmentsContainer}>
-                    {
-                        newContent.attachments.map(att =>
-                            <DeletableAttachment
-                                key={att._id}
-                                attachment={att.url}
-                                remove={() => {
-                                    setNewContent({
-                                        ...newContent,
-                                        attachments: newContent.attachments.filter(({_id}) => _id !== att._id)
-                                    });
-                                    onRemoveAttachment?.(att._id);
-                                }} 
-                        />)
+                        ).then(res => res.json());
+
+                        const newAttachments: WithTypename<attachment>[] = photos.map((photo, i) => ({
+                            url: findMaxPhotoResolution(photo),
+                            value: parseAttachment(photo),
+                            _id: i + Date.now().toString(),
+                            __typename: "ClassHomeworkAttachment"
+                        }));
+
+                        changeHandler([
+                            ...value,
+                            ...newAttachments
+                        ]);
                     }
-                </div>
-            </section>
-            <section className={styles.text}>
-                <h1 className={styles.title}> Домашняя работа </h1>
+                } catch (e) {
+                    console.error(e);
+                }
+            };
+
+            return <div className={styles.header}>
+                <h1 className={styles.title}> Вложения </h1>
+                <FileUploader View={() => <MdFileUpload size={25} className={styles.uploaderIcon} />} onChange={onPhotoUpload} />
+            </div>;
+        },
+        ContentComponent: ({ value, changeHandler }) => {
+            return <div className={styles.attachmentsContainer}>
+                {value.map((att: attachment) => <DeletableAttachment
+                    key={att._id}
+                    attachment={att.url}
+                    remove={() => {
+                        changeHandler(value.filter(({ _id }) => _id !== att._id));
+                    } } />
+                )}
+            </div>;
+        },
+        defaultValue: []
+    },
+    text: {
+        title: "Домашняя работа",
+        ContentComponent: ({ value, changeHandler }) => {
+            return (
                 <textarea
-                    name="text" value={newContent.text}
-                    className={styles.text} 
+                    autoFocus
+                    name="text" value={value}
+                    className={styles.text}
                     onChange={e => {
-                        setNewContent({
-                            ...newContent,
-                            text: e.target.value
-                        });
-                        onChangeText?.(e.target.value)
-                    }}
+                        changeHandler(e.target.value);
+                    } }
                     cols={60} rows={5}
                 >
-                    {content.text}
+                    {value}
                 </textarea>
-            </section>
-        </div>
-    )
-}
+            );
+        },
+        defaultValue: ""
+    }
+};
+const ChangeContent = createContentFiller<ChangeContentPropsType>(ChangeContentProps)
 
 export default ChangeContent;
 

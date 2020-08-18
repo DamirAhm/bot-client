@@ -1,0 +1,25 @@
+.contentChanger {
+    background-color: var(--secondary);
+    padding: 20px;
+}
+.contentChanger section:not(:last-of-type) {
+    margin-bottom: 10px;
+    width: 1000px;
+    min-width: 600px;
+    max-width: 90vw;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    width: 100%;
+}
+.header label {
+    width: fit-content;
+    display: flex;
+    align-items: center;
+}
+.header * {
+    cursor: pointer;
+}

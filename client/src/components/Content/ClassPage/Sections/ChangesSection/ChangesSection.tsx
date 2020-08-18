@@ -273,10 +273,9 @@ const Change: React.FC<changeProps> = ({ change, removeChange, updateChange }) =
                     ReactDOM.createPortal(
                         <div className="modal" onMouseDown={() => setUpdating(false)}>
                             <ChangeContent
-                                contentChanger={(newContent: content) => updateChange(change._id, newContent)}
-                                content={change}
-                                closer={() => setUpdating(false)}
-                                withConfirm={true}
+                                initState={change}
+                                confirm={(newContent) => (updateChange(change._id, newContent), setUpdating(false))}
+                                reject={() => setUpdating(false)}
                             />
                         </div>,
                         changeContentModalRoot)
@@ -314,15 +313,9 @@ const CreateChangeModal: React.FC<CreateChangeModalProps> = ({ returnChange, clo
         return ReactDOM.createPortal(
             <div className={"modal"} onMouseDown={close}>
                 <ChangeContent
-                    content={{
-                        attachments: [],
-                        text: "",
-                        to: String(new Date()),
-                        ...initContent
-                    }}
-                    contentChanger={content => returnChange(content)}
-                    withConfirm={true}
-                    closer={close}
+                    initState={initContent}
+                    confirm={(content) => (returnChange(content), close)}
+                    reject={close}
                 />
             </div>
             , changeContentModalRoot)
