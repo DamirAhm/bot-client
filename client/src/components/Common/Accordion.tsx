@@ -2,12 +2,12 @@ import React, { useState, HTMLAttributes } from 'react';
 import { useEffect } from "react";
 type Props = {
     Head: React.FC<{ onClick: () => void, opened: boolean }> | JSX.Element
-    Body: React.FC<{ opened: boolean }> | JSX.Element
+    children: JSX.Element | ((opened: boolean) => JSX.Element)
     initiallyOpened?: boolean
     isOpened?: boolean
 } & HTMLAttributes<HTMLDivElement>
  
-const Accordion: React.FC<Props> = ({ Body, Head, children, initiallyOpened, isOpened, ...attributes }) => {
+const Accordion: React.FC<Props> = ({ Head, children, initiallyOpened, isOpened, ...attributes }) => {
     const [opened, setOpened] = useState(initiallyOpened ?? true);
 
     useEffect(() => {
@@ -23,10 +23,7 @@ const Accordion: React.FC<Props> = ({ Body, Head, children, initiallyOpened, isO
                 }
             </div>
             {opened &&
-                <>{typeof Body === "function"
-                    ? <Body opened={opened} />
-                    : Body
-                }</>
+                <>{children && typeof children === "function" ? children(opened) : children}</>
             }
         </div>
     )

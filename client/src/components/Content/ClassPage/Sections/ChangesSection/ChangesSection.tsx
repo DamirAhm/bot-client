@@ -169,7 +169,6 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
         }
     }
     const add = (changeData: Omit<change, "_id">) => {
-        console.log(changeData);
         addChange({
             variables: { ...changeData, className, attachments: changeData?.attachments?.map(({ __typename, ...att }) => att) },
             optimisticResponse: {
@@ -219,14 +218,13 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
                                             )} />
                                         </div>
                                     }
-                                    Body={() =>
-                                        <>
-                                            <div className={`${styles.elements} ${styles.offseted}`}>
-                                                {parsedChanges[changeDate].map((change, i) => <Change updateChange={update} key={change._id} removeChange={remove} change={change} />)}
-                                            </div>
-                                        </>
-                                    }
-                                />
+                                >
+                                    <>
+                                        <div className={`${styles.elements} ${styles.offseted}`}>
+                                            {parsedChanges[changeDate].map((change, i) => <Change updateChange={update} key={change._id} removeChange={remove} change={change} />)}
+                                        </div>
+                                    </>
+                                </Accordion>
                             )}
                         </div>
                     }

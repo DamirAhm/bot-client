@@ -36,10 +36,11 @@ const InfoSection: React.FC<Props> = ({ name, children, className = "", updateSe
                         </div>
                     } </>
                 }
-                Body={() => <div className={`${styles.content} ${className}`}>
-                    {children && typeof children === "function" ? children(text) : children}
-                </div>}
-            />
+            >
+            <div className={`${styles.content} ${className}`}>
+                {children && typeof children === "function" ? children(text) : children}
+            </div>
+            </Accordion>
         </div>
     )
 }
