@@ -40,12 +40,16 @@
     padding: 5px;
     border-radius: 5px;
     color: var(--main);
-    margin-left: 10%;
 }
 .datePickerCalendar,
 .datePickerCalendar :global(.react-datepicker__current-month) {
     font-size: 1.1rem;
     color: var(--main);
+}
+
+.selectLesson {
+    padding: 5px;
+    border-radius: 5px;
 }
 
 .attachmentsContainer {

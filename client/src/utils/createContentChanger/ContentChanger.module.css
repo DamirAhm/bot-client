@@ -1,6 +1,6 @@
 .contentChanger {
     background-color: var(--secondary);
-    padding: 20px;
+    padding: 15px 20px;
 }
 .contentChanger section:not(:last-of-type) {
     margin-bottom: 10px;
@@ -22,4 +22,15 @@
 }
 .header * {
     cursor: pointer;
+}
+
+.title {
+    color: var(--main);
+    margin-bottom: 5px;
+    font-size: 1.8rem;
+}
+
+.error {
+    color: var(--negative);
+    font-size: 1.8rem;
 }

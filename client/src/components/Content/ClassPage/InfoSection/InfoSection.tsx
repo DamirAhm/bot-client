@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import styles from './InfoSection.module.css'
-import { FaFilter } from "react-icons/fa";
 import Searcher from '../../../Common/Searcher';
-import ReactElement from 'react';
 import Accordion from '../../../Common/Accordion';
 import { GoTriangleRight } from "react-icons/go";
 

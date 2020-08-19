@@ -61,6 +61,7 @@
 
 .sectionHeader .addContent {
     visibility: hidden;
+    display: flex;
 }
 .sectionHeader:hover .addContent {
     visibility: visible;

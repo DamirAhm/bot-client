@@ -41,6 +41,7 @@ export const ChangeContentProps: ChangeContentPropsType = {
             showPopperArrow={false}
             calendarClassName={styles.datePickerCalendar} />,
         defaultValue: new Date().toISOString(),
+        validator: (date) => {if (+date >= Date.now()) return "Дата на которую задано задание должно быть в будущем"} 
     },
     attachments: {
         Header: ({ changeHandler, value }) => {
@@ -123,7 +124,13 @@ export const ChangeContentProps: ChangeContentPropsType = {
         defaultValue: ""
     }
 };
-const ChangeContent = createContentFiller<ChangeContentPropsType>(ChangeContentProps)
+const ChangeContent = createContentFiller<ChangeContentPropsType>(
+    ChangeContentProps, 
+    (state) => {
+    if (state.text.trim() === "" || state.attachments.length === 0) {
+        return "Задание должно содержать текст или фотографии";
+    }
+})
 
 export default ChangeContent;
 

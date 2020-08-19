@@ -10,6 +10,9 @@ import { GET_SCHEDULE, GET_LESSONS } from "../../Content/ClassPage/Sections/Sche
 import { ChangeContentProps } from "./ChangeContent";
 import { useParams } from "react-router-dom";
  
+
+const DEFAULT_LESSON = "Выберите предмет";
+
 type changableHomework = Pick<homework, "lesson" | "to" | "attachments" | "text">
 type ChangeHomeworkProps = {
     [K in keyof changableHomework]: ContentSectionProps<changableHomework[K]>
@@ -33,9 +36,9 @@ const ChangeHomework = createContentFiller<ChangeHomeworkProps>({
                             onChange={e => changeHandler(e.target.value)}
                             value={value}
                         >
-                            {!value &&
-                                <option key={`possibleLessonNothing`} value={""}>
-                                    Выберите предмет 
+                            {(!value || value === DEFAULT_LESSON) &&
+                                <option key={`possibleLessonNothing`} value={DEFAULT_LESSON}>
+                                    {DEFAULT_LESSON} 
                                 </option>
                             }
                             {possibleLessons
@@ -47,9 +50,15 @@ const ChangeHomework = createContentFiller<ChangeHomeworkProps>({
                     }}
                 </Suspender>
             )
-        }
+        },
+        defaultValue: "Выберите предмет",
+        validator: (lesson) => {if (lesson === "" || lesson === DEFAULT_LESSON) return "Выберите урок"}
     },
     ...ChangeContentProps
+}, (state) => {
+    if (state.text.trim() === "" && state.attachments.length === 0) {
+        return "Задание должно содержать текст или фотографии";
+    }
 })
 
 export default ChangeHomework;
