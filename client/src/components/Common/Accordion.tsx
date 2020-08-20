@@ -16,16 +16,16 @@ const Accordion: React.FC<Props> = ({ Head, children, initiallyOpened, isOpened,
 
     return (
         <div {...attributes}>
-            <div className="accordion">
+            <div className="accordion" onClick={() => setOpened(!opened)}>
                 {typeof Head === "function"
-                    ? <Head onClick={() => setOpened(!opened)} opened={opened} />
+                    ? <Head onClick={() => {}} opened={opened} />
                     : Head
                 }
             </div>
             {opened &&
                 <>{children && typeof children === "function" ? children(opened) : children}</>
             }
-        </div>
+        </div> 
     )
 }
 

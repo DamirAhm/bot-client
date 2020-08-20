@@ -254,9 +254,9 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                             {Object.keys(oldHw).length > 0 &&
                                 <Accordion
                                     initiallyOpened={false}
-                                    Head={({ opened, onClick }) =>
+                                    Head={({ opened }) =>
                                         <div className={styles.oldContentHeader}>
-                                            <p className={`${styles.date} ${styles.accordion}`} onClick={onClick}>
+                                            <p className={`${styles.date} ${styles.accordion}`}>
                                                     Старое дз
                                                     <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} />
                                             </p>
@@ -272,18 +272,18 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                             />
                                         </div>
                                     } 
-                                    >
-                                        <div className={styles.offseted}>
-                                            <HomeworkLayout 
-                                                homework={oldHw}
-                                                initiallyOpened={false}
-                                                {...{
-                                                    setHomeworkCreating, setInitContent, 
-                                                    update, remove
-                                                }}
-                                                />
-                                        </div>
-                                    </Accordion>
+                                >
+                                    <div className={styles.offseted}>
+                                        <HomeworkLayout 
+                                            homework={oldHw}
+                                            initiallyOpened={false}
+                                            {...{
+                                                setHomeworkCreating, setInitContent, 
+                                                update, remove
+                                            }}
+                                            />
+                                    </div>
+                                </Accordion>
                             }
                             <HomeworkLayout 
                                 homework={newHw}

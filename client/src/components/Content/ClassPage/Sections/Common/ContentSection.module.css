@@ -82,7 +82,7 @@
     display: none;
 }
 .oldContentHeader:hover .removeOldContent {
-    display: inline;
+    display: flex;
 }
 
 .date {

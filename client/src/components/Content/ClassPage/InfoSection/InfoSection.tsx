@@ -21,7 +21,6 @@ const InfoSection: React.FC<Props> = ({ name, children, className = "", updateSe
     return (
         <div className={styles.section}>
             <Accordion
-                isOpened={opened}
                 Head={
                     <>{Header
                         ? <Header onClick={onClick} opened={opened} />
