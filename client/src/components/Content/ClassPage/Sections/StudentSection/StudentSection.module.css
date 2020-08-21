@@ -1,4 +1,4 @@
-.students > *{
+.students > * {
     margin-bottom: 20px;
 }
 
@@ -14,7 +14,6 @@
     display: flex;
     align-items: center;
     color: var(--accent);
-
 }
 
 .remove {
@@ -37,7 +36,7 @@
 }
 
 .chooseStudent {
-    height: 70%;
+    height: 60%;
     min-height: 300px;
     width: 25%;
     min-width: 200px;
@@ -52,7 +51,7 @@
 
 .title {
     color: var(--main);
-    font-size: 1.4rem;
+    font-size: 1.8rem;
     margin-bottom: 10px;
     font-weight: bolder;
     text-align: center;
@@ -93,6 +92,11 @@
     text-align: right;
 }
 
+.filters {
+    width: 80%;
+    margin: 0 auto;
+}
+
 @media screen and (max-width: 1300px) {
     .chooseStudent {
         width: 50%;
@@ -109,7 +113,9 @@
     .chooseStudent {
         width: 90%;
     }
-
+    .filters {
+        width: 100%;
+    }
     .students {
         grid-template-columns: 1fr;
     }
@@ -118,5 +124,6 @@
 @media screen and (max-width: 400px) {
     .chooser span {
         font-size: 1rem;
+        font-weight: 700;
     }
 }

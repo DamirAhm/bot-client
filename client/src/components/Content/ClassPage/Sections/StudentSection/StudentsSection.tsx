@@ -4,7 +4,7 @@ import Suspender from '../../../../Common/Suspender';
 import StudentPreview from "../../../Students/StudentPreview/StudentPreview"
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
-import { studentPreview } from '../../../Students/Students';
+import { sort, studentPreview } from '../../../Students/Students';
 import { redactorOptions, roles, Student, WithTypename } from '../../../../../types';
 import ReactDOM from "react-dom"
 import useList from "../../../../../hooks/useList";
@@ -12,6 +12,8 @@ import styles from "./StudentSection.module.css";
 import Options from "../../../../Common/Options";
 import { UserContext } from "../../../../../App";
 import { useContext } from "react";
+import Filters from "../../../../Filters/Filters";
+import { highlightSearch } from "../../../../../utils/functions";
 
 const modalEl = document.getElementById("chooseStudentModal");
 type Props = {
@@ -60,11 +62,11 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
     const { data, loading, error } = useQuery<{ students: studentPreview[] }>(GET_STUDENTS_FOR_CLASS, { variables: { className } });
 
     const [remove] = useMutation<{ removed: boolean }, { vkId: number }>(REMOVE_STUDENT_FROM_CLASS);
-    const [changeClass] = useMutation<WithTypename<{ 
-        student: WithTypename<studentPreview> 
-    }>, { 
-        vkId: number, 
-        className: string 
+    const [changeClass] = useMutation<WithTypename<{
+        student: WithTypename<studentPreview>
+    }>, {
+        vkId: number,
+        className: string
     }>(ADD_STUDENT_TO_CLASS)
 
     const [modalOpened, setModalOpened] = useState(false);
@@ -142,17 +144,17 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
                 <Suspender query={{ data: items, loading, error }}>
                     {(data: Student[]) =>
                         <div className={`${styles.students}`}>
-                            {role === roles.contributor || role === roles.admin && 
+                            {role === roles.contributor || role === roles.admin &&
                                 <div className={styles.creator} onClick={() => setModalOpened(true)}> Добавить ученика </div>
                             }
                             {data.map(e =>
                                 <div className={styles.student} key={e.vkId}>
                                     <StudentPreview searchText={searchString}  {...e} />
-                                    <Options 
+                                    <Options
                                         include={redactorOptions.reject}
                                         props={{
                                             onClick: () => removeStudent(e.vkId),
-                                            size: 30, 
+                                            size: 30,
                                             className: `${styles.remove} remove`,
                                             allowOnlyRedactor: true
                                         }}
@@ -164,7 +166,7 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
                 </Suspender>
                 {modalOpened &&
                     <StudentModal className={className} styles={styles} addStudent={addToClass} closeModal={() => setModalOpened(false)} />
-            }</>
+                }</>
         </InfoSection>
     )
 }
@@ -194,6 +196,57 @@ type StudentModalProps = {
 
 const StudentModal: React.FC<StudentModalProps> = ({ closeModal, addStudent, styles, className }) => {
     const query = useQuery<{ students: studentPreview[] }>(GET_STUDENTS_FOR_CHOOSING);
+    const { items, setFilter, setSort, setItems } = useList<studentPreview>([], (student: studentPreview) => student.className !== className);
+    const [searchText, setText] = useState("");
+    const sorts: sort[] = [
+        {
+            name: "Имени",
+            sort: (a: studentPreview, b: studentPreview) => (a.fullName > b.fullName ? 1 : -1)
+        },
+        {
+            name: "Vk id",
+            sort: (a: studentPreview, b: studentPreview) => (a.vkId - b.vkId)
+        },
+        {
+            name: "Имени класса",
+            sort: (a: studentPreview, b: studentPreview) => {
+                if (a.className.toLowerCase() === "нету") return -1;
+                if (b.className.toLowerCase() === "нету") return 1;
+                return (a.className > b.className ? 1 : -1)
+            }
+        }
+    ];
+
+    const setSearchText = (str: string) => {
+        str = str.toLowerCase();
+        setText(str);
+        setFilter(
+            (c: studentPreview) =>
+                c.fullName
+                    .toLowerCase()
+                    .search(str) !== -1 ||
+                c.vkId
+                    .toString()
+                    .search(str) !== -1 ||
+                c.className
+                    .toLowerCase()
+                    .search(str) !== -1,
+            (student: studentPreview) => student.className !== className
+        );
+    };
+
+    const setSorting = (name: string) => {
+        const sort = sorts.find(sort => sort.name === name)?.sort;
+        if (sort) {
+            setSort(sort);
+        } else {
+            setSort(() => 1);
+        }
+    };
+
+    useEffect(() => {
+        setItems(query.data?.students || [])
+    }, [query.data?.students])
 
     if (modalEl) {
         return ReactDOM.createPortal(
@@ -201,25 +254,29 @@ const StudentModal: React.FC<StudentModalProps> = ({ closeModal, addStudent, sty
                 <div className={styles.chooseStudent} onClick={e => (e.stopPropagation())}>
                     <span className={styles.title}> Выберите ученика которого необходимо добавить </span>
                     <Suspender query={query}>
-                        {(data: { students: studentPreview[] }) =>
-                            <div className={styles.studentsChooser}>
-                                <div className={styles.chooser}>
-                                    <span className={styles.chooser_name}>Имя</span>
-                                    <span className={styles.chooser_vkId}>vkId</span>
-                                    <span className={styles.chooser_className}>Класс</span>
-                                </div>
-                                {data.students
-                                    .filter((student: studentPreview) => student.className !== className)
-                                    .map((student: studentPreview) =>
-                                        <div key={student.vkId} className={styles.chooser} onClick={() => (addStudent(student), closeModal())}>
-                                            <span className={styles.chooser_name}>{student.fullName}</span>
-                                            <span className={styles.chooser_vkId}>{student.vkId}</span>
-                                            <span className={styles.chooser_className}>{student.className}</span>
-                                        </div>
-                                    )
-                                }
+                        <div className={styles.studentsChooser}>
+                            <Filters
+                                className={styles.filters}
+                                setSearchText={setSearchText}
+                                sortsList={sorts}
+                                setSort={setSorting}
+                            />
+                            <div className={styles.chooser}>
+                                <span className={styles.chooser_name}>Имя</span>
+                                <span className={styles.chooser_vkId}>vkId</span>
+                                <span className={styles.chooser_className}>Класс</span>
                             </div>
-                        }
+                            {items
+                                .map((student: studentPreview) =>
+                                    <StudentPicker
+                                        onClick={() => (addStudent(student), closeModal())}
+                                        key={student.vkId}
+                                        student={student}
+                                        searchText={searchText}
+                                    />
+                                )
+                            }
+                        </div>
                     </Suspender>
                 </div>
             </div>,
@@ -227,4 +284,27 @@ const StudentModal: React.FC<StudentModalProps> = ({ closeModal, addStudent, sty
     }
     return null;
 }
+
+const StudentPicker: React.FC<{
+    student: studentPreview,
+    onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void,
+    searchText: string
+}> = ({ student, onClick, searchText }) => {
+    const highlighter = (str: string | number) => {
+        return highlightSearch(str.toString(), searchText);
+    };
+
+    return (
+        <div
+            key={student.vkId}
+            className={styles.chooser}
+            onClick={onClick}
+        >
+            <span className={styles.chooser_name}>{highlighter(student.fullName)}</span>
+            <span className={styles.chooser_vkId}>{highlighter(student.vkId)}</span>
+            <span className={styles.chooser_className}>{highlighter(student.className)}</span>
+        </div>
+    )
+}
+
 export default React.memo(StudentsSection)

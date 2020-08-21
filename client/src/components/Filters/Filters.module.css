@@ -37,17 +37,18 @@
 @media screen and (max-width: 776px) {
     .filters input,
     .filters select {
-        padding: 3px 5px;
+        padding: 3px 3px;
         background-color: #fff;
         width: 100%;
         color: var(--main) !important;
+        font-size: 1rem;
     }
 
     .filters .search {
-        /*width: 60px;*/
+        width: 50%;
     }
 
     .filters {
-        padding: 0 15px;
+        padding: 0;
     }
 }

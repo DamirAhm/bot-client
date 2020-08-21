@@ -6,7 +6,6 @@ import { gql } from "apollo-boost";
 import { useMutation } from "@apollo/react-hooks";
 import { highlightSearch } from "../../../../utils/functions";
 import { Link } from "react-router-dom";
-import { GiSpiralTentacle } from "react-icons/gi";
 
 type Props = {
     vkId: number
@@ -14,7 +13,7 @@ type Props = {
     banned: boolean
     role: roles,
     searchText?: string
-    fullName: string, 
+    fullName: string,
     _id: string
 }
 
