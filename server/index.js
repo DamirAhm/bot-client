@@ -89,7 +89,7 @@ app.post("/saveAttachment", upload.array("newAttachment"), async (req, res) => {
 
 app.get("/*", (req, res) => {
     if (/\.(js|css|html|svg|ico|png|jpg|webp)$/i.test(req.url)) {
-        path.join(__dirname, "build", req.url);
+        res.sendFile(path.join(__dirname, "build", req.url));
     } else {
         res.sendFile(__dirname + "/build/index.html");
     }
