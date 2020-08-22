@@ -8,7 +8,7 @@ const cors = require("cors");
 const multer = require("multer");
 const fs = require("fs");
 const { DataBase: DB } = require("bot-database/DataBase");
-const serveHandler = require("serve-handler");
+const path = require("path");
 
 const DataBase = new DB(config["MONGODB_URI"]);
 const vk = new VK_API(
@@ -89,7 +89,7 @@ app.post("/saveAttachment", upload.array("newAttachment"), async (req, res) => {
 
 app.get("/*", (req, res) => {
     if (/\.(js|css|html|svg|ico|png|jpg|webp)$/i.test(req.url)) {
-        serveHandler(req, res, { public: "./build" });
+        path.join(__dirname, "build", req.url);
     } else {
         res.sendFile(__dirname + "/build/index.html");
     }
