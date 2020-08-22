@@ -32,7 +32,7 @@
     "scripts": {
         "start": "react-scripts start",
         "vk-tunnel": "vk-tunnel --insecure=1 --http-protocol=https --ws-protocol=wss --host=localhost --port=3000",
-        "build": "react-scripts build",
+        "build": "CI=false react-scripts build",
         "test": "env CI=true react-scripts test --no-watchman --all",
         "test:dev": "react-scripts test",
         "eject": "react-scripts eject",
