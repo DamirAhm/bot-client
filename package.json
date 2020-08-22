@@ -15,7 +15,6 @@
         "start:server": "npm run start:dev --prefix ./server",
         "start:client": "npm start --prefix ./client",
         "test": "npm run test --prefix ./client && npm run test --prefix ./server",
-        "predeploy": "npm run build",
         "deploy": "rsync -e ssh -i /home/damirahm/.ssh/id_rsa -o StrictHostKeyChecking=no --archive --compress --progress --delete ./server root@damirahm.ru:/root/bot-client-server"
     },
     "repository": {
