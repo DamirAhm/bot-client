@@ -196,7 +196,8 @@ type StudentModalProps = {
 
 const StudentModal: React.FC<StudentModalProps> = ({ closeModal, addStudent, styles, className }) => {
     const query = useQuery<{ students: studentPreview[] }>(GET_STUDENTS_FOR_CHOOSING);
-    const { items, setFilter, setSort, setItems } = useList<studentPreview>([], (student: studentPreview) => student.className !== className);
+    const { items, setFilter, setSort, setItems } = useList<studentPreview>(
+        [], (student: studentPreview) => student.className !== className, sorts[2].sort);
     const [searchText, setText] = useState("");
     const sorts: sort[] = [
         {

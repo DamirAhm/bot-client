@@ -6,10 +6,10 @@ const StudentModel = require("bot-database/Models/StudentModel");
 const ClassModel = require("bot-database/Models/ClassModel");
 const { DataBase: DB } = require("bot-database/DataBase");
 const VK_API = require("bot-database/VkAPI/VK_API");
-const config = require("config");
+const config = require("./config.json");
 
-const DataBase = new DB(config.get("MONGODB_URI"));
-const vk = new VK_API(config.get("VK_API_KEY"));
+const DataBase = new DB(config["MONGODB_URI"]);
+const vk = new VK_API(config["VK_API_KEY"]);
 
 const customizationOptions = {};
 const StudentTC = composeWithMongoose(StudentModel, customizationOptions);
