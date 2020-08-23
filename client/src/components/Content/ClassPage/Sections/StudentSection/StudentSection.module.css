@@ -6,20 +6,32 @@
     max-height: 300px;
     overflow: auto;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     color: var(--accent);
+    justify-items: center;
 }
 
 .student {
     display: flex;
     align-items: center;
     color: var(--accent);
+    width: 100%;
+    min-width: 200px;
+    align-self: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
 }
 
 .remove {
     padding-left: 10px;
     box-sizing: content-box;
     cursor: pointer;
+    display: flex;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .creator {

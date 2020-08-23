@@ -10,7 +10,7 @@
 
 .link {
     display: flex;
-    width: 80%;
+    width: 100%;
     font-size: 1.6rem;
     border-radius: 18px;
     justify-content: space-between;

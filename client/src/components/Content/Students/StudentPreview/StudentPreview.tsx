@@ -1,6 +1,5 @@
 import React, { memo } from "react";
 import styles from "./StudentPreview.module.css";
-import { roles } from "../../../../types";
 import { highlightSearch } from "../../../../utils/functions";
 import { Link } from "react-router-dom";
 import { studentPreview } from "../Students";

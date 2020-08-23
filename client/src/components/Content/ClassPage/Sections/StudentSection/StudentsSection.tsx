@@ -111,14 +111,25 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
                         }
                     });
 
-                if (data?.students && result.data?.student) {
-                    proxy.writeQuery({
-                        query: GET_STUDENTS_FOR_CLASS,
-                        variables: { className },
-                        data: {
-                            students: data.students.concat([result.data.student])
-                        }
-                    })
+                const resData = result.data;
+
+                if (resData !== undefined && resData !== null) {
+                    if (data?.students && result.data?.student) {
+                        proxy.writeQuery({
+                            query: GET_STUDENTS_FOR_CLASS,
+                            variables: { className },
+                            data: {
+                                students: data.students.concat([result.data.student])
+                            }
+                        })
+                        proxy.writeQuery({
+                            query: GET_STUDENTS_FOR_CLASS,
+                            variables: { className: student.className },
+                            data: {
+                                students: data.students.filter(({ _id }) => _id !== resData.student._id)
+                            }
+                        })
+                    }
                 }
             }
         })
