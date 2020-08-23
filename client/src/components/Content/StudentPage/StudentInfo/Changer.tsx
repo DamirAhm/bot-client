@@ -3,7 +3,6 @@ import styles from "./StudentInfo.module.css";
 import StudentInfo, { infos } from "./StudentInfo";
 import { gql } from 'apollo-boost';
 import { useQuery } from '@apollo/react-hooks';
-import { parseDate } from '../../../../utils/date';
 
 export type changeHandler<T = string | number | boolean> = (path: string, value: T) => void
 type SelectorProps = {
@@ -36,7 +35,7 @@ const GET_INFO = gql`
 `
 
 const Changer: React.FC<Props<string | number | boolean | object>> = ({ name, value, changeHandler }) => {
-    const { data, loading, error } = useQuery<{ classes: { name: string }[], roles: string[] }>(GET_INFO);
+    const { data, error } = useQuery<{ classes: { name: string }[], roles: string[] }>(GET_INFO);
 
     if (error) return <div>{error}</div>
     return (

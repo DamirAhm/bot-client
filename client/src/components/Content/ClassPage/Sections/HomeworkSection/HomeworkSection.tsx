@@ -3,14 +3,11 @@ import styles from '../Common/ContentSection.module.css'
 import InfoSection from '../../InfoSection/InfoSection';
 import { gql } from 'apollo-boost';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { content, attachment, WithTypename, homework, redactorOptions } from '../../../../../types';
+import { attachment, WithTypename, homework, redactorOptions } from '../../../../../types';
 import Suspender from '../../../../Common/Suspender';
 import Accordion from "../../../../Common/Accordion";
 import { GoTriangleRight } from "react-icons/go";
-import { useParams } from "react-router-dom";
 import ReactDOM from "react-dom";
-import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
-import { GET_SCHEDULE, GET_LESSONS } from "../ScheduleSection/ScheduleSection";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
 import { parseContentByDate, objectForEach, getDateStrFromDayMonthStr } from "../../../../../utils/functions";
 import Options from "../../../../Common/Options";
@@ -103,7 +100,7 @@ const REMOVE_OLD_HOMEWORK = gql`
 const HomeworkSection: React.FC<Props> = ({ className }) => {
     const [homeworkCreating, setHomeworkCreating] = useState(false);
     const [initContent, setInitContent] = useState({});
-    const homeworkQuery = useQuery<{ homework: homework[] }, {className: string}>(GET_HOMEWORK, { variables: { className } });
+    const homeworkQuery = useQuery<{ homework: homework[] }, { className: string }>(GET_HOMEWORK, { variables: { className } });
 
     const [removeHomework] = useMutation<
         WithTypename<{
@@ -137,12 +134,12 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
         }
     >(ADD_HOMEWORK)
     const [removeOldHomework] = useMutation<
-        {removeOldHomework: homework[]},
-        {className: string}
+        { removeOldHomework: homework[] },
+        { className: string }
     >(REMOVE_OLD_HOMEWORK, {
         variables: { className },
         optimisticResponse: {
-            removeOldHomework: homeworkQuery.data?.homework.filter(({to}) => Date.now() - Date.parse(to) <= 24 * 60 * 60 * 1000) || []
+            removeOldHomework: homeworkQuery.data?.homework.filter(({ to }) => Date.now() - Date.parse(to) <= 24 * 60 * 60 * 1000) || []
         },
         update: (proxy, mutation) => {
             if (mutation && mutation.data?.removeOldHomework) {
@@ -150,11 +147,12 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                     query: GET_HOMEWORK,
                     variables: { className },
                     data: {
-                        homework: mutation.data.removeOldHomework}
+                        homework: mutation.data.removeOldHomework
+                    }
                 })
             }
         }
-    } );
+    });
 
     const remove = (homeworkId: string | undefined) => {
         if (homeworkId) {
@@ -181,7 +179,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
         }
     }
     const update = (homeworkId: string | undefined, updates: Partial<WithTypename<homework>>) => {
-        const {__typename, ...updatesWithoutTypename} = updates; 
+        const { __typename, ...updatesWithoutTypename } = updates;
 
         if (homeworkId) {
             updateHomework({
@@ -229,21 +227,21 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
         })
         setInitContent({});
     }
- 
-    return ( 
+
+    return (
         <>
             <InfoSection
                 name='Домашняя работа'
                 Header={({ opened, onClick }) =>
                     <div className={`${styles.sectionHeader} ${styles.contentHeader}`} onClick={onClick}>
                         <div className={styles.title}>
-                            Домашняя работа 
+                            Домашняя работа
                             <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                         </div>
-                        <Add onClick={(e) => (
-                                    e.stopPropagation(), 
-                                    setHomeworkCreating(true)
-                        )} />
+                        <Add onClick={(e) => {
+                            e.stopPropagation();
+                            setHomeworkCreating(true)
+                        }} />
                     </div>
                 }
             >
@@ -257,11 +255,11 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                     Head={({ opened }) =>
                                         <div className={styles.oldContentHeader}>
                                             <p className={`${styles.date} ${styles.accordion}`}>
-                                                    Старое дз
+                                                Старое дз
                                                     <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} />
                                             </p>
 
-                                            <Options 
+                                            <Options
                                                 include={redactorOptions.delete}
                                                 props={{
                                                     allowOnlyRedactor: true,
@@ -271,24 +269,24 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                                 }}
                                             />
                                         </div>
-                                    } 
+                                    }
                                 >
                                     <div className={styles.offseted}>
-                                        <HomeworkLayout 
+                                        <HomeworkLayout
                                             homework={oldHw}
                                             initiallyOpened={false}
                                             {...{
-                                                setHomeworkCreating, setInitContent, 
+                                                setHomeworkCreating, setInitContent,
                                                 update, remove
                                             }}
-                                            />
+                                        />
                                     </div>
                                 </Accordion>
                             }
-                            <HomeworkLayout 
+                            <HomeworkLayout
                                 homework={newHw}
                                 {...{
-                                    setHomeworkCreating, setInitContent, 
+                                    setHomeworkCreating, setInitContent,
                                     update, remove
                                 }}
                             />
@@ -301,7 +299,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                 ReactDOM.createPortal(
                     <CreateHomeworkModal
                         returnHomework={add}
-                        close={() => (setHomeworkCreating(false), setInitContent({}))}
+                        close={() => { setHomeworkCreating(false); setInitContent({}) }}
                         initContent={initContent}
                     />,
                     changeContentModalRoot
@@ -320,14 +318,14 @@ const HomeworkLayout: React.FC<{
     update: (homeworkId: string | undefined, updates: Partial<homework>) => void
     remove: (homeworkId: string | undefined) => void
 }> = React.memo(({
-    homework, remove, update, 
+    homework, remove, update,
     setHomeworkCreating, setInitContent,
     initiallyOpened = true
 }) => {
     const parsedHomework = objectForEach(homework, parseHomeworkByLesson);
-    
+
     return <>
-        {Object.keys(parsedHomework).map(hwDate => 
+        {Object.keys(parsedHomework).map(hwDate =>
             <Accordion
                 key={hwDate}
                 initiallyOpened={initiallyOpened}
@@ -337,11 +335,11 @@ const HomeworkLayout: React.FC<{
                             {hwDate}
                             <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                         </div>
-                        <Add onClick={(e) => (
-                            e.stopPropagation(), 
-                            setHomeworkCreating(true), 
-                            setInitContent({to: getDateStrFromDayMonthStr(hwDate)}) 
-                        )} />
+                        <Add onClick={(e) => {
+                            e.stopPropagation();
+                            setHomeworkCreating(true);
+                            setInitContent({ to: getDateStrFromDayMonthStr(hwDate) });
+                        }} />
                     </div>
                 }
             >
@@ -350,16 +348,16 @@ const HomeworkLayout: React.FC<{
                         <Accordion
                             className={styles.offseted} key={hwDate + lesson}
                             Head={({ onClick, opened }) =>
-                            <div className={styles.sectionHeader} onClick={onClick}>
+                                <div className={styles.sectionHeader} onClick={onClick}>
                                     <div className={`${styles.lesson} ${styles.accordion}`}>
                                         {lesson}
                                         <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                                     </div>
-                                    <Add onClick={(e) => (
-                                        e.stopPropagation(), 
-                                        setHomeworkCreating(true), 
-                                        setInitContent({to: getDateStrFromDayMonthStr(hwDate), lesson})
-                                        )} />
+                                    <Add onClick={(e) => {
+                                        e.stopPropagation();
+                                        setHomeworkCreating(true);
+                                        setInitContent({ to: getDateStrFromDayMonthStr(hwDate), lesson });
+                                    }} />
                                 </div>
                             }
                         >
@@ -386,13 +384,13 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
                         ? <div className={styles.attachments}>
                             <ImgAlbum images={homework.attachments} />
                         </div>
-                        : <ImgAlbum images={homework.attachments} 
+                        : <ImgAlbum images={homework.attachments}
                             Stab={({ onClick }) => (
                                 <div className={styles.stab} onClick={onClick}>
                                     <span>{homework.attachments.length}</span>
                                     <span> Photos </span>
                                 </div>
-                            )}/>
+                            )} />
                     } </>
                 }
                 {homework.text &&
@@ -403,7 +401,7 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
                         <div className="modal" onMouseDown={() => setChanging(false)}>
                             <ChangeHomework
                                 initState={homework}
-                                confirm={(newHomework) => (updateHomework(homework._id, newHomework), setChanging(false))}
+                                confirm={(newHomework) => { updateHomework(homework._id, newHomework); setChanging(false) }}
                                 reject={() => setChanging(false)}
                             />
                         </div>,
@@ -411,17 +409,17 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
                 }
             </div>
             <div className={styles.controls}>
-                <Options 
+                <Options
                     include={[redactorOptions.change, redactorOptions.delete]}
-                    props={{ 
+                    props={{
                         [redactorOptions.change]: {
                             onClick: () => setChanging(true),
-                            className: `${styles.pen}`, 
+                            className: `${styles.pen}`,
                             size: 15,
                         },
                         [redactorOptions.delete]: {
                             onClick: () => removeHomework(homework._id),
-                            className: `${styles.remove}`, 
+                            className: `${styles.remove}`,
                             size: 20,
                         }
                     }}
@@ -432,10 +430,10 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
     )
 }
 
-type CreateHomeworkModalProps = { 
-    returnHomework: (hw: Omit<homework, "_id">) => void, 
-    close: () => void, 
-    initContent?: Partial<homework> 
+type CreateHomeworkModalProps = {
+    returnHomework: (hw: Omit<homework, "_id">) => void,
+    close: () => void,
+    initContent?: Partial<homework>
 }
 const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({ returnHomework, close, initContent = {} }) => {
     if (changeContentModalRoot) {
@@ -443,7 +441,7 @@ const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({ returnHomewor
             <div className={"modal"} onMouseDown={close}>
                 <ChangeHomework
                     initState={initContent}
-                    confirm={(homework) => (returnHomework(homework), close())}
+                    confirm={(homework) => { returnHomework(homework); close() }}
                     reject={close}
                 />
             </div>
@@ -452,16 +450,17 @@ const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({ returnHomewor
     return null;
 }
 
-const Add: React.FC<{onClick: (e: React.MouseEvent<SVGElement, MouseEvent>) => void}> = ({onClick}) => {
-    return <Options 
-        include={redactorOptions.add} 
+const Add: React.FC<{ onClick: (e: React.MouseEvent<SVGElement, MouseEvent>) => void }> = ({ onClick }) => {
+    return <Options
+        include={redactorOptions.add}
         props={{
             [redactorOptions.add]: {
-            className: styles.addContent,
-            size: 30,
-            onClick,
-            allowOnlyRedactor: true
-        }}}
+                className: styles.addContent,
+                size: 30,
+                onClick,
+                allowOnlyRedactor: true
+            }
+        }}
     />
 }
 
@@ -471,7 +470,7 @@ const parseHomeworkByLesson = (homework: homework[]): { [lesson: string]: homewo
     for (let hw of homework) {
         const lesson = hw.lesson;
         if (parsedHomework.hasOwnProperty(lesson)) {
-                parsedHomework[lesson].push(hw);
+            parsedHomework[lesson].push(hw);
         } else {
             parsedHomework[lesson] = [hw];
         }

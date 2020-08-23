@@ -1,12 +1,12 @@
 import React, { lazy, Suspense, useEffect, useState } from 'react';
 import Sidebar from "./components/Sidebar/Sidebar";
-import { Redirect, Route, RouteChildrenProps, RouteComponentProps, Switch } from "react-router";
+import { Redirect, Route, Switch } from "react-router";
 import StudentPage from "./components/Content/StudentPage/StudentPage";
 import ClassPage from './components/Content/ClassPage/ClassPage';
 import { roles, Student, User } from "./types";
 import withRedirect from "./HOCs/withAuth";
 import { gql } from "apollo-boost";
-import { useApolloClient, useQuery } from "@apollo/react-hooks";
+import { useApolloClient } from "@apollo/react-hooks";
 
 const Classes = lazy(() => import("./components/Content/Classes/Classes"));
 const Students = lazy(() => import("./components/Content/Students/Students"));
@@ -77,7 +77,7 @@ function App() {
                 }
             }
         }
-    }, [])
+    }, [user]);
 
     return (
         <UserContext.Provider value={{ isAuth: user !== null, ...user }}>

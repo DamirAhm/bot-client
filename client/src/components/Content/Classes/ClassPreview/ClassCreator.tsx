@@ -69,21 +69,21 @@ const ClassCreator: React.FC = () => {
             <div className={`${styles.creator} ${!creating ? styles.creator_stab : ""} ${styles.preview}`} onClick={() => setCreating(true)}>
                 {creating ?
                     <form onSubmit={confirm} className={styles.form}>
-                        <Options 
-                            include={redactorOptions.reject} 
+                        <Options
+                            include={redactorOptions.reject}
                             size={20} onClick={clear}
                             className={`reject ${styles.button}`} />
-                        <input 
-                            onChange={(e) => setName(e.target.value)} value={name} 
+                        <input
+                            onChange={(e) => setName(e.target.value)} value={name}
                             autoFocus={true} type="text"
                             placeholder={error ?? "Имя класса в формате цифра буква"}
                             className={`${error ? styles.with_error : ""} ${styles.input}`} />
-                        <Options 
-                            include={redactorOptions.confirm} 
-                            size={20} onClick={confirm} 
+                        <Options
+                            include={redactorOptions.confirm}
+                            size={20} onClick={confirm}
                             className={`confirm ${styles.button}`} />
                     </form> :
-                    "Create class" 
+                    "Create class"
                 }
             </div>
         </div>
@@ -95,7 +95,7 @@ const matchClassName = (name: string): readonly [number, string] | null => {
         const res = name.match(/([0-9]{1,2})\s*([A-Z]|[А-Я]){1}/i);
 
         if (res !== null) {
-            const [_, digit, letter] = res;
+            const [, digit, letter] = res;
 
             if (+digit > 0 && +digit <= 12) {
                 return [+digit, letter] as const;

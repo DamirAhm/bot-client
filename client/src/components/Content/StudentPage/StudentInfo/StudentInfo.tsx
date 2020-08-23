@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import styles from "./StudentInfo.module.css";
-import { parseDate } from "../../../../utils/date";
 import { changeHandler } from './Changer';
 import Changer from './Changer';
 

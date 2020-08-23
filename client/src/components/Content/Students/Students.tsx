@@ -66,7 +66,7 @@ const Students: React.FC = () => {
         if (data?.students) {
             setItems(data.students);
         }
-    }, [data?.students]);
+    }, [data, setItems]);
 
     const setSearchText = (str: string): void => {
         str = str.toLowerCase();

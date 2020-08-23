@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
-import ApolloClient, { gql, ApolloLink } from "apollo-boost";
+import ApolloClient, { gql } from "apollo-boost";
 import { ApolloProvider } from "@apollo/react-hooks";
 import { BrowserRouter } from "react-router-dom";
 import { InMemoryCache } from "apollo-cache-inmemory";
@@ -69,15 +69,16 @@ const resolvers = {
             return null;
         }
     }
-}; 
+};
 
 const typeDefs = gql`
     fragment StudentPreview on Student {
         vkId
         className
-        role,
-        banned,
+        role
+        banned
         fullName
+        _id
     }
     fragment ClassPreview on Class {
         name
@@ -86,9 +87,6 @@ const typeDefs = gql`
     extend type Mutation {
         deleteClass(name: String): [Class]!
         createClass(name: String): Class!
-    }
-    extend type Query {
-        sidebarOpened: Boolean
     }
 `;
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 export default <T>(
     values: T[],
@@ -16,14 +16,18 @@ export default <T>(
     const setSort = (sort: typeof defaultSort) => {
         setItems([...initialValues.sort(sort)]);
     };
+    const setValue = useCallback(
+        (vals: T[]) => {
+            setInitialValues(vals);
+            setItems(vals);
+        },
+        [setInitialValues, setItems]
+    );
 
     return {
         items,
         setFilter,
         setSort,
-        setItems: (vals: T[]) => {
-            setInitialValues(vals);
-            setItems(vals);
-        },
+        setItems: setValue,
     };
 };

@@ -11,7 +11,8 @@ const FileUploader: React.FC<Props> = ({ View, style, onChange }) => {
             <View />
             <input
                 type="file"
-                onChange={(e) => (onChange(e), e.target.value = "")} multiple
+                onChange={(e) => { onChange(e); e.target.value = "" }}
+                multiple
                 style={{ outline: 0, opacity: 0, pointerEvents: "none", userSelect: "none", display: "none" }} />
         </label>
     )

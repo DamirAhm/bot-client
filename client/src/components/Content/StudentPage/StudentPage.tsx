@@ -5,7 +5,6 @@ import { useQuery, useMutation } from "@apollo/react-hooks";
 import { redactorOptions, Student } from "../../../types";
 import StudentInfo from "./StudentInfo/StudentInfo";
 import { parseDate } from "../../../utils/date";
-import { BAN } from "../Students/StudentPreview/StudentPreview";
 import { Redirect } from 'react-router';
 import { GET_STUDENTS } from "../Students/Students";
 import Suspender from "../../Common/Suspender";
@@ -76,8 +75,8 @@ export const DELETE_STUDENT = gql`
     }
 `
 
-const StudentPage: React.FC = ({}) => {
-    const vkId = Number(useParams<{vkId: string}>().vkId);
+const StudentPage: React.FC = () => {
+    const vkId = Number(useParams<{ vkId: string }>().vkId);
     const [changing, setChanging] = useState(false);
     const [diff, setDiff] = useState<{ [key: string]: any }>({});
     const [removed, setRemoved] = useState(false);
@@ -89,9 +88,6 @@ const StudentPage: React.FC = ({}) => {
         { studentOne: Student & { __typename: string } }
     >(GET_STUDENT, { variables: { vkId } });
 
-    const [ban] = useMutation<
-        { banStudent: Partial<Student> & { __typename: string }, __typename: string },
-        { vkId: number, isBan?: boolean }>(BAN);
     const [updater] = useMutation<
         { updatedStudent: { record: Partial<Student> & { __typename: string }, __typename: string }, __typename: string },
         { record: Partial<Student>, vkId: number }>(UPDATE_STUDENT);
@@ -102,23 +98,6 @@ const StudentPage: React.FC = ({}) => {
         { removed: { vkId: number, __typename: string }, __typename: string },
         { vkId: number }>(DELETE_STUDENT);
 
-    const banStudent = (isBan: boolean, _id: string) => {
-        ban({
-            variables: {
-                vkId,
-                isBan: isBan
-            },
-            optimisticResponse: {
-                __typename: "Mutation",
-                banStudent: {
-                    banned: isBan,
-                    _id,
-                    __typename: "Student"
-                }
-            }
-        })
-    }
-    
     const deleteStudent = () => {
         deleter({
             variables: {
@@ -225,7 +204,6 @@ const StudentPage: React.FC = ({}) => {
             <Suspender query={{ data, loading, error }}>
                 {(data: ({ studentOne: Student & { __typename: string } })) => {
                     const { fullName, banned, __typename, _id, ...info } = data.studentOne;
-                    info.className = info.className;
                     info.lastHomeworkCheck = info.lastHomeworkCheck === "1970-01-01T00:00:00.000Z" ? "Никогда" : parseDate(info.lastHomeworkCheck, "YYYY.MMn.dd hh:mm");
 
                     return <div className={styles.student}>
@@ -234,13 +212,13 @@ const StudentPage: React.FC = ({}) => {
                                 <div className={styles.name}> {fullName} </div>
                             </div>
                             <div className={styles.icons}>
-                                {changing 
-                                    ? <Options 
-                                        include={[redactorOptions.reject, redactorOptions.confirm]} 
+                                {changing
+                                    ? <Options
+                                        include={[redactorOptions.reject, redactorOptions.confirm]}
                                         props={{
                                             [redactorOptions.reject]: {
                                                 className: styles.icon + " negative",
-                                                onClick: () => (setDiff({}), setChanging(false)),
+                                                onClick: () => { setDiff({}); setChanging(false) },
                                             },
                                             [redactorOptions.confirm]: {
                                                 className: styles.icon + " positive",
@@ -250,12 +228,12 @@ const StudentPage: React.FC = ({}) => {
                                         }}
                                         size={iconSize}
                                     />
-                                    : <Options 
+                                    : <Options
                                         include={[redactorOptions.change, redactorOptions.delete]}
-                                        props={{ 
+                                        props={{
                                             [redactorOptions.change]: {
                                                 onClick: () => setChanging(true),
-                                                className: `${styles.icon} ${styles.pen}`, 
+                                                className: `${styles.icon} ${styles.pen}`,
                                                 size: iconSize * 0.8
                                             },
                                             [redactorOptions.delete]: {

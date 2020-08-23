@@ -1,5 +1,4 @@
-import React, { useState, StyleHTMLAttributes } from 'react'
-import { useEffect } from "react"
+import React from 'react'
 import { MdClose } from "react-icons/md"
 type Props = {
     changeHandler: (str: string) => void,
@@ -29,7 +28,7 @@ const Searcher: React.FC<Props> = ({ changeHandler, text }) => {
     return (
         <div style={divStyle} onClick={e => e.stopPropagation()}>
             <input style={inputStyle} type="text" value={text} onChange={e => changeHandler(e.target.value)} />
-            <MdClose onClick={() =>changeHandler("")} style={closeStyle} className={"negative"} size={15} />
+            <MdClose onClick={() => changeHandler("")} style={closeStyle} className={"negative"} size={15} />
         </div>
     )
 }

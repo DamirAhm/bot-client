@@ -1,17 +1,17 @@
-import React, { useState, memo, ChangeEvent, useRef } from 'react'
+import React, { useState, memo, ChangeEvent } from 'react'
 import { gql } from 'apollo-boost';
 import InfoSection from '../../InfoSection/InfoSection';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import Suspender from '../../../../Common/Suspender';
 import styles from "./ScheduleSection.module.css";
-import { MdClose, MdCheck } from "react-icons/md";
+import { MdClose } from "react-icons/md";
 import { redactorOptions, WithTypename } from '../../../../../types';
 import Options from "../../../../Common/Options";
 
 const days = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"]
 type Props = {
     className: string,
-} 
+}
 
 export const GET_SCHEDULE = gql`
     query GetSchedule($className: String!){
@@ -108,7 +108,7 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(({ index, lessons, lessonsL
 
     const changeHandler = (e: ChangeEvent<{ value: string } & Element>) => {
         const index = e.target?.getAttribute("data-index");
-        if (index != undefined) {
+        if (index !== undefined && index !== null) {
             const t = [...changes];
             t[+index] = e.target.value;
             setChanges(t);
@@ -125,50 +125,50 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(({ index, lessons, lessonsL
     return <div className={styles.day} onDoubleClick={() => setChanging(true)}>
         <div className={styles.lessons}>
             <div className={styles.dayName} onClick={() => setChanging(true)}> {days[index]} </div>
-            {changes.map((lesson, i) => !changing 
-            ? <span key={index + lesson + i} className={styles.lesson}> {i + 1})  {lesson} </span> 
-            : <div className={styles.lessonChange} key={`picker${index + lesson + i}`}>
-                <select
-                    data-index={i} className={styles.selectLesson} name="lesson"
-                    id={styles.pickLesson + index + lesson} onChange={changeHandler}>
-                    <option key={"pick-1"} value="lesson">
-                        {lesson}
-                    </option>
-                    {lessonsList
-                        .filter(les => les !== lesson)
-                        .map(lesson => <option key={`pick${styles.pickLesson + index + lesson}`} value={lesson}>
+            {changes.map((lesson, i) => !changing
+                ? <span key={index + lesson + i} className={styles.lesson}> {i + 1})  {lesson} </span>
+                : <div className={styles.lessonChange} key={`picker${index + lesson + i}`}>
+                    <select
+                        data-index={i} className={styles.selectLesson} name="lesson"
+                        id={styles.pickLesson + index + lesson} onChange={changeHandler}>
+                        <option key={"pick-1"} value="lesson">
                             {lesson}
-                        </option>)}
-                </select>
-                <MdClose className={"remove " + styles.removeLesson} size={20} onClick={() => removeLesson(i)} />
-            </div>)
+                        </option>
+                        {lessonsList
+                            .filter(les => les !== lesson)
+                            .map(lesson => <option key={`pick${styles.pickLesson + index + lesson}`} value={lesson}>
+                                {lesson}
+                            </option>)}
+                    </select>
+                    <MdClose className={"remove " + styles.removeLesson} size={20} onClick={() => removeLesson(i)} />
+                </div>)
             }
             {/*//? In different element because confirm and reject should be on the bottom of component */}
             {changing &&
                 <div className={styles.addLesson + " " + styles.lesson} onClick={addLesson}> Добавить урок </div>
             }
         </div>
-        {!changing 
-            ? <Options 
+        {!changing
+            ? <Options
                 include={redactorOptions.change}
                 props={{
-                    className: styles.pen, 
-                    size: iconSize, 
+                    className: styles.pen,
+                    size: iconSize,
                     onClick: () => setChanging(true),
                     allowOnlyRedactor: true,
                 }}
             />
             : <div className={styles.changers}>
-                <Options 
+                <Options
                     include={[redactorOptions.reject, redactorOptions.confirm]}
                     props={{
                         [redactorOptions.reject]: {
                             onClick: reject,
-                            className: `remove ${styles.changer}`, 
+                            className: `remove ${styles.changer}`,
                         },
                         [redactorOptions.confirm]: {
                             onClick: confirm,
-                            className: `confirm ${styles.changer}`, 
+                            className: `confirm ${styles.changer}`,
                             allowOnlyRedactor: true
                         }
                     }}

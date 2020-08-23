@@ -29,11 +29,10 @@ const GET_STUDENTS_FOR_CLASS = gql`
     fragment StudentPreview on Student {
         vkId
         className
-        banned
         role
+        banned
         fullName
         _id
-        __typename
     }
     query GetStudents($className: String!){
         students: studentsForClass(className: $className) {
@@ -45,11 +44,10 @@ const ADD_STUDENT_TO_CLASS = gql`
     fragment StudentPreview on Student {
         vkId
         className
-        banned
         role
+        banned
         fullName
         _id
-        __typename
     }
     mutation AddStudentToClass($vkId: Int!, $className: String!) {
         student: changeClass(vkId: $vkId, newClassName: $className) {
@@ -130,7 +128,7 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
 
     useEffect(() => {
         if (data?.students) setItems(data?.students)
-    }, [data?.students])
+    }, [data, setItems])
 
     const changeHandler = (str: string) => {
         str = str.toLowerCase();
@@ -144,7 +142,7 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
                 <Suspender query={{ data: items, loading, error }}>
                     {(data: Student[]) =>
                         <div className={`${styles.students}`}>
-                            {role === roles.contributor || role === roles.admin &&
+                            {(role === roles.contributor || role === roles.admin) &&
                                 <div className={styles.creator} onClick={() => setModalOpened(true)}> Добавить ученика </div>
                             }
                             {data.map(e =>
@@ -175,9 +173,10 @@ const GET_STUDENTS_FOR_CHOOSING = gql`
     fragment StudentPreview on Student {
         vkId
         className
-        role,
-        banned,
+        role
+        banned
         fullName
+        _id
     }
     {
         students: studentMany {
@@ -247,8 +246,9 @@ const StudentModal: React.FC<StudentModalProps> = ({ closeModal, addStudent, sty
     };
 
     useEffect(() => {
-        setItems(query.data?.students || [])
-    }, [query.data?.students])
+        if (query.data?.students)
+            setItems(query.data.students)
+    }, [query, setItems]);
 
     if (modalEl) {
         return ReactDOM.createPortal(
@@ -271,7 +271,7 @@ const StudentModal: React.FC<StudentModalProps> = ({ closeModal, addStudent, sty
                             {items
                                 .map((student: studentPreview) =>
                                     <StudentPicker
-                                        onClick={() => (addStudent(student), closeModal())}
+                                        onClick={() => { addStudent(student); closeModal() }}
                                         key={student.vkId}
                                         student={student}
                                         searchText={searchText}

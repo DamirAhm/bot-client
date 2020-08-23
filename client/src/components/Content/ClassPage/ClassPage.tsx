@@ -20,9 +20,9 @@ const REMOVE_CLASS = gql`
     } 
 `
 
-const ClassPage: React.FC = ({ }) => {
+const ClassPage: React.FC = () => {
     const [removeClass] = useMutation<WithTypename<{ classRemoveOne: WithTypename<{ name: string }> }>, { className: string }>(REMOVE_CLASS);
-    const {className} = useParams<{className: string}>();
+    const { className } = useParams<{ className: string }>();
     const [waitForConfirm, setWaitForConfirm] = useState(false);
 
     const remove = () => {
@@ -48,19 +48,19 @@ const ClassPage: React.FC = ({ }) => {
             }
         })
     }
-    
+
     return (
         <>
             <div className={styles.class}>
                 <div className={styles.header}>
                     <div className={styles.className}> {className} </div>
-                    <Options 
+                    <Options
                         include={redactorOptions.delete}
                         props={{
                             onClick: () => setWaitForConfirm(true),
                             size: 30,
                             className: "remove",
-                            style: {cursor: "pointer"},
+                            style: { cursor: "pointer" },
                             allowOnlyAdmin: true
                         }}
                     />

@@ -11,12 +11,7 @@ const Auth: React.FC<Props> = ({ setUser }) => {
 
     useEffect(() => {
         VK.Widgets.Auth(styles.vk_auth, { onAuth: setUser, width: 200 })
-        const cur = authRef.current;
-
-        if (cur) {
-            // cur.style.width = "";
-        }
-    }, [])
+    })
 
     return (
         <div className={styles.container}>

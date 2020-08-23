@@ -10,7 +10,7 @@ import { redactorOptions, roles } from "../../types"
 
 type Props = {
     include: redactorOptions[] | redactorOptions
-    props?: {[key: string]: IconBaseProps & iconSpecialProps} | IconBaseProps & iconSpecialProps
+    props?: { [key: string]: IconBaseProps & iconSpecialProps } | IconBaseProps & iconSpecialProps
     withRoleControl?: boolean
     allowOnlyAdmin?: boolean
 } & IconBaseProps;
@@ -30,29 +30,28 @@ const OptionsElements = {
 }
 
 const isSoloIconProps = (
-    props: {[key: string]: IconBaseProps & iconSpecialProps} | IconBaseProps & iconSpecialProps
+    props: { [key: string]: IconBaseProps & iconSpecialProps } | IconBaseProps & iconSpecialProps
 ): props is IconBaseProps & iconSpecialProps => {
     const options = Object.values(redactorOptions);
     const keys = Object.keys(props);
 
     let flag = true;
 
-    for(const opt of options) {
+    for (const opt of options) {
         if (keys.includes(opt)) flag = false;
     }
 
     return flag;
 }
 
-const Options: React.FC<Props> = ({ 
-    include, props = {}, withRoleControl = false, 
-    allowOnlyAdmin = false, ...iconProps }) => 
-{
-    if (isSoloIconProps(props) && typeof include === 'string') props = {[include]: props};
+const Options: React.FC<Props> = ({
+    include, props = {}, withRoleControl = false,
+    allowOnlyAdmin = false, ...iconProps }) => {
+    if (isSoloIconProps(props) && typeof include === 'string') props = { [include]: props };
     if (typeof include === "string") include = [include];
 
-    const {role = roles.student} = useContext(UserContext); 
- 
+    const { role = roles.student } = useContext(UserContext);
+
     if (withRoleControl && role !== roles.admin && (allowOnlyAdmin || role !== roles.contributor)) {
         return null
     }
@@ -64,13 +63,13 @@ const Options: React.FC<Props> = ({
                     throw new Error("If you pass props for one icon you must pass string of icon, not an array")
                 }
 
-                const {allowOnlyAdmin, allowOnlyRedactor, renderIf, ...restProps} = props[e];
+                const { allowOnlyAdmin, allowOnlyRedactor, renderIf, ...restProps } = props[e];
                 if (
-                    (allowOnlyRedactor && ![roles.admin, roles.contributor].includes(role)) || 
+                    (allowOnlyRedactor && ![roles.admin, roles.contributor].includes(role)) ||
                     (allowOnlyAdmin && role !== roles.admin) ||
-                     renderIf && !renderIf()
+                    (renderIf && !renderIf())
                 ) return null;
-                return <button key={i}> {React.createElement(OptionsElements[e], {...iconProps, ...restProps})} </button>
+                return <button key={i}> {React.createElement(OptionsElements[e], { ...iconProps, ...restProps })} </button>
             }
             )}
         </>

@@ -70,7 +70,7 @@ const Classes: React.FC = () => {
 		if (query.data?.classes) {
 			setItems(query.data.classes);
 		}
-	}, [query.data?.classes]);
+	}, [query, setItems]);
 
 	return (
 		<Suspender query={query}>

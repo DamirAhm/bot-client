@@ -1,7 +1,8 @@
 import React from "react";
 import { content } from "../types";
 import { parseDate, months } from "./date";
-import { MdDateRange } from "react-icons/md";
+
+type c = content;
 
 export const highlightSearch = (str: string, searchString: string, highlightClass = "highlight") => {
     if (searchString.trim() !== "") {
@@ -15,7 +16,7 @@ export const highlightSearch = (str: string, searchString: string, highlightClas
     return <span> {str} </span>
 };
 
-export const parseContentByDate = <T extends content>(content: T[]): [{ [day: string]: T[] },{ [day: string]: T[] }] => {
+export const parseContentByDate = <T extends c>(content: T[]): [{ [day: string]: T[] }, { [day: string]: T[] }] => {
     const parsedFutureCont: { [day: string]: T[] } = {};
     const parsedPastCont: { [day: string]: T[] } = {};
 
@@ -25,7 +26,7 @@ export const parseContentByDate = <T extends content>(content: T[]): [{ [day: st
         const contDate = parseDate(cont.to, "dd MM");
 
         if (Date.parse(cont.to) > Date.now()) {
-            parsedFutureCont[contDate] = [...(parsedFutureCont[contDate] || []), cont]; 
+            parsedFutureCont[contDate] = [...(parsedFutureCont[contDate] || []), cont];
         } else {
             parsedPastCont[contDate] = [...(parsedPastCont[contDate] || []), cont];
         }
@@ -34,7 +35,7 @@ export const parseContentByDate = <T extends content>(content: T[]): [{ [day: st
     return [parsedPastCont, parsedFutureCont];
 }
 
-export const objectForEach = <T extends {[key: string]: ValueType}, ValueType, Output>(object: T, fn: (value: ValueType) => Output): {[key: string]: Output} => {
+export const objectForEach = <T extends { [key: string]: ValueType }, ValueType, Output>(object: T, fn: (value: ValueType) => Output): { [key: string]: Output } => {
     const entries: [keyof T, ValueType][] = Object.entries(object);
     const mappedEntries = entries.map(([key, value]) => [key, fn(value)]);
 
@@ -42,15 +43,15 @@ export const objectForEach = <T extends {[key: string]: ValueType}, ValueType, O
 }
 
 export const getDateStrFromDayMonthStr = (dayMonthStr: string): string => {
-    if (new RegExp(`\\d\\s(${Object.values(months).join("|")})`,"i").test(dayMonthStr)) {
+    if (new RegExp(`\\d\\s(${Object.values(months).join("|")})`, "i").test(dayMonthStr)) {
         const [day, month] = dayMonthStr.split(" ");
         if (months.indexOf(month) !== -1 && !isNaN(Number(day))) {
             const monthIndex = months.indexOf(month);
 
-            const date = new Date(new Date().getFullYear(),monthIndex, Number(day));
+            const date = new Date(new Date().getFullYear(), monthIndex, Number(day));
 
             return date.toISOString();
-        } 
-    } 
+        }
+    }
     return "";
 }

@@ -3,16 +3,16 @@ import styles from '../Common/ContentSection.module.css'
 import InfoSection from '../../InfoSection/InfoSection';
 import { gql } from 'apollo-boost';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { content, attachment, WithTypename, change, redactorOptions } from '../../../../../types';
+import { attachment, WithTypename, change, redactorOptions } from '../../../../../types';
 import Suspender from '../../../../Common/Suspender';
 import Accordion from "../../../../Common/Accordion";
-import { GoTriangleRight } from "react-icons/go"; 
+import { GoTriangleRight } from "react-icons/go";
 import ReactDOM from "react-dom";
 import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
 import { parseContentByDate, getDateStrFromDayMonthStr } from "../../../../../utils/functions";
 import Options from "../../../../Common/Options";
- 
+
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
 type Props = {
@@ -138,7 +138,7 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
         }
     }
     const update = (changeId: string | undefined, updates: Partial<WithTypename<change>>) => {
-        const {__typename, ...changeWithoutTypename} = updates;
+        const { __typename, ...changeWithoutTypename } = updates;
 
         if (changeId) {
             updateChange({
@@ -193,29 +193,30 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
                 Header={({ opened, onClick }) =>
                     <div className={`${styles.sectionHeader} ${styles.contentHeader}`} onClick={onClick}>
                         <div className={styles.title}>
-                            Изменения в расписании 
+                            Изменения в расписании
                             <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                         </div>
-                        <Add onClick={(e) => (e.stopPropagation(), setChangeCreating(true))} />
+
+                        <Add onClick={(e) => { e.stopPropagation(); setChangeCreating(true) }} />
                     </div>}>
                 <Suspender query={changesQuery}>
                     {(data: { changes: WithTypename<change>[] }) => {
-                        const [_,parsedChanges] = parseContentByDate(data.changes);
+                        const parsedChanges = parseContentByDate(data.changes)[1];
                         return <div className={styles.content}>
                             {Object.keys(parsedChanges).map(changeDate =>
                                 <Accordion
                                     key={changeDate}
-                                    Head={({ onClick, opened }) => 
+                                    Head={({ onClick, opened }) =>
                                         <div className={styles.sectionHeader} onClick={onClick}>
                                             <div className={styles.title}>
                                                 {changeDate}
                                                 <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                                             </div>
-                                            <Add onClick={(e) => (
-                                                e.stopPropagation(), 
-                                                setChangeCreating(true),
-                                                setInitContent({to: getDateStrFromDayMonthStr(changeDate)})
-                                            )} />
+                                            <Add onClick={(e) => {
+                                                e.stopPropagation();
+                                                setChangeCreating(true);
+                                                setInitContent({ to: getDateStrFromDayMonthStr(changeDate) })
+                                            }} />
                                         </div>
                                     }
                                 >
@@ -255,13 +256,13 @@ const Change: React.FC<changeProps> = ({ change, removeChange, updateChange }) =
                         ? <div className={styles.attachments}>
                             <ImgAlbum images={change.attachments} />
                         </div>
-                        : <ImgAlbum images={change.attachments} 
+                        : <ImgAlbum images={change.attachments}
                             Stab={({ onClick }) => (
                                 <div className={styles.stab} onClick={onClick}>
                                     <span>{change.attachments.length}</span>
                                     <span> Photos </span>
                                 </div>
-                            )}/>
+                            )} />
                     } </>
                 }
                 {change.text &&
@@ -272,7 +273,7 @@ const Change: React.FC<changeProps> = ({ change, removeChange, updateChange }) =
                         <div className="modal" onMouseDown={() => setUpdating(false)}>
                             <ChangeContent
                                 initState={change}
-                                confirm={(newContent) => (updateChange(change._id, newContent), setUpdating(false))}
+                                confirm={(newContent) => { updateChange(change._id, newContent); setUpdating(false) }}
                                 reject={() => setUpdating(false)}
                             />
                         </div>,
@@ -280,17 +281,17 @@ const Change: React.FC<changeProps> = ({ change, removeChange, updateChange }) =
                 }
             </div>
             <div className={styles.controls}>
-                <Options 
+                <Options
                     include={[redactorOptions.change, redactorOptions.delete]}
-                    props={{ 
+                    props={{
                         [redactorOptions.change]: {
                             onClick: () => setUpdating(true),
-                            className: `${styles.pen}`, 
+                            className: `${styles.pen}`,
                             size: 15,
                         },
                         [redactorOptions.delete]: {
                             onClick: () => removeChange(change._id),
-                            className: `${styles.remove}`, 
+                            className: `${styles.remove}`,
                             size: 20,
                         }
                     }}
@@ -312,7 +313,7 @@ const CreateChangeModal: React.FC<CreateChangeModalProps> = ({ returnChange, clo
             <div className={"modal"} onMouseDown={close}>
                 <ChangeContent
                     initState={initContent}
-                    confirm={(content) => (returnChange(content), close)}
+                    confirm={(content) => { returnChange(content); close() }}
                     reject={close}
                 />
             </div>
@@ -321,16 +322,17 @@ const CreateChangeModal: React.FC<CreateChangeModalProps> = ({ returnChange, clo
     return null;
 }
 
-const Add: React.FC<{onClick: (e: React.MouseEvent<SVGElement, MouseEvent>) => void}> = ({onClick}) => {
-    return <Options 
-        include={redactorOptions.add} 
+const Add: React.FC<{ onClick: (e: React.MouseEvent<SVGElement, MouseEvent>) => void }> = ({ onClick }) => {
+    return <Options
+        include={redactorOptions.add}
         props={{
             [redactorOptions.add]: {
-            className: styles.addContent,
-            size: 30,
-            onClick,
-            allowOnlyRedactor: true
-        }}}
+                className: styles.addContent,
+                size: 30,
+                onClick,
+                allowOnlyRedactor: true
+            }
+        }}
     />
 }
 
