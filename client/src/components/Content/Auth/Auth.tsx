@@ -3,21 +3,21 @@ import { User } from "../../../types"
 import styles from './Auth.module.css'
 
 type Props = {
-    setUser: (user: Omit<User, "role">) => void
+    setUser: (user: Omit<User, "role" | "className">) => void
 }
 
-const Auth: React.FC<Props> = ({setUser}) => {
+const Auth: React.FC<Props> = ({ setUser }) => {
     const authRef = React.createRef<HTMLDivElement>();
 
     useEffect(() => {
         VK.Widgets.Auth(styles.vk_auth, { onAuth: setUser, width: 200 })
         const cur = authRef.current;
-        
-        if (cur) { 
+
+        if (cur) {
             // cur.style.width = "";
         }
-    }, []) 
-     
+    }, [])
+
     return (
         <div className={styles.container}>
             <h1>Авторизуйтесь с помощью вконтакте</h1>

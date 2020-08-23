@@ -1,4 +1,28 @@
 //TODO wirte type
-type vkType = any;
+
+type returnUserType = {
+    photo: string;
+    photo_rec: string;
+    first_name: string;
+    last_name: string;
+    uid: number;
+    hash: string;
+    session: {
+        mid: number;
+        sid: string;
+        secret: string;
+        expire: number;
+        sig: string;
+    };
+};
+
+type vkType = {
+    Widgets: {
+        Auth(
+            id: string,
+            settings: { onAuth: (user: returnUserType) => void; width: number }
+        );
+    };
+};
 
 declare var VK: vkType;

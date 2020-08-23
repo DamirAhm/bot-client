@@ -13,12 +13,12 @@ const Students = lazy(() => import("./components/Content/Students/Students"));
 const Auth = lazy(() => import("./components/Content/Auth/Auth"));
 
 export const UserContext = React.createContext<
-    {isAuth: boolean} & Partial<User>
+    { isAuth: boolean } & Partial<User>
 >({
     isAuth: false,
     role: roles.student,
     className: "Нету",
-    photo: "", 
+    photo: "",
     photo_rec: "",
     last_name: "",
     first_name: "",
@@ -39,7 +39,7 @@ function App() {
     const [user, setUser] = useState<User | null>(
         process.env.NODE_ENV === "production"
             ? null
-            : JSON.parse(process.env.REACT_APP_USER || "null") as User || 
+            : JSON.parse(process.env.REACT_APP_USER || "null") as User ||
             {
                 role: (process.env.REACT_APP_ROLE || "ADMIN") as roles,
                 className: process.env.REACT_APP_CLASS_NAME || "10Б",
@@ -50,14 +50,15 @@ function App() {
                 uid: process.env.REACT_APP_UID || 227667805,
             }
     );
-    
-    const onUser = async (user: Omit<User, "role">) => {
+
+    const onUser = async (user: Omit<User, "role" | "className">) => {
+        console.log(user);
         const { data: { student: { role, className } } } = await ApolloClient.query<
-            {student: {role: roles, className: string}}, 
-            {filter: Partial<Student>}
-        >({query: GET_STUDENT, variables: { filter: {vkId: user.uid} }});
-        
-        const userWithRole = {...user, role, className}
+            { student: { role: roles, className: string } },
+            { filter: Partial<Student> }
+        >({ query: GET_STUDENT, variables: { filter: { vkId: user.uid } } });
+
+        const userWithRole = { ...user, role, className }
 
         setUser(userWithRole);
         localStorage.setItem("user", JSON.stringify(userWithRole));
@@ -67,7 +68,7 @@ function App() {
         if (!user) {
             const userItem = localStorage.getItem("user");
 
-            if (userItem) { 
+            if (userItem) {
                 const parsedUser = JSON.parse(userItem);
                 if (typeof parsedUser === "object") {
                     setUser(parsedUser);
@@ -79,32 +80,32 @@ function App() {
     }, [])
 
     return (
-        <UserContext.Provider value={{isAuth: user !== null, ...user}}>
+        <UserContext.Provider value={{ isAuth: user !== null, ...user }}>
             <div className={`wrapper`}>
                 <div className={`app`}>
-                    {user === null 
+                    {user === null
                         ? <Suspense fallback={<div>loading...</div>}>
-                            <Auth setUser={onUser}/>
+                            <Auth setUser={onUser} />
                         </Suspense>
                         : <>
-                            <Sidebar setUser={setUser}/>
+                            <Sidebar setUser={setUser} />
                             <div className="content">
                                 <Suspense fallback={<div> Loading... </div>}>
-                                <Switch>
-                                    <Route exact path="/classes" component={() => withRedirect(Classes)} />
-                                    <Route 
-                                    path="/classes/:className" 
-                                    render={(props) => props.match.params.className === user.className 
-                                        ? <ClassPage />
-                                        : withRedirect(ClassPage)
-                                    } />
-                                    <Route exact path="/students" component={() => withRedirect(Students)} />
-                                    <Route path="/students/:vkId" component={() => withRedirect(StudentPage, true)} />
-                                    <Route path="*" render={() => <Redirect to={"/classes"} />} />
-                                </Switch>
+                                    <Switch>
+                                        <Route exact path="/classes" component={() => withRedirect(Classes)} />
+                                        <Route
+                                            path="/classes/:className"
+                                            render={(props) => props.match.params.className === user.className
+                                                ? <ClassPage />
+                                                : withRedirect(ClassPage)
+                                            } />
+                                        <Route exact path="/students" component={() => withRedirect(Students)} />
+                                        <Route path="/students/:vkId" component={() => withRedirect(StudentPage, true)} />
+                                        <Route path="*" render={() => <Redirect to={"/classes"} />} />
+                                    </Switch>
                                 </Suspense>
                             </div>
-                        </> 
+                        </>
                     }
                 </div>
             </div>
