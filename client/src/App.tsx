@@ -13,7 +13,7 @@ const Students = lazy(() => import("./components/Content/Students/Students"));
 const Auth = lazy(() => import("./components/Content/Auth/Auth"));
 
 export const UserContext = React.createContext<
-    { isAuth: boolean } & Partial<User>
+    { isAuth: boolean } & User
 >({
     isAuth: false,
     role: roles.student,
@@ -80,7 +80,7 @@ function App() {
     }, [user]);
 
     return (
-        <UserContext.Provider value={{ isAuth: user !== null, ...user }}>
+        <UserContext.Provider value={{ isAuth: user !== null, ...user as User }}>
             <div className={`wrapper`}>
                 <div className={`app`}>
                     {user === null
