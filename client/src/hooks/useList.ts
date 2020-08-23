@@ -20,13 +20,10 @@ export default <T>(
     const setSort = (sort: typeof defaultSort) => {
         setItems([...initialValues.sort(sort)]);
     };
-    const setValue = useCallback(
-        (vals: T[]) => {
-            setInitialValues(vals);
-            setItems(vals.filter(defaultFilter));
-        },
-        [setInitialValues, setItems]
-    );
+    const setValue = useCallback((vals: T[]) => {
+        setInitialValues(vals);
+        setItems(vals.filter(defaultFilter));
+    }, []);
 
     return {
         items,

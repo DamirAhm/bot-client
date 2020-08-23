@@ -59,10 +59,10 @@ function App() {
         >({ query: GET_STUDENT, variables: { filter: { vkId: user.uid } } });
 
         const userWithRole: User = { ...user, role, className }
-        console.log(hash, `` + process.env.REACT_APP_APP_ID + user.uid + process.env.REACT_APP_SECRET)
+
         setUser(userWithRole);
         localStorage.setItem("user", JSON.stringify(userWithRole));
-        localStorage.setItem("hash", `` + process.env.REACT_APP_APP_ID + user.uid + process.env.REACT_APP_SECRET)
+        localStorage.setItem("hash", hash)
     }
 
     useEffect(() => {
@@ -75,8 +75,8 @@ function App() {
             if (userItem && hash) {
                 const parsedUser = JSON.parse(userItem);
                 if (typeof parsedUser === "object") {
-                    if (Object.keys(parsedUser).every(key => ["first_name", "last_name", "uid", "hash", "photo_rec"].includes(key))) {
-                        if (hash === app_id + parsedUser.uid + secret) {
+                    if (["first_name", "last_name", "uid", "photo_rec"].every(key => Object.keys(parsedUser).includes(key))) {
+                        if (hash === md5(app_id + parsedUser.uid + secret)) {
                             setUser(parsedUser);
                         } else {
                             localStorage.removeItem("user");

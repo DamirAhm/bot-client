@@ -27,5 +27,6 @@
     "license": "ISC",
     "bugs": {
         "url": "https://github.com/Proger3228/bot-client/issues"
-    }
+    },
+    "dependencies": {}
 }

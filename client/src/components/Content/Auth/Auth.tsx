@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import { User } from "../../../types"
 import styles from './Auth.module.css'
 
 type Props = {
