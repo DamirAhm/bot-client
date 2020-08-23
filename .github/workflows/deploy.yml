@@ -26,4 +26,4 @@ jobs:
       - run: npm run build
       # Deploy
       - run: sudo apt install sshpass
-      - run: cd server && rsync -e "sshpass -p 2vA7ygPk34Zw ssh -i $HOME/.ssh/key -o StrictHostKeyChecking=no" --archive --compress --progress --delete . root@damirahm.ru:/root/bot-client-server
+      - run: cd server && rsync -e "sshpass -p ${{secrets.password}} ssh -i $HOME/.ssh/key -o StrictHostKeyChecking=no" --archive --compress --progress --delete . root@damirahm.ru:/root/bot-client-server
