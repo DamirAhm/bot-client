@@ -9,9 +9,13 @@ export default <T>(
     const [items, setItems] = useState<T[]>(
         values.filter(defaultFilter).sort(defaultSort)
     );
-
     const setFilter = (...filters: typeof defaultFilter[]) => {
-        setItems(filters.reduce((acc, c) => acc.filter(c), initialValues));
+        setItems(
+            [...filters, defaultFilter].reduce(
+                (acc, c) => acc.filter(c),
+                initialValues
+            )
+        );
     };
     const setSort = (sort: typeof defaultSort) => {
         setItems([...initialValues.sort(sort)]);
@@ -19,7 +23,7 @@ export default <T>(
     const setValue = useCallback(
         (vals: T[]) => {
             setInitialValues(vals);
-            setItems(vals);
+            setItems(vals.filter(defaultFilter));
         },
         [setInitialValues, setItems]
     );

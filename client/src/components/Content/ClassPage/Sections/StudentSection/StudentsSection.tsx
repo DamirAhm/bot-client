@@ -156,7 +156,7 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
                             }
                             {data.map(e =>
                                 <div className={styles.student} key={e.vkId}>
-                                    <StudentPreview searchText={searchString}  {...e} />
+                                    <StudentPreview visibleInfo={["fullName", "vkId"]} searchText={searchString}  {...e} />
                                     <Options
                                         include={redactorOptions.reject}
                                         props={{
