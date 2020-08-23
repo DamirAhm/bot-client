@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import styles from '../Common/ContentSection.module.css'
 import InfoSection from '../../InfoSection/InfoSection';
 import { gql } from 'apollo-boost';
@@ -12,6 +12,7 @@ import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
 import { parseContentByDate, getDateStrFromDayMonthStr } from "../../../../../utils/functions";
 import Options from "../../../../Common/Options";
+import { UserContext } from "../../../../../App";
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -63,8 +64,8 @@ const UPDATE_CHANGE = gql`
 `
 
 const ADD_CHANGE = gql`
-    mutation addChange($className: String!, $text: String!, $to: String, $attachments: [ClassHomeworkAttachmentsInput]!) {
-        addChange(className: $className, text: $text, to: $to, attachments: $attachments) {
+    mutation addChange($className: String!, $text: String!, $to: String, $attachments: [ClassHomeworkAttachmentsInput]!, $student_id: Number!) {
+        addChange(className: $className, text: $text, to: $to, attachments: $attachments, student_id: $student_id) {
             __typename
             text
             _id
@@ -81,6 +82,7 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
     const [changeCreating, setChangeCreating] = useState(false);
     const [initContent, setInitContent] = useState({});
     const changesQuery = useQuery<{ changes: change[] }>(GET_CHANGES, { variables: { className } });
+    const { uid } = useContext(UserContext);
 
     const [removeChange] = useMutation<
         WithTypename<{
@@ -109,7 +111,8 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
             className: string,
             text: string,
             attachments: attachment[]
-            to: string
+            to: string,
+            student_id: number
         }
     >(ADD_CHANGE)
 
@@ -170,7 +173,12 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
     }
     const add = (changeData: Omit<change, "_id">) => {
         addChange({
-            variables: { ...changeData, className, attachments: changeData?.attachments?.map(({ __typename, ...att }) => att) },
+            variables: {
+                ...changeData,
+                className,
+                attachments: changeData?.attachments?.map(({ __typename, ...att }) => att),
+                student_id: uid
+            },
             optimisticResponse: {
                 __typename: "Mutation",
                 addChange: {

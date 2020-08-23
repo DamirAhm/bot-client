@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import styles from '../Common/ContentSection.module.css'
 import InfoSection from '../../InfoSection/InfoSection';
 import { gql } from 'apollo-boost';
@@ -12,6 +12,7 @@ import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
 import { parseContentByDate, objectForEach, getDateStrFromDayMonthStr } from "../../../../../utils/functions";
 import Options from "../../../../Common/Options";
 import ChangeHomework from "../../../../Common/ChangeContent/ChangeHomework";
+import { UserContext } from "../../../../../App";
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -65,8 +66,8 @@ const CHANGE_HOMEWORK = gql`
 `
 
 const ADD_HOMEWORK = gql`
-    mutation addHomework($className: String!, $text: String!, $to: String, $lesson: String!, $attachments: [ClassHomeworkAttachmentsInput]!) {
-        addHomework(className: $className, text: $text, to: $to, lesson: $lesson, attachments: $attachments) {
+    mutation addHomework($className: String!, $text: String!, $to: String, $lesson: String!, $attachments: [ClassHomeworkAttachmentsInput]!, student_id: Number!) {
+        addHomework(className: $className, text: $text, to: $to, lesson: $lesson, attachments: $attachments, student_id: $student_id) {
             __typename
             text
             _id
@@ -101,6 +102,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
     const [homeworkCreating, setHomeworkCreating] = useState(false);
     const [initContent, setInitContent] = useState({});
     const homeworkQuery = useQuery<{ homework: homework[] }, { className: string }>(GET_HOMEWORK, { variables: { className } });
+    const { uid } = useContext(UserContext);
 
     const [removeHomework] = useMutation<
         WithTypename<{
@@ -130,7 +132,8 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
             text: string,
             lesson: string,
             attachments: attachment[]
-            to: string
+            to: string,
+            student_id: number
         }
     >(ADD_HOMEWORK)
     const [removeOldHomework] = useMutation<
@@ -211,7 +214,12 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
     }
     const add = (homeworkData: Omit<homework, "_id">) => {
         addHomework({
-            variables: { ...homeworkData, className, attachments: homeworkData.attachments.map(({ __typename, ...att }) => att) },
+            variables: {
+                ...homeworkData,
+                className,
+                attachments: homeworkData.attachments.map(({ __typename, ...att }) => att),
+                student_id: uid
+            },
             optimisticResponse: {
                 __typename: "Mutation",
                 addHomework: {

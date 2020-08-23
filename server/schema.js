@@ -121,6 +121,7 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
                 name: "addChange",
                 type: ClassTC.get("changes").getType(),
                 args: {
+                    student_id: "Int!",
                     className: "String!",
                     text: "String!",
                     to: "String",
@@ -130,7 +131,7 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
                 },
                 resolve: async ({
                     source,
-                    args: { attachments, text, to, className },
+                    args: { attachments, text, to, className, student_id },
                 }) => {
                     try {
                         if (attachments) {
@@ -142,7 +143,9 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
                         const change = await DataBase.addChanges(
                             className,
                             { attachments, text },
-                            to
+                            to,
+                            false,
+                            student_id
                         );
                         if (change) {
                             return await DataBase.getClassByName(
@@ -263,6 +266,7 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
                 name: "addHomework",
                 type: ClassTC.get("homework").getType(),
                 args: {
+                    student_id: "String!",
                     className: "String!",
                     text: "String!",
                     to: "String",
@@ -281,7 +285,7 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
                         args.className,
                         args.lesson,
                         { text: args.text, attachments: args.attachments },
-                        -1,
+                        student_id,
                         args.to
                     );
                     if (id) {
