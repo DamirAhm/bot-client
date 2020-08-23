@@ -18,7 +18,6 @@ export const GET_STUDENT = gql`
             vkId
             className
             role
-            banned
             settings {
                 notificationsEnabled
                 notificationTime
@@ -43,7 +42,6 @@ export const UPDATE_STUDENT = gql`
                 vkId
                 className
                 role
-                banned
                 settings {
                     notificationsEnabled
                     notificationTime
@@ -203,7 +201,7 @@ const StudentPage: React.FC = () => {
         <>
             <Suspender query={{ data, loading, error }}>
                 {(data: ({ studentOne: Student & { __typename: string } })) => {
-                    const { fullName, banned, __typename, _id, ...info } = data.studentOne;
+                    const { fullName, __typename, _id, ...info } = data.studentOne;
                     info.lastHomeworkCheck = info.lastHomeworkCheck === "1970-01-01T00:00:00.000Z" ? "Никогда" : parseDate(info.lastHomeworkCheck, "YYYY.MMn.dd hh:mm");
 
                     return <div className={styles.student}>

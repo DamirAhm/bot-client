@@ -30,7 +30,6 @@ const GET_STUDENTS_FOR_CLASS = gql`
         vkId
         className
         role
-        banned
         fullName
         _id
     }
@@ -45,7 +44,6 @@ const ADD_STUDENT_TO_CLASS = gql`
         vkId
         className
         role
-        banned
         fullName
         _id
     }
@@ -174,7 +172,6 @@ const GET_STUDENTS_FOR_CHOOSING = gql`
         vkId
         className
         role
-        banned
         fullName
         _id
     }

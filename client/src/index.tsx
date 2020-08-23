@@ -76,7 +76,6 @@ const typeDefs = gql`
         vkId
         className
         role
-        banned
         fullName
         _id
     }

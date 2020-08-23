@@ -23,14 +23,6 @@
     align-items: center;
 }
 
-.ban > * {
-    color: var(--negative);
-}
-
-.unban > * {
-    color: var(--positive);
-}
-
 .button {
     cursor: pointer;
     min-width: 20px;
@@ -38,14 +30,6 @@
 
 .button:hover > * {
     color: var(--accent);
-}
-
-.banned .button:hover > * {
-    color: var(--main);
-}
-
-.banned {
-    background-color: var(--banned);
 }
 
 @media screen and (max-width: 1200px) {

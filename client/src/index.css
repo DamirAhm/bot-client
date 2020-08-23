@@ -1,6 +1,5 @@
 * {
     --main: #2e2f47;
-    --banned: #64656c;
     --negative: #e34a4a;
     --positive: #71a842;
     --accent: #f5f5f5;
@@ -51,34 +50,21 @@ html {
     position: relative;
 }
 
-.banned {
-    animation: banned 2s forwards;
-    opacity: 0.5;
-}
-
-.unbanned {
-    animation: unbanned 2s forwards;
-    opacity: 0.5;
-}
-
 .negative,
 .trash,
 .remove,
-.ban,
 .reject {
     fill: var(--negative);
     color: var(--negative);
 }
 .negative,
 .trash,
-.remove,
-.ban {
+.remove {
     cursor: pointer;
 }
 
 .positive,
-.confirm,
-.unban {
+.confirm {
     fill: var(--positive);
     color: var(--positive);
 }

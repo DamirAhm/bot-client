@@ -500,23 +500,6 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
                     return await DataBase.removeStudentFromClass(args.vkId);
                 },
             });
-            //? Ban
-            StudentTC.addResolver({
-                name: "banStudent",
-                type: StudentTC.getType(),
-                args: { vkId: "Int!", isBan: "Boolean" },
-                resolve: async ({ source, args, context, info }) => {
-                    const result = await DataBase.banUser(
-                        args.vkId,
-                        args.isBan ?? true
-                    );
-                    if (result) {
-                        return await DataBase.getStudentByVkId(args.vkId);
-                    } else {
-                        return null;
-                    }
-                },
-            });
         }
         //* Getters
         {
@@ -664,7 +647,6 @@ schemaComposer.Mutation.addFields({
     changeSettings: StudentTC.getResolver("changeSettings"),
     removeStudentFromClass: StudentTC.getResolver("removeStudentFromClass"),
     changeClass: StudentTC.getResolver("changeClass"),
-    banStudent: StudentTC.getResolver("banStudent"),
     addHomework: ClassTC.getResolver("addHomework"),
     removeHomework: ClassTC.getResolver("removeHomework"),
     updateHomework: ClassTC.getResolver("updateHomework"),

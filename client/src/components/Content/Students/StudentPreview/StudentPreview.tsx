@@ -1,65 +1,26 @@
 import React, { memo } from "react";
 import styles from "./StudentPreview.module.css";
 import { roles } from "../../../../types";
-import { FaRegCheckCircle, FaRegTimesCircle } from "react-icons/fa";
-import { gql } from "apollo-boost";
-import { useMutation } from "@apollo/react-hooks";
 import { highlightSearch } from "../../../../utils/functions";
 import { Link } from "react-router-dom";
+import { studentPreview } from "../Students";
 
 type Props = {
-    vkId: number
-    className: string
-    banned: boolean
-    role: roles,
     searchText?: string
-    fullName: string,
-    _id: string
-}
+} & studentPreview
 
-export const BAN = gql`
-    mutation BanStudent($vkId: Int!, $isBan: Boolean){
-        banStudent(vkId: $vkId, isBan: $isBan) {
-            banned
-            _id
-            __typename
-        }
-    }
-`;
-
-const StudentPreview: React.FC<Props> = ({ vkId, role, banned, className, searchText, fullName: name, _id }) => {
-    const [banStudent] = useMutation<
-        { banStudent: { banned: boolean, _id: string, __typename: string }, __typename: string }, { vkId: number, isBan?: boolean }
-    >(BAN, {
-        variables: {
-            vkId,
-            isBan: !banned
-        },
-        optimisticResponse: {
-            __typename: "Mutation",
-            banStudent: {
-                banned: !banned,
-                _id,
-                __typename: "Student"
-            }
-        }
-    });
-
+const StudentPreview: React.FC<Props> = ({ vkId, role, className, searchText, fullName: name }) => {
     const highlighter = (str: string) => {
         return highlightSearch(str, searchText || "");
     };
-    //TODO добавить обновление кеша после изменения чтоб на странице полхователей + классов тоже все менялось 
+
     return (
-        <div className={`${styles.preview} ${banned && styles.banned}`}>
+        <div className={`${styles.preview}`}>
             <Link to={`/students/${vkId}`} className={`${styles.link}`}>
                 <span className={styles.info}> {highlighter(getPrettyName(name))} </span>
                 <span className={styles.info}> {highlighter(getPrettyName(role))} </span>
                 <span className={styles.info}> {highlighter(getPrettyName(className))} </span>
             </Link>
-            {banned ?
-                <FaRegCheckCircle size={20} onClick={() => { banStudent() }} className={`unban ${styles.button}`} /> :
-                <FaRegTimesCircle size={20} onClick={() => { banStudent() }} className={`ban ${styles.button}`} />
-            }
         </div>
     )
 };

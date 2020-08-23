@@ -34,7 +34,6 @@ export type Student = {
     vkId: number;
     settings: studentSettings;
     lastHomeworkCheck: string;
-    banned: boolean;
     fullName: string;
     className: string;
     _id: string;

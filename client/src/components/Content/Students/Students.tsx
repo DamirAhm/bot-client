@@ -14,7 +14,6 @@ export const GET_STUDENTS = gql`
             vkId,
             className
             role
-            banned
             fullName
             _id
         }
@@ -25,7 +24,6 @@ export type studentPreview = {
     vkId: number
     className: string
     role: roles
-    banned: boolean
     fullName: string
     _id: string
 }
@@ -55,10 +53,6 @@ const Students: React.FC = () => {
         {
             name: "Имени",
             sort: (a, b) => a.fullName > b.fullName ? 1 : -1
-        },
-        {
-            name: "Забаненности",
-            sort: (a, b) => a.banned ? 1 : -1
         }
     ];
 
