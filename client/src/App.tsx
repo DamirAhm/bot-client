@@ -7,6 +7,7 @@ import { roles, Student, User } from "./types";
 import withRedirect from "./HOCs/withAuth";
 import { gql } from "apollo-boost";
 import { useApolloClient } from "@apollo/react-hooks";
+import md5 from "md5";
 
 const Classes = lazy(() => import("./components/Content/Classes/Classes"));
 const Students = lazy(() => import("./components/Content/Students/Students"));
@@ -51,29 +52,43 @@ function App() {
             }
     );
 
-    const onUser = async (user: Omit<User, "role" | "className">) => {
-        console.log(user);
+    const onUser = async ({ hash, session, ...user }: returnUserType) => {
         const { data: { student: { role, className } } } = await ApolloClient.query<
             { student: { role: roles, className: string } },
             { filter: Partial<Student> }
         >({ query: GET_STUDENT, variables: { filter: { vkId: user.uid } } });
 
-        const userWithRole = { ...user, role, className }
-
+        const userWithRole: User = { ...user, role, className }
+        console.log(hash, `` + process.env.REACT_APP_APP_ID + user.uid + process.env.REACT_APP_SECRET)
         setUser(userWithRole);
         localStorage.setItem("user", JSON.stringify(userWithRole));
+        localStorage.setItem("hash", `` + process.env.REACT_APP_APP_ID + user.uid + process.env.REACT_APP_SECRET)
     }
 
     useEffect(() => {
         if (!user) {
             const userItem = localStorage.getItem("user");
+            const hash = localStorage.getItem("hash");
 
-            if (userItem) {
+            const app_id = process.env.REACT_APP_APP_ID;
+            const secret = process.env.REACT_APP_SECRET;
+            if (userItem && hash) {
                 const parsedUser = JSON.parse(userItem);
                 if (typeof parsedUser === "object") {
-                    setUser(parsedUser);
+                    if (Object.keys(parsedUser).every(key => ["first_name", "last_name", "uid", "hash", "photo_rec"].includes(key))) {
+                        if (hash === app_id + parsedUser.uid + secret) {
+                            setUser(parsedUser);
+                        } else {
+                            localStorage.removeItem("user");
+                            localStorage.removeItem("hash");
+                        }
+                    } else {
+                        localStorage.removeItem("user");
+                        localStorage.removeItem("hash");
+                    }
                 } else {
                     localStorage.removeItem("user");
+                    localStorage.removeItem("hash");
                 }
             }
         }
