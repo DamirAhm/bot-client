@@ -6,7 +6,7 @@ import { roles } from "../../../types";
 import StudentPreview from "./StudentPreview/StudentPreview";
 import useList from "../../../hooks/useList";
 import Filters from "../../Filters/Filters";
-import Suspender from "../../Common/Suspender";
+import Suspender from "../../Common/Suspender/Suspender";
 
 export const GET_STUDENTS = gql`
     {

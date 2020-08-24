@@ -1,12 +1,12 @@
 import React, { useState, HTMLAttributes } from 'react';
 import { useEffect } from "react";
 type Props = {
-    Head: React.FC<{ onClick: () => void, opened: boolean }> | JSX.Element
+    Head: React.FC<{ opened: boolean }> | JSX.Element
     children: JSX.Element | ((opened: boolean) => JSX.Element)
     initiallyOpened?: boolean
     isOpened?: boolean
 } & HTMLAttributes<HTMLDivElement>
- 
+
 const Accordion: React.FC<Props> = ({ Head, children, initiallyOpened, isOpened, ...attributes }) => {
     const [opened, setOpened] = useState(initiallyOpened ?? true);
 
@@ -18,14 +18,14 @@ const Accordion: React.FC<Props> = ({ Head, children, initiallyOpened, isOpened,
         <div {...attributes}>
             <div className="accordion" onClick={() => setOpened(!opened)}>
                 {typeof Head === "function"
-                    ? <Head onClick={() => {}} opened={opened} />
+                    ? <Head opened={opened} />
                     : Head
                 }
             </div>
             {opened &&
                 <>{children && typeof children === "function" ? children(opened) : children}</>
             }
-        </div> 
+        </div>
     )
 }
 

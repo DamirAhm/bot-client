@@ -11,32 +11,34 @@ import { UserContext } from "../../App";
 import { useContext } from "react";
 
 const UserInfo: React.FC<
-    {userInfo: Pick<User, "photo_rec" | "first_name" | "last_name">, resetUser: () => void}
-> = ({userInfo: {first_name, last_name, photo_rec}, resetUser}) => {
+    { userInfo: Pick<User, "photo_rec" | "first_name" | "last_name">, resetUser: () => void }
+> = ({ userInfo: { first_name, last_name, photo_rec }, resetUser }) => {
     const logOut = () => {
         resetUser();
         localStorage.removeItem("user");
     }
 
     return <div className={styles.userInfo}>
-        <img src={"https://vk.com" + photo_rec} alt="Фото пользователя"/>
+        <img src={"https://vk.com" + photo_rec} alt="Фото пользователя" />
         <span className={styles.userName}>{first_name} {last_name}</span>
         <button className={styles.logOut} onClick={logOut}> Выйти </button>
     </div>
 }
 
-const Sidebar: React.FC<{setUser: (user: User | null) => void}> = ({setUser}) => {
-    const {first_name, last_name, photo_rec, role, className, uid} = useContext(UserContext);
+const Sidebar: React.FC<{ setUser: (user: User | null) => void }> = ({ setUser }) => {
+    const { first_name, last_name, photo_rec, role, className, uid } = useContext(UserContext);
+
+    const userInfo = { first_name, last_name, photo_rec };
 
     return (
         <div onMouseDown={e => e.stopPropagation()} className={styles.sidebar}>
             <input type="checkbox" id={styles.check} />
             <label htmlFor={styles.check}>
                 <FaChevronLeft className={styles.opened} size={20} />
-                <GiHamburgerMenu className={styles.closed} size={20}/>
+                <GiHamburgerMenu className={styles.closed} size={20} />
             </label>
 
-            {role === roles.admin 
+            {role === roles.admin
                 ? <>
                     <NavLink to="/classes" className={styles.link} activeClassName={styles.active}> Классы </NavLink>
                     <NavLink to="/students" className={styles.link} activeClassName={styles.active}> Ученики </NavLink>
@@ -44,11 +46,11 @@ const Sidebar: React.FC<{setUser: (user: User | null) => void}> = ({setUser}) =>
                 : <>
                     <NavLink to={`/classes/${className}`} className={styles.link} activeClassName={styles.active}> Класс </NavLink>
                     <NavLink to={`/students/${uid}`} className={styles.link} activeClassName={styles.active}> Ученик </NavLink>
-                </>    
+                </>
             }
             {first_name && last_name && photo_rec &&
                 <NavLink to={`/students/${uid}`} className={styles.userInfo}>
-                    <UserInfo userInfo={{first_name, last_name, photo_rec}} resetUser={() => setUser(null)}/>
+                    <UserInfo userInfo={userInfo} resetUser={() => setUser(null)} />
                 </NavLink>
             }
         </div>

@@ -2,7 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import styles from './Confirm.module.css'
 
-const modalRoot = document.querySelector("#confirmModal");
 
 type Props = {
     text?: string,
@@ -17,6 +16,7 @@ const Confirm: React.FC<Props> = ({
     text = "Вы уверены что хотите совершить это действие", returnRes,
     confirmElement, onConfirm, onReject, rejectElement
 }) => {
+    const modalRoot = document.querySelector("#confirmModal");
 
     const chooseHandler = (res: boolean) => {
         if (res) onConfirm?.()
@@ -30,13 +30,13 @@ const Confirm: React.FC<Props> = ({
             <div className={styles.container}>
                 <span className={styles.text}>{text}</span>
                 <div className={styles.options}>
-                    {confirmElement 
+                    {confirmElement
                         ? rejectElement
-                        : <button onClick={() => chooseHandler(false)} className={`${styles.btn} ${styles.reject}`}>Нет</button>
+                        : <button onClick={() => chooseHandler(false)} data-testid={"reject"} className={`${styles.btn} ${styles.reject}`}>Нет</button>
                     }
-                    {rejectElement 
+                    {rejectElement
                         ? confirmElement
-                        : <button onClick={() => chooseHandler(true)} className={`${styles.btn} ${styles.confirm}`}>Да</button>
+                        : <button onClick={() => chooseHandler(true)} data-testid={"confirm"} className={`${styles.btn} ${styles.confirm}`}>Да</button>
                     }
                 </div>
             </div>

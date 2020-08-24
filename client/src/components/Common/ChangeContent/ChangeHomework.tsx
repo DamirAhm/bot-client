@@ -4,12 +4,12 @@ import { homework } from '../../../types';
 
 import styles from './ChangeContent.module.css'
 import createContentFiller, { ContentSectionProps } from "../../../utils/createContentChanger/createContentChanger";
-import Suspender from "../Suspender";
+import Suspender from "../Suspender/Suspender";
 import { useQuery } from "@apollo/react-hooks";
 import { GET_SCHEDULE, GET_LESSONS } from "../../Content/ClassPage/Sections/ScheduleSection/ScheduleSection";
 import { ChangeContentProps } from "./ChangeContent";
 import { useParams } from "react-router-dom";
- 
+
 
 const DEFAULT_LESSON = "Выберите предмет";
 
@@ -21,8 +21,8 @@ type ChangeHomeworkProps = {
 const ChangeHomework = createContentFiller<ChangeHomeworkProps>({
     lesson: {
         title: "Урок",
-        ContentComponent: ({value, changeHandler}) => {
-            const {className} = useParams<{className: string}>();
+        ContentComponent: ({ value, changeHandler }) => {
+            const { className } = useParams<{ className: string }>();
             const scheduleQuery = useQuery<{ schedule: string[][] }>(GET_SCHEDULE, { variables: { className } });
             const lessonsQuery = useQuery<{ lessons: string[] }>(GET_LESSONS);
 
@@ -30,7 +30,7 @@ const ChangeHomework = createContentFiller<ChangeHomeworkProps>({
                 <Suspender queries={[scheduleQuery, lessonsQuery]}>
                     {({ schedule }: ({ schedule: string[][] }), { lessons }: { lessons: string[] }) => {
                         const possibleLessons = lessons.filter(lesson => schedule.some(day => day.includes(lesson)));
-                        
+
                         return <select
                             className={styles.selectLesson}
                             onChange={e => changeHandler(e.target.value)}
@@ -38,7 +38,7 @@ const ChangeHomework = createContentFiller<ChangeHomeworkProps>({
                         >
                             {(!value || value === DEFAULT_LESSON) &&
                                 <option key={`possibleLessonNothing`} value={DEFAULT_LESSON}>
-                                    {DEFAULT_LESSON} 
+                                    {DEFAULT_LESSON}
                                 </option>
                             }
                             {possibleLessons
@@ -52,7 +52,7 @@ const ChangeHomework = createContentFiller<ChangeHomeworkProps>({
             )
         },
         defaultValue: "Выберите предмет",
-        validator: (lesson) => {if (lesson === "" || lesson === DEFAULT_LESSON) return "Выберите урок"}
+        validator: (lesson) => { if (lesson === "" || lesson === DEFAULT_LESSON) return "Выберите урок" }
     },
     ...ChangeContentProps
 }, (state) => {

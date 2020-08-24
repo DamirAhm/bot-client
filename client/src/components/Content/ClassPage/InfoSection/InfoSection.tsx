@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import styles from './InfoSection.module.css'
-import Searcher from '../../../Common/Searcher';
-import Accordion from '../../../Common/Accordion';
+import Searcher from '../../../Common/Searcher/Searcher';
+import Accordion from '../../../Common/Accordion/Accordion';
 import { GoTriangleRight } from "react-icons/go";
 
 type Props = {
@@ -36,9 +36,9 @@ const InfoSection: React.FC<Props> = ({ name, children, className = "", updateSe
                     } </>
                 }
             >
-            <div className={`${styles.content} ${className}`}>
-                {children && typeof children === "function" ? children(text) : children}
-            </div>
+                <div className={`${styles.content} ${className}`}>
+                    {children && typeof children === "function" ? children(text) : children}
+                </div>
             </Accordion>
         </div>
     )

@@ -5,18 +5,18 @@ import "react-datepicker/dist/react-datepicker.css";
 import { content, attachment, WithTypename, vkPhoto } from '../../../types';
 
 import styles from './ChangeContent.module.css'
-import FileUploader from "../FileUploader";
+import FileUploader from "../FileUploader/FileUploader";
 import DeletableAttachment from "../OpenableImage/DeletableAttachment";
 import createContentFiller, { ContentSectionProps } from "../../../utils/createContentChanger/createContentChanger";
 
 const parseAttachment = (photo: vkPhoto) => {
     return `photo${photo.owner_id}_${photo.id}`;
 };
-const findMaxPhotoResolution = (photo: vkPhoto) => 
+const findMaxPhotoResolution = (photo: vkPhoto) =>
     photo.sizes.reduce<
         { url: string, height: number }
-    >((acc, c) => 
-        (c.height > acc.height) ? c : acc, 
+    >((acc, c) =>
+        (c.height > acc.height) ? c : acc,
         { height: 0, url: "" }
     ).url;
 
@@ -34,14 +34,14 @@ export const ChangeContentProps: ChangeContentPropsType = {
                 if (date !== null) {
                     changeHandler(date.toISOString());
                 }
-            } }
+            }}
             minDate={new Date()}
             dateFormat={"dd/MM/yyyy"}
             className={styles.datePickerInput}
             showPopperArrow={false}
             calendarClassName={styles.datePickerCalendar} />,
         defaultValue: new Date().toISOString(),
-        validator: (date) => {if (+date >= Date.now()) return "Дата на которую задано задание должно быть в будущем"} 
+        validator: (date) => { if (+date >= Date.now()) return "Дата на которую задано задание должно быть в будущем" }
     },
     attachments: {
         Header: ({ changeHandler, value }) => {
@@ -88,7 +88,7 @@ export const ChangeContentProps: ChangeContentPropsType = {
 
             return <div className={styles.header}>
                 <h1 className={styles.title}> Вложения </h1>
-                <FileUploader View={() => <MdFileUpload size={25} className={styles.uploaderIcon} />} onChange={onPhotoUpload} />
+                <FileUploader View={<MdFileUpload size={25} className={styles.uploaderIcon} />} onChange={onPhotoUpload} />
             </div>;
         },
         ContentComponent: ({ value, changeHandler }) => {
@@ -98,7 +98,7 @@ export const ChangeContentProps: ChangeContentPropsType = {
                     attachment={att.url}
                     remove={() => {
                         changeHandler(value.filter(({ _id }) => _id !== att._id));
-                    } } />
+                    }} />
                 )}
             </div>;
         },
@@ -114,7 +114,7 @@ export const ChangeContentProps: ChangeContentPropsType = {
                     className={styles.text}
                     onChange={e => {
                         changeHandler(e.target.value);
-                    } }
+                    }}
                     cols={60} rows={5}
                 >
                     {value}
@@ -125,12 +125,12 @@ export const ChangeContentProps: ChangeContentPropsType = {
     }
 };
 const ChangeContent = createContentFiller<ChangeContentPropsType>(
-    ChangeContentProps, 
+    ChangeContentProps,
     (state) => {
-    if (state.text.trim() === "" || state.attachments.length === 0) {
-        return "Задание должно содержать текст или фотографии";
-    }
-})
+        if (state.text.trim() === "" || state.attachments.length === 0) {
+            return "Задание должно содержать текст или фотографии";
+        }
+    })
 
 export default ChangeContent;
 

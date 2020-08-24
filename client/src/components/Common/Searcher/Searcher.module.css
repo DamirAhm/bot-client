@@ -1,0 +1,19 @@
+.container {
+    position: relative;
+}
+
+.clear {
+    position: absolute;
+    color: var(--main);
+    right: 0.5rem;
+    top: calc(50% - 15px / 2);
+    display: flex;
+}
+
+.input {
+    border-radius: 10px;
+    height: 100%;
+    color: var(--main);
+    padding-left: 5px;
+    box-sizing: border-box;
+}

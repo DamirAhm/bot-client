@@ -7,9 +7,9 @@ import StudentInfo from "./StudentInfo/StudentInfo";
 import { parseDate } from "../../../utils/date";
 import { Redirect } from 'react-router';
 import { GET_STUDENTS } from "../Students/Students";
-import Suspender from "../../Common/Suspender";
+import Suspender from "../../Common/Suspender/Suspender";
 import { useParams } from "react-router-dom";
-import Options from "../../Common/Options";
+import Options from "../../Common/Options/Options";
 import Confirm from "../../Common/Confirm/Confirm";
 
 export const GET_STUDENT = gql`

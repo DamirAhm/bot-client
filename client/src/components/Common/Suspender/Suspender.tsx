@@ -4,20 +4,21 @@ interface Props {
     query?: {
         loading: boolean
         data: any
-        error?: any
+        error?: Error
     }
     queries?: {
         loading: boolean
         data: any
-        error?: any
+        error?: Error
     }[]
+    fallback?: JSX.Element
     children: any | ((...data: any) => any)
 }
 
-const Suspender: React.FC<Props> = ({ query, children, queries }) => {
+const Suspender: React.FC<Props> = ({ query, children, queries, fallback = <div> loading... </div> }) => {
     if (queries) {
-        if (queries.some(q => q.error)) return <div> {queries.map((q, i) => <span key={"SuspenderErrorSpan" + i}> {q.error && JSON.stringify(q.error, null, 2)} <br /></span>)} </div>;
-        if (queries.some(q => q.loading)) return <div> loading... </div>;
+        if (queries.some(q => q.error)) return <div> {queries.map((q, i) => q.error && <span key={"SuspenderErrorSpan" + i}> {q.error && q.error.message}</span>)} </div>;
+        if (queries.some(q => q.loading)) return fallback;
         else if (queries.every(q => q.data)) {
             if (typeof children === "function") return children(...(queries.map(q => q.data)))
             else return children
@@ -26,7 +27,7 @@ const Suspender: React.FC<Props> = ({ query, children, queries }) => {
         const { error, loading, data } = query;
 
         if (error) return <div> {JSON.stringify(error, null, 2)} </div>;
-        else if (loading) return <div> loading... </div>
+        else if (loading) return fallback;
         else if (data && children) {
             if (typeof children === "function") return children(data)
             else return children

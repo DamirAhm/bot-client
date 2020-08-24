@@ -4,13 +4,13 @@ import InfoSection from '../../InfoSection/InfoSection';
 import { gql } from 'apollo-boost';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { attachment, WithTypename, homework, redactorOptions } from '../../../../../types';
-import Suspender from '../../../../Common/Suspender';
-import Accordion from "../../../../Common/Accordion";
+import Suspender from '../../../../Common/Suspender/Suspender';
+import Accordion from "../../../../Common/Accordion/Accordion";
 import { GoTriangleRight } from "react-icons/go";
 import ReactDOM from "react-dom";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
 import { parseContentByDate, objectForEach, getDateStrFromDayMonthStr } from "../../../../../utils/functions";
-import Options from "../../../../Common/Options";
+import Options from "../../../../Common/Options/Options";
 import ChangeHomework from "../../../../Common/ChangeContent/ChangeHomework";
 import { UserContext } from "../../../../../App";
 
@@ -337,8 +337,8 @@ const HomeworkLayout: React.FC<{
             <Accordion
                 key={hwDate}
                 initiallyOpened={initiallyOpened}
-                Head={({ onClick, opened }) =>
-                    <div className={styles.sectionHeader} onClick={onClick}>
+                Head={({ opened }) =>
+                    <div className={styles.sectionHeader}>
                         <div className={`${styles.date} ${styles.accordion}`}>
                             {hwDate}
                             <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
@@ -355,8 +355,8 @@ const HomeworkLayout: React.FC<{
                     {Object.keys(parsedHomework[hwDate]).map(lesson =>
                         <Accordion
                             className={styles.offseted} key={hwDate + lesson}
-                            Head={({ onClick, opened }) =>
-                                <div className={styles.sectionHeader} onClick={onClick}>
+                            Head={({ opened }) =>
+                                <div className={styles.sectionHeader} >
                                     <div className={`${styles.lesson} ${styles.accordion}`}>
                                         {lesson}
                                         <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />

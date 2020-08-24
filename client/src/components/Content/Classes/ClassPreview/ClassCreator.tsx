@@ -4,7 +4,7 @@ import { gql } from "apollo-boost";
 import { useMutation } from "@apollo/react-hooks";
 import { GET_CLASSES, classPreview } from "../Classes";
 import { redactorOptions, WithTypename } from "../../../../types";
-import Options from "../../../Common/Options";
+import Options from "../../../Common/Options/Options";
 const CREATE_CLASS = gql`
     mutation CreateClass($name: String!) {
 #        createClass(name: $name) @client

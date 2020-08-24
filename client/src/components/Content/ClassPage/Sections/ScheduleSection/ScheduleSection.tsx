@@ -2,11 +2,11 @@ import React, { useState, memo, ChangeEvent } from 'react'
 import { gql } from 'apollo-boost';
 import InfoSection from '../../InfoSection/InfoSection';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import Suspender from '../../../../Common/Suspender';
+import Suspender from '../../../../Common/Suspender/Suspender';
 import styles from "./ScheduleSection.module.css";
 import { MdClose } from "react-icons/md";
 import { redactorOptions, WithTypename } from '../../../../../types';
-import Options from "../../../../Common/Options";
+import Options from "../../../../Common/Options/Options";
 
 const days = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"]
 type Props = {

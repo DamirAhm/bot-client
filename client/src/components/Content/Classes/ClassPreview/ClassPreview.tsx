@@ -5,7 +5,7 @@ import { useMutation } from "@apollo/react-hooks";
 import { highlightSearch } from "../../../../utils/functions";
 import { Link } from "react-router-dom";
 import { redactorOptions } from "../../../../types";
-import Options from "../../../Common/Options";
+import Options from "../../../Common/Options/Options";
 import Confirm from "../../../Common/Confirm/Confirm";
 import { useState } from "react";
 
@@ -58,7 +58,7 @@ const ClassPreview: React.FC<Props> = ({ className, studentsCount, searchText })
                     <div className={styles.count}> Учеников: {highlighter(String(studentsCount))} </div>
                     <div></div>
                 </Link>
-                <Options 
+                <Options
                     include={redactorOptions.delete}
                     props={{
                         onClick: () => setWaitForConfirm(true),

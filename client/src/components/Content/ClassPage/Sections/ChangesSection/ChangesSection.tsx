@@ -4,14 +4,14 @@ import InfoSection from '../../InfoSection/InfoSection';
 import { gql } from 'apollo-boost';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { attachment, WithTypename, change, redactorOptions } from '../../../../../types';
-import Suspender from '../../../../Common/Suspender';
-import Accordion from "../../../../Common/Accordion";
+import Suspender from '../../../../Common/Suspender/Suspender';
+import Accordion from "../../../../Common/Accordion/Accordion";
 import { GoTriangleRight } from "react-icons/go";
 import ReactDOM from "react-dom";
 import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
 import { parseContentByDate, getDateStrFromDayMonthStr } from "../../../../../utils/functions";
-import Options from "../../../../Common/Options";
+import Options from "../../../../Common/Options/Options";
 import { UserContext } from "../../../../../App";
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
@@ -214,8 +214,8 @@ const ChangesSection: React.FC<Props> = ({ className }) => {
                             {Object.keys(parsedChanges).map(changeDate =>
                                 <Accordion
                                     key={changeDate}
-                                    Head={({ onClick, opened }) =>
-                                        <div className={styles.sectionHeader} onClick={onClick}>
+                                    Head={({ opened }) =>
+                                        <div className={styles.sectionHeader}>
                                             <div className={styles.title}>
                                                 {changeDate}
                                                 <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />

@@ -7,7 +7,7 @@ import ClassCreator from "./ClassPreview/ClassCreator";
 import Filters from "../../Filters/Filters";
 import { sort } from "../Students/Students";
 import useList from "../../../hooks/useList";
-import Suspender from "../../Common/Suspender";
+import Suspender from "../../Common/Suspender/Suspender";
 
 export const GET_CLASSES = gql`
   query GetClasses {

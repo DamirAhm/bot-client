@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import InfoSection from "../../InfoSection/InfoSection"
-import Suspender from '../../../../Common/Suspender';
+import Suspender from '../../../../Common/Suspender/Suspender';
 import StudentPreview from "../../../Students/StudentPreview/StudentPreview"
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
@@ -9,7 +9,7 @@ import { redactorOptions, roles, Student, WithTypename } from '../../../../../ty
 import ReactDOM from "react-dom"
 import useList from "../../../../../hooks/useList";
 import styles from "./StudentSection.module.css";
-import Options from "../../../../Common/Options";
+import Options from "../../../../Common/Options/Options";
 import { UserContext } from "../../../../../App";
 import { useContext } from "react";
 import Filters from "../../../../Filters/Filters";

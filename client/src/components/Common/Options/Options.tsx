@@ -1,12 +1,12 @@
 import React, { useContext } from 'react'
-import { UserContext } from "../../App";
+import { UserContext } from "../../../App";
 
 import { FaPen } from "react-icons/fa";
 import { MdClose, MdCheck, MdAdd } from "react-icons/md";
 import { IoIosTrash } from "react-icons/io";
 
 import { IconBaseProps } from "react-icons/lib";
-import { redactorOptions, roles } from "../../types"
+import { redactorOptions, roles } from "../../../types"
 
 type Props = {
     include: redactorOptions[] | redactorOptions
@@ -45,9 +45,10 @@ const isSoloIconProps = (
 }
 
 const Options: React.FC<Props> = ({
-    include, props = {}, withRoleControl = false,
-    allowOnlyAdmin = false, ...iconProps }) => {
-    if (isSoloIconProps(props) && typeof include === 'string') props = { [include]: props };
+    include, props, withRoleControl = false,
+    allowOnlyAdmin = false, ...iconProps
+}) => {
+    if (props && isSoloIconProps(props) && typeof include === 'string') props = { [include]: props };
     if (typeof include === "string") include = [include];
 
     const { role = roles.student } = useContext(UserContext);
@@ -59,17 +60,17 @@ const Options: React.FC<Props> = ({
     return (
         <>
             {include.map((e, i) => {
-                if (isSoloIconProps(props)) {
+                if (props && isSoloIconProps(props)) {
                     throw new Error("If you pass props for one icon you must pass string of icon, not an array")
                 }
 
-                const { allowOnlyAdmin, allowOnlyRedactor, renderIf, ...restProps } = props[e];
+                const { allowOnlyAdmin, allowOnlyRedactor, renderIf, ...restProps } = (props?.[e] || {});
                 if (
                     (allowOnlyRedactor && ![roles.admin, roles.contributor].includes(role)) ||
                     (allowOnlyAdmin && role !== roles.admin) ||
                     (renderIf && !renderIf())
                 ) return null;
-                return <button key={i}> {React.createElement(OptionsElements[e], { ...iconProps, ...restProps })} </button>
+                return <button key={i}> {React.createElement(OptionsElements[e], { ...iconProps, ...restProps, ["data-testid"]: e })} </button>
             }
             )}
         </>
