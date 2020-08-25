@@ -31,13 +31,13 @@ describe("with one query", () => {
     test("renders error if state is error", () => {
         const query = {
             loading: false,
-            error: { error: "error" },
+            error: new Error("error"),
             data: undefined,
         };
 
         const suspender = render(<Suspender query={query} />);
 
-        expect(suspender.queryByText(/\"error\":\s*\"error\"/)).not.toBeNull();
+        expect(suspender.queryByText("error")).not.toBeNull();
     });
     test("renders children if data is loaded", () => {
         const query = {
