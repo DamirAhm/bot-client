@@ -1,6 +1,7 @@
 import React, { HTMLAttributes, useState } from "react";
 import styles from "./Filters.module.css";
 import { sort } from "../Content/Students/Students";
+import Searcher from "../Common/Searcher/Searcher";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
     sortsList?: sort[]
@@ -18,10 +19,14 @@ const Filters: React.FC<Props> = ({ sortsList, setSearchText, setSort, defaultSo
             <div className={styles.filters}>
                 {setSearchText &&
                     <div className={styles.search}>
-                        <input style={{ color: "var(--main)" }} placeholder="Поиск" type="text" onChange={(e) => {
-                            setText(e.target.value);
-                            setSearchText(e.target.value)
-                        }} value={text} />
+                        <Searcher
+                            onChange={(text: string) => {
+                                setText(text);
+                                setSearchText(text)
+                            }}
+                            placeholder={"Поиск"}
+                            value={text}
+                        />
                     </div>
                 }
                 {sortsList?.length && setSort &&

@@ -20,8 +20,6 @@
 
 .filters .search {
     color: var(--main);
-    width: 60%;
-    max-width: 130px;
 }
 
 .filters .sorts {
@@ -36,6 +34,7 @@
 }
 
 @media screen and (max-width: 776px) {
+
     .filters input,
     .filters select {
         padding: 3px 3px;
