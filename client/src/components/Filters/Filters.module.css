@@ -16,16 +16,20 @@
     border-radius: 10px;
     padding: 5px 10px;
     height: 100%;
+    width: 100%;
 }
 
+.filters .select {
+    flex-direction: row-reverse;
+}
+
+.filters .sorts,
 .filters .search {
     color: var(--main);
-}
-
-.filters .sorts {
     width: 40%;
     display: flex;
-    flex-direction: row-reverse;
+    max-width: 250px;
+    min-width: 100px;
 }
 
 .sorts * {
@@ -34,18 +38,15 @@
 }
 
 @media screen and (max-width: 776px) {
-
     .filters input,
     .filters select {
-        padding: 3px 3px;
-        background-color: #fff;
         width: 100%;
         color: var(--main) !important;
-        font-size: 1rem;
+        font-size: 1.4rem;
     }
 
-    .filters .search {
-        width: 50%;
+    .filters > * {
+        width: 40%;
     }
 
     .filters {

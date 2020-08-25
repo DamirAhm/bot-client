@@ -20,7 +20,10 @@ const StudentPreview: React.FC<Props> = ({ searchText, visibleInfo = ["fullName"
                 {visibleInfo.map((key) =>
                     <span
                         key={key}
-                        className={styles.info}> {highlighter((key === "fullName" ? getPrettyName(info.fullName) : info[key]) as string)} </span>
+                        className={`${styles.info} ${styles[key]}`}
+                    >
+                        {highlighter((key === "fullName" ? getPrettyName(info.fullName) : info[key]) as string)}
+                    </span>
                 )}
             </Link>
         </div>

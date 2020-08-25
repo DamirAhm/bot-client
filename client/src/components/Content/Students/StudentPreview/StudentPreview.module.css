@@ -45,6 +45,10 @@
     .info * {
         font-size: 1.4rem;
     }
+
+    .role {
+        display: none;
+    }
 }
 
 @media screen and (max-width: 350px) {
@@ -53,6 +57,6 @@
     }
     .info,
     .info * {
-        font-size: 0.8rem;
+        font-size: 1.4rem;
     }
 }

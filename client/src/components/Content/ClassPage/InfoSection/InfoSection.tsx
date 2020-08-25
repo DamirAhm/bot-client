@@ -30,9 +30,12 @@ const InfoSection: React.FC<Props> = ({ name, children, className = "", updateSe
                                 <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
                             </div>
                             {updateSearchString &&
-                                <Searcher
-                                    value={text} placeholder="Поиск"
-                                    onChange={text => updateSearchString(text)} />
+                                <div className={styles.search}>
+                                    <Searcher
+                                        value={text} placeholder="Поиск"
+                                        onChange={text => updateSearchString(text)}
+                                    />
+                                </div>
                             }
                         </div>
                     } </>

@@ -78,7 +78,7 @@ const Students: React.FC = () => {
     };
     return (
         <div>
-            <Filters className={styles.filter} setSearchText={setSearchText} sortsList={sorts} setSort={setSorting} />
+            <Filters className={styles.filters} setSearchText={setSearchText} sortsList={sorts} setSort={setSorting} />
             <Suspender query={{ data, error, loading }}>
                 {() =>
                     <div className={styles.students}>
