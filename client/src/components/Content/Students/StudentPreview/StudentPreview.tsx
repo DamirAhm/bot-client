@@ -22,7 +22,11 @@ const StudentPreview: React.FC<Props> = ({ searchText, visibleInfo = ["fullName"
                         key={key}
                         className={`${styles.info} ${styles[key]}`}
                     >
-                        {highlighter((key === "fullName" ? getPrettyName(info.fullName) : info[key]) as string)}
+                        {
+                            highlighter((key === "fullName"
+                                ? getPrettyName(info.fullName, info.fullName.split(" ")[0].search(searchText || "") === -1)
+                                : String(info[key])))
+                        }
                     </span>
                 )}
             </Link>
@@ -32,7 +36,9 @@ const StudentPreview: React.FC<Props> = ({ searchText, visibleInfo = ["fullName"
 
 export default memo(StudentPreview);
 
-function getPrettyName(name: string) {
+function getPrettyName(name: string, shortenName: boolean = false) {
     if (!name) return "Error empty name"
-    return name.split(" ")[0] + " " + (name.split(" ")[1]?.[0]?.toUpperCase() || "");
+
+    if (shortenName) return name.split(" ")[0][0].toUpperCase() + " " + name.split(" ")[1];
+    else return name.split(" ")[0] + " " + (name.split(" ")[1][0].toUpperCase() || "");
 }

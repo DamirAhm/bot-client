@@ -9,7 +9,6 @@ import { redactorOptions, WithTypename } from '../../../../../types';
 import Options from "../../../../Common/Options/Options";
 import {
     DragDropContext,
-    DragUpdate,
     DropResult,
 } from "react-beautiful-dnd";
 import { DraggableEntity, DroppableEntity } from "../../../../Common/DragAndDropEntities";
@@ -42,7 +41,6 @@ const CHANGE_SCHEDULE = gql`
 
 type scheduleData = { schedule: string[][], lessonsList: string[] };
 
-//* Could optimize with checking where is cursor by traking it in dnd update and changing isAnyLessonDragging on component only if cursor is above it
 const ScheduleSection: React.FC<Props> = ({ className }) => {
     const [isAnyLessonDragging, setIsAnyLessonDragging] = useState(false);
     const [scheduleData, setScheduleData] = useState<Partial<scheduleData> | null>(null)
@@ -84,9 +82,6 @@ const ScheduleSection: React.FC<Props> = ({ className }) => {
     const onDragStart = () => {
         setIsAnyLessonDragging(true);
     }
-    const onDragUpdate = (initial: DragUpdate) => {
-        console.log(initial);
-    }
     const onDragEnd = (initial: DropResult) => {
         const schedule = scheduleData?.schedule;
         if (schedule) {
@@ -120,7 +115,7 @@ const ScheduleSection: React.FC<Props> = ({ className }) => {
     }, [scheduleQuery, lessonsQuery, scheduleQuery.data, lessonsQuery.data])
 
     return (
-        <DragDropContext onDragStart={onDragStart} onDragUpdate={onDragUpdate} onDragEnd={onDragEnd}>
+        <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
             <InfoSection name={"Расписание"}>
                 <Suspender queries={[scheduleQuery, lessonsQuery]}>
                     {scheduleData && scheduleData.schedule !== undefined && scheduleData.lessonsList !== undefined &&

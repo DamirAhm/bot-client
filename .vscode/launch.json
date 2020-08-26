@@ -5,6 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "effectful",
+            "request": "launch",
+            "name": "Launch Browser application",
+            "preset": "browser",
+            "cwd": "${workspaceRoot}/client",
+            "reconnectTimeout": 5,
+            "open": true
+        },
+        {
             "name": "Attach",
             "port": 9229,
             "request": "attach",

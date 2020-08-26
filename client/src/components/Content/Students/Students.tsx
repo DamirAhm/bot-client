@@ -66,7 +66,9 @@ const Students: React.FC = () => {
         str = str.toLowerCase();
         const _class = (item: studentPreview) => item.className;
         setText(str);
-        setFilter(item => item.fullName.search(str) !== -1 || _class(item).toLowerCase().search(str) !== -1 || item.role.toLowerCase().search(str) !== -1)
+        setFilter(item => {
+            return item.fullName.toLowerCase().search(str) !== -1 || _class(item).toLowerCase().search(str) !== -1 || item.role.toLowerCase().search(str) !== -1
+        })
     };
     const setSorting = (name: string) => {
         const sort = sorts.find(e => e.name === name)?.sort;
