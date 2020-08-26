@@ -9,71 +9,96 @@ import {
 } from "@testing-library/dom";
 import { connectImages } from "./ImgAlbum";
 
-test("renders image with given src", () => {
+test( "renders image with given src", () => {
     const { queryByAltText } = render(
         <OpenableImg src={"fake url"} alt={"Alt to find"} />
     );
 
-    const image = queryByAltText("Alt to find");
+    const image = queryByAltText( "Alt to find" );
 
-    expect(image).not.toBeNull();
-    expect(image.getAttribute("src")).toBe("fake url");
-});
+    expect( image ).not.toBeNull();
+    expect( image.getAttribute( "src" ) ).toBe( "fake url" );
+} );
+test( "image has alt prop even if it's not passed", () => {
+    const { queryByTestId } = render(
+        <OpenableImg src={"fake url"} />
+    );
 
-test("opens modal on click on photo", () => {
-    const photoModal = document.createElement("div");
+    const image = queryByTestId( "image" );
+
+    expect( image.getAttribute( "alt" ) ).toBeDefined()
+} )
+
+test( "opens modal on click on photo", () => {
+    const photoModal = document.createElement( "div" );
     photoModal.id = "photoModal";
-    document.body.appendChild(photoModal);
+    document.body.appendChild( photoModal );
 
     const { getByAltText } = render(
         <OpenableImg src={"fake url"} alt={"Alt to find"} />
     );
-    const photo = getByAltText("Alt to find");
+    const photo = getByAltText( "Alt to find" );
     photo.click();
 
-    const modalPhoto = queryByAltText(photoModal, "Alt to find");
+    const modalPhoto = queryByAltText( photoModal, "Alt to find" );
 
-    expect(modalPhoto).not.toBeNull();
-    expect(modalPhoto.getAttribute("src")).toBe("fake url");
+    expect( modalPhoto ).not.toBeNull();
+    expect( modalPhoto.getAttribute( "src" ) ).toBe( "fake url" );
 
     photoModal.remove();
-});
-test("does not render modal if photoModal div is not exists", () => {
+} );
+test( "does not render modal if photoModal div is not exists", () => {
     const { getByAltText } = render(
         <OpenableImg src={"fake url"} alt={"Alt to find"} />
     );
-    const photo = getByAltText("Alt to find");
+    const photo = getByAltText( "Alt to find" );
     photo.click();
 
-    const photos = screen.queryAllByAltText("Alt to find");
+    const photos = screen.queryAllByAltText( "Alt to find" );
 
     //Just original photo element
-    expect(photos.length).toBe(1);
-});
-
-test("does not renders chevrons if prev/nextImg are not given", () => {
-    const photoModal = document.createElement("div");
+    expect( photos.length ).toBe( 1 );
+} );
+test( "modal image has alt prop even if it's not passed", () => {
+    const photoModal = document.createElement( "div" );
     photoModal.id = "photoModal";
-    document.body.appendChild(photoModal);
+    document.body.appendChild( photoModal );
 
     const { getByAltText } = render(
         <OpenableImg src={"fake url"} alt={"Alt to find"} />
     );
-    const photo = getByAltText("Alt to find");
+    const photo = getByAltText( "Alt to find" );
     photo.click();
 
-    const prevImgChevron = queryByTestId(photoModal, "prevImg");
-    const nextImgChevron = queryByTestId(photoModal, "nextImg");
+    const image = queryByTestId( photoModal, "modalImg" );
 
-    expect(prevImgChevron).toBeNull();
-    expect(nextImgChevron).toBeNull();
+    expect( image.getAttribute( "alt" ) ).toBeDefined()
+} )
+
+
+test( "does not renders chevrons if prev/nextImg are not given", () => {
+    const photoModal = document.createElement( "div" );
+    photoModal.id = "photoModal";
+    document.body.appendChild( photoModal );
+
+    const { getByAltText } = render(
+        <OpenableImg src={"fake url"} alt={"Alt to find"} />
+    );
+    const photo = getByAltText( "Alt to find" );
+    photo.click();
+
+    const prevImgChevron = queryByTestId( photoModal, "prevImg" );
+    const nextImgChevron = queryByTestId( photoModal, "nextImg" );
+
+    expect( prevImgChevron ).toBeNull();
+    expect( nextImgChevron ).toBeNull();
 
     photoModal.remove();
-});
-test("renders chevrons if prev/nextImg are given", () => {
-    const photoModal = document.createElement("div");
+} );
+test( "renders chevrons if prev/nextImg are given", () => {
+    const photoModal = document.createElement( "div" );
     photoModal.id = "photoModal";
-    document.body.appendChild(photoModal);
+    document.body.appendChild( photoModal );
 
     let openablePhoto = render(
         <OpenableImg
@@ -82,15 +107,15 @@ test("renders chevrons if prev/nextImg are given", () => {
             prevImg={{ src: "prev url" }}
         />
     );
-    let photo = openablePhoto.getByAltText("Alt to find");
+    let photo = openablePhoto.getByAltText( "Alt to find" );
     photo.click();
 
-    let prevImgChevron = queryByTestId(photoModal, "prevImg");
-    let nextImgChevron = queryByTestId(photoModal, "nextImg");
+    let prevImgChevron = queryByTestId( photoModal, "prevImg" );
+    let nextImgChevron = queryByTestId( photoModal, "nextImg" );
 
     //only prevImg is given
-    expect(prevImgChevron).not.toBeNull();
-    expect(nextImgChevron).toBeNull();
+    expect( prevImgChevron ).not.toBeNull();
+    expect( nextImgChevron ).toBeNull();
 
     openablePhoto.unmount();
 
@@ -101,15 +126,15 @@ test("renders chevrons if prev/nextImg are given", () => {
             nextImg={{ src: "next url" }}
         />
     );
-    photo = openablePhoto.getByAltText("Alt to find");
+    photo = openablePhoto.getByAltText( "Alt to find" );
     photo.click();
 
-    prevImgChevron = queryByTestId(photoModal, "prevImg");
-    nextImgChevron = queryByTestId(photoModal, "nextImg");
+    prevImgChevron = queryByTestId( photoModal, "prevImg" );
+    nextImgChevron = queryByTestId( photoModal, "nextImg" );
 
     //only nextImg is given
-    expect(prevImgChevron).toBeNull();
-    expect(nextImgChevron).not.toBeNull();
+    expect( prevImgChevron ).toBeNull();
+    expect( nextImgChevron ).not.toBeNull();
 
     openablePhoto.unmount();
 
@@ -121,95 +146,95 @@ test("renders chevrons if prev/nextImg are given", () => {
             prevImg={{ src: "prev url" }}
         />
     );
-    photo = openablePhoto.getByAltText("Alt to find");
+    photo = openablePhoto.getByAltText( "Alt to find" );
     photo.click();
 
-    prevImgChevron = queryByTestId(photoModal, "prevImg");
-    nextImgChevron = queryByTestId(photoModal, "nextImg");
+    prevImgChevron = queryByTestId( photoModal, "prevImg" );
+    nextImgChevron = queryByTestId( photoModal, "nextImg" );
 
     //both nextImg and prevImg are given
-    expect(prevImgChevron).not.toBeNull();
-    expect(nextImgChevron).not.toBeNull();
+    expect( prevImgChevron ).not.toBeNull();
+    expect( nextImgChevron ).not.toBeNull();
 
     openablePhoto.unmount();
 
     photoModal.remove();
-});
-test("change photo src on click on chevron", () => {
-    const photoModal = document.createElement("div");
+} );
+test( "change photo src on click on chevron", () => {
+    const photoModal = document.createElement( "div" );
     photoModal.id = "photoModal";
-    document.body.appendChild(photoModal);
+    document.body.appendChild( photoModal );
 
-    const images = connectImages([
+    const images = connectImages( [
         { url: "prev url" },
         { url: "fake url" },
         { url: "next url" },
-    ]);
+    ] );
 
     let openablePhoto = render(
         <OpenableImg
             src={"fake url"}
             alt={"Alt to find"}
-            prevImg={images[0]}
-            nextImg={images[2]}
+            prevImg={images[ 0 ]}
+            nextImg={images[ 2 ]}
         />
     );
-    let photo = openablePhoto.getByAltText("Alt to find");
+    let photo = openablePhoto.getByAltText( "Alt to find" );
     photo.click();
 
-    let prevImgChevron = queryByTestId(photoModal, "prevImg");
-    let nextImgChevron = queryByTestId(photoModal, "nextImg");
+    let prevImgChevron = queryByTestId( photoModal, "prevImg" );
+    let nextImgChevron = queryByTestId( photoModal, "nextImg" );
 
-    fireEvent(prevImgChevron, new MouseEvent("mousedown", { bubbles: true }));
+    fireEvent( prevImgChevron, new MouseEvent( "mousedown", { bubbles: true } ) );
 
-    let modalPhoto = queryByAltText(photoModal, "Alt to find");
+    let modalPhoto = queryByAltText( photoModal, "Alt to find" );
 
-    expect(modalPhoto).not.toBeNull();
-    expect(modalPhoto.getAttribute("src")).toBe("prev url");
+    expect( modalPhoto ).not.toBeNull();
+    expect( modalPhoto.getAttribute( "src" ) ).toBe( "prev url" );
 
-    fireEvent(nextImgChevron, new MouseEvent("mousedown", { bubbles: true }));
+    fireEvent( nextImgChevron, new MouseEvent( "mousedown", { bubbles: true } ) );
 
-    expect(modalPhoto).not.toBeNull();
-    expect(modalPhoto.getAttribute("src")).toBe("fake url");
+    expect( modalPhoto ).not.toBeNull();
+    expect( modalPhoto.getAttribute( "src" ) ).toBe( "fake url" );
 
-    fireEvent(nextImgChevron, new MouseEvent("mousedown", { bubbles: true }));
+    fireEvent( nextImgChevron, new MouseEvent( "mousedown", { bubbles: true } ) );
 
-    expect(modalPhoto).not.toBeNull();
-    expect(modalPhoto.getAttribute("src")).toBe("next url");
+    expect( modalPhoto ).not.toBeNull();
+    expect( modalPhoto.getAttribute( "src" ) ).toBe( "next url" );
 
     photoModal.remove();
-});
+} );
 
-test("stab places given element instead of image", () => {
+test( "stab places given element instead of image", () => {
     const imageStab = render(
         <ImgStab
-            Stab={({ onClick }) => <div onClick={onClick}>stab</div>}
+            Stab={( { onClick } ) => <div onClick={onClick}>stab</div>}
             src={"fake url"}
         />
     );
 
-    expect(imageStab.queryByText("stab")).not.toBeNull();
-});
-test("opens modal on click on stab", () => {
-    const photoModal = document.createElement("div");
+    expect( imageStab.queryByText( "stab" ) ).not.toBeNull();
+} );
+test( "opens modal on click on stab", () => {
+    const photoModal = document.createElement( "div" );
     photoModal.id = "photoModal";
-    document.body.appendChild(photoModal);
+    document.body.appendChild( photoModal );
 
     const imageStab = render(
         <ImgStab
-            Stab={({ onClick }) => <div onClick={onClick}>stab</div>}
+            Stab={( { onClick } ) => <div onClick={onClick}>stab</div>}
             src={"fake url"}
             alt={"Alt to find"}
         />
     );
 
-    const stab = imageStab.queryByText("stab");
+    const stab = imageStab.queryByText( "stab" );
 
     stab.click();
-    const modalPhoto = queryByAltText(photoModal, "Alt to find");
+    const modalPhoto = queryByAltText( photoModal, "Alt to find" );
 
-    expect(modalPhoto).not.toBeNull();
-    expect(modalPhoto.getAttribute("src")).toBe("fake url");
+    expect( modalPhoto ).not.toBeNull();
+    expect( modalPhoto.getAttribute( "src" ) ).toBe( "fake url" );
 
     photoModal.remove();
-});
+} );

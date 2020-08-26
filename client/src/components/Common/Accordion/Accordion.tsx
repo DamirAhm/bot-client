@@ -11,7 +11,6 @@ const Accordion: React.FC<Props> = ({ Head, children, initiallyOpened, isOpened,
     const [opened, setOpened] = useState(initiallyOpened ?? true);
 
     useEffect(() => {
-        console.log(isOpened);
         if (isOpened !== undefined) setOpened(isOpened);
     }, [isOpened])
 

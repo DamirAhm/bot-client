@@ -1,22 +1,24 @@
 .days {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    justify-items: center;
+    margin-bottom: 20px;
+    gap: 20px 20px;
 }
 
 .day {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    padding: 10px 15px;
+    height: 100%;
+}
+.droppableDay {
+    padding: 10px 0;
     background-color: var(--main);
     border-radius: 20px;
-    width: calc(100% / 6 - 40px);
-    min-width: 150px;
-    margin-bottom: 20px;
+    width: 100%;
     position: relative;
-    box-sizing: content-box;
-    justify-content: space-between;
 }
 
 .lessons {
@@ -24,36 +26,50 @@
     flex-direction: column;
     min-width: 100%;
 }
+.lessonDraging {
+    margin-bottom: 1.8rem;
+}
+.lesson {
+    padding: 5px 15px 5px;
+    font-size: 1.4rem;
+    align-self: start;
+}
+.lessons .changingLlesson:last-of-type {
+    padding: 0 15px 0;
+}
 
 .dayName {
     font-size: 1.8rem;
     align-self: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     justify-self: center;
     cursor: pointer;
-}
-
-.lesson {
-    font-size: 1.4rem;
-    margin-bottom: 10px;
-    align-self: start;
 }
 
 .addLesson {
     align-self: center;
     cursor: pointer;
+    padding: 0.2rem 1.2rem;
+    border-radius: 10px;
+    margin-bottom: 5px;
+    box-sizing: border-box;
+    border: 2px solid transparent;
+    font-size: 1.4rem;
+}
+.addLesson:hover {
+    border: 2px solid var(--accent);
 }
 
 .lessonChange {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
 }
 
 .selectLesson {
     height: 1.6rem;
     border-radius: 5px;
+    width: max(80%, 50px);
 }
 
 .removeLesson {

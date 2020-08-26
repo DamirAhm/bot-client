@@ -67,7 +67,7 @@ test( "opened should be the same as isOpened prop", () => {
         const [ isOpened, setIsOpened ] = React.useState( false );
 
         changeState = setIsOpened;
-        console.log( isOpened )
+
         return <Accordion isOpened={isOpened} Head={Head}>
             {Body}
         </Accordion>
