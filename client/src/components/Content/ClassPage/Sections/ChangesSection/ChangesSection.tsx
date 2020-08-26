@@ -64,7 +64,7 @@ const UPDATE_CHANGE = gql`
 `
 
 const ADD_CHANGE = gql`
-    mutation addChange($className: String!, $text: String!, $to: String, $attachments: [ClassHomeworkAttachmentsInput]!, $student_id: Number!) {
+    mutation addChange($className: String!, $text: String!, $to: String, $attachments: [ClassHomeworkAttachmentsInput]!, $student_id: Int!) {
         addChange(className: $className, text: $text, to: $to, attachments: $attachments, student_id: $student_id) {
             __typename
             text

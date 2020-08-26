@@ -25,7 +25,7 @@ export const parseContentByDate = <T extends c>(content: T[]): [{ [day: string]:
     for (let cont of content) {
         const contDate = parseDate(cont.to, "dd MM");
 
-        if (Date.parse(cont.to) > Date.now()) {
+        if (Date.parse(cont.to) >= Date.now() || isToday(new Date(Date.parse(cont.to)))) {
             parsedFutureCont[contDate] = [...(parsedFutureCont[contDate] || []), cont];
         } else {
             parsedPastCont[contDate] = [...(parsedPastCont[contDate] || []), cont];
@@ -54,4 +54,11 @@ export const getDateStrFromDayMonthStr = (dayMonthStr: string): string => {
         }
     }
     return "";
+}
+
+export function isToday(date: Date) {
+    const deltaIsLessThanDay =
+        Math.abs(date.getTime() - new Date().getTime()) <= 24 * 60 * 60 * 1000;
+    const datesAreSame = date.getDate() === new Date().getDate();
+    return deltaIsLessThanDay && datesAreSame;
 }

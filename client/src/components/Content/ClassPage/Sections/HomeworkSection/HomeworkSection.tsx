@@ -66,7 +66,7 @@ const CHANGE_HOMEWORK = gql`
 `
 
 const ADD_HOMEWORK = gql`
-    mutation addHomework($className: String!, $text: String!, $to: String, $lesson: String!, $attachments: [ClassHomeworkAttachmentsInput]!, $student_id: Number!) {
+    mutation addHomework($className: String!, $text: String!, $to: String, $lesson: String!, $attachments: [ClassHomeworkAttachmentsInput]!, $student_id: Int!) {
         addHomework(className: $className, text: $text, to: $to, lesson: $lesson, attachments: $attachments, student_id: $student_id) {
             __typename
             text
