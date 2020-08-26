@@ -9,6 +9,7 @@
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     color: var(--accent);
     justify-items: center;
+    overflow-x: hidden;
 }
 
 .student {
@@ -137,9 +138,20 @@
     }
 }
 
+@media screen and (max-width: 500px) {
+    .remove {
+        transform: translateY(-50%) scale(0.9);
+        right: 0.1%;
+    }
+}
+
 @media screen and (max-width: 400px) {
     .chooser span {
         font-size: 1rem;
         font-weight: 700;
+    }
+
+    .remove {
+        right: -2%;
     }
 }

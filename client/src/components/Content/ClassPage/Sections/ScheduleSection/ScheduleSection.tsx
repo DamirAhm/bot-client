@@ -195,7 +195,7 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(({ index, lessons, lessonsL
                 ))}
                 {/*//? In different element because confirm and reject should be on the bottom of component */}
                 {changing && !isAnyLessonDragging &&
-                    <div className={styles.addLesson + " " + styles.lesson} onClick={addLesson}> Добавить урок </div>
+                    <div className={styles.addLesson} onClick={addLesson}> Добавить урок </div>
                 }
             </div>
             {!changing

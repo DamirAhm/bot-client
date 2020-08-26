@@ -33,6 +33,7 @@
     padding: 5px 15px 5px;
     font-size: 1.4rem;
     align-self: start;
+    width: 100%;
 }
 .lessons .changingLlesson:last-of-type {
     padding: 0 15px 0;
@@ -55,6 +56,7 @@
     box-sizing: border-box;
     border: 2px solid transparent;
     font-size: 1.4rem;
+    align-self: center;
 }
 .addLesson:hover {
     border: 2px solid var(--accent);
