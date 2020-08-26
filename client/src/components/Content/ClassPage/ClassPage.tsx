@@ -73,7 +73,7 @@ const ClassPage: React.FC = () => {
                 </div>
             </div>
             {waitForConfirm &&
-                <Confirm text={`Вы уверены что хотите удалить ${className} класс`} onConfirm={remove} returnRes={() => setWaitForConfirm(false)} />
+                <Confirm text={`Вы уверены что хотите удалить ${className} класс? 😕`} onConfirm={remove} returnRes={() => setWaitForConfirm(false)} />
             }
         </>
     )

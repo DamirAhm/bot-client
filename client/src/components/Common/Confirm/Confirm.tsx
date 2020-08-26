@@ -19,8 +19,8 @@ const Confirm: React.FC<Props> = ({
     const modalRoot = document.querySelector("#confirmModal");
 
     const chooseHandler = (res: boolean) => {
-        if (res) onConfirm?.()
-        else onReject?.()
+        if (res && onConfirm) onConfirm()
+        else if (!res && onReject) onReject()
 
         returnRes?.(res);
     }
