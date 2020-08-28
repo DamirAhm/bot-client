@@ -389,16 +389,18 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
                 className={styles.element}>
                 {homework.attachments.length > 0 &&
                     <> {homework.attachments.length <= 2
-                        ? <div className={styles.attachments}>
+                        ? <div className={styles.attachments} onDoubleClick={e => e.stopPropagation()}>
                             <ImgAlbum images={homework.attachments} />
                         </div>
-                        : <ImgAlbum images={homework.attachments}
-                            Stab={({ onClick }) => (
-                                <div className={styles.stab} onClick={onClick}>
-                                    <span>{homework.attachments.length}</span>
-                                    <span> Photos </span>
-                                </div>
-                            )} />
+                        : <div onDoubleClick={e => e.stopPropagation()}>
+                            <ImgAlbum images={homework.attachments}
+                                Stab={({ onClick }) => (
+                                    <div className={styles.stab} onClick={onClick}>
+                                        <span>{homework.attachments.length}</span>
+                                        <span> Photos </span>
+                                    </div>
+                                )} />
+                        </div>
                     } </>
                 }
                 {homework.text &&

@@ -1,8 +1,6 @@
 import React, { lazy, Suspense, useEffect, useState } from 'react';
 import Sidebar from "./components/Sidebar/Sidebar";
 import { Redirect, Route, Switch } from "react-router";
-import StudentPage from "./components/Content/StudentPage/StudentPage";
-import ClassPage from './components/Content/ClassPage/ClassPage';
 import { roles, Student, User } from "./types";
 import withRedirect from "./HOCs/withAuth";
 import { gql } from "apollo-boost";
@@ -11,6 +9,9 @@ import md5 from "md5";
 
 const Classes = lazy(() => import("./components/Content/Classes/Classes"));
 const Students = lazy(() => import("./components/Content/Students/Students"));
+const StudentPage = lazy(() => import("./components/Content/StudentPage/StudentPage"));
+const ClassPage = lazy(() => import('./components/Content/ClassPage/ClassPage'));
+
 const Auth = lazy(() => import("./components/Content/Auth/Auth"));
 
 export const UserContext = React.createContext<

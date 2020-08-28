@@ -42,8 +42,8 @@ export const ImgStab: React.FC<OpenableImgProps & { Stab: React.FC<HTMLAttribute
     )
 }
 
-export const ModalImg: React.FC<ModalImgProps> = ({ close, nextImg, prevImg, ...props }) => {
-    const [src, setSrc] = useState(props.src);
+export const ModalImg: React.FC<ModalImgProps> = ({ close, nextImg, prevImg, src: initSrc, ...props }) => {
+    const [src, setSrc] = useState(initSrc);
     const [prev, setPrev] = useState(prevImg);
     const [next, setNext] = useState(nextImg);
 
@@ -58,7 +58,15 @@ export const ModalImg: React.FC<ModalImgProps> = ({ close, nextImg, prevImg, ...
         {prev &&
             <MdNavigateBefore data-testid="prevImg" size={40} className={styles.prev} onMouseDown={(e) => toImg(prev, e)} />
         }
-        <img style={{ width: "100%", maxWidth: "80vh" }} {...props} data-testid="modalImg" alt={props.alt || "Открытое изображение"} src={src} onMouseDown={e => e.stopPropagation()} />
+        <img
+            style={{ width: "100%", maxWidth: "80vh" }}
+            data-testid="modalImg"
+            alt={props.alt || "Открытое изображение"}
+            src={src}
+            className={styles.modalImage}
+            onMouseDown={e => e.stopPropagation()}
+            {...props}
+        />
         {next &&
             <MdNavigateNext data-testid="nextImg" size={40} className={styles.next} onMouseDown={(e) => toImg(next, e)} />
         }
