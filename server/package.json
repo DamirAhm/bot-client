@@ -13,7 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "apollo-server-express": "^2.11.0",
-    "bot-database": "^1.0.8",
+    "bot-database": "^1.0.10-1",
     "cors": "^2.8.5",
     "easyvk": "^2.7.1",
     "express": "^4.17.1",
