@@ -73,15 +73,15 @@ const Classes: React.FC = () => {
 	}, [query, setItems]);
 
 	return (
-		<Suspender query={query}>
-			<div>
-				<Filters
-					className={styles.filters}
-					setSearchText={setSearchText}
-					sortsList={sorts}
-					setSort={setSorting}
-				/>
-				<ClassCreator />
+		<>
+			<Filters
+				className={styles.filters}
+				setSearchText={setSearchText}
+				sortsList={sorts}
+				setSort={setSorting}
+			/>
+			<ClassCreator />
+			<Suspender query={query}>
 				<div className={styles.classes}>
 					{items.map(c => (
 						<ClassPreview
@@ -92,8 +92,8 @@ const Classes: React.FC = () => {
 						/>
 					))}
 				</div>
-			</div>
-		</Suspender>
+			</Suspender>
+		</>
 	);
 };
 

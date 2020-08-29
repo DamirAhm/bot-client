@@ -73,6 +73,8 @@ test( "modal image has alt prop even if it's not passed", () => {
     const image = queryByTestId( photoModal, "modalImg" );
 
     expect( image.getAttribute( "alt" ) ).toBeDefined()
+
+    photoModal.remove();
 } )
 
 
@@ -157,7 +159,6 @@ test( "renders chevrons if prev/nextImg are given", () => {
     expect( nextImgChevron ).not.toBeNull();
 
     openablePhoto.unmount();
-
     photoModal.remove();
 } );
 test( "change photo src on click on chevron", () => {
@@ -205,16 +206,7 @@ test( "change photo src on click on chevron", () => {
     photoModal.remove();
 } );
 
-test( "stab places given element instead of image", () => {
-    const imageStab = render(
-        <ImgStab
-            Stab={( { onClick } ) => <div onClick={onClick}>stab</div>}
-            src={"fake url"}
-        />
-    );
 
-    expect( imageStab.queryByText( "stab" ) ).not.toBeNull();
-} );
 test( "opens modal on click on stab", () => {
     const photoModal = document.createElement( "div" );
     photoModal.id = "photoModal";
