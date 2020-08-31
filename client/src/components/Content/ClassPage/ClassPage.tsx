@@ -3,7 +3,7 @@ import styles from './ClassPage.module.css'
 import StudentsSection from "./Sections/StudentSection/StudentsSection";
 import ScheduleSection from "./Sections/ScheduleSection/ScheduleSection";
 import HomeworkSection from "./Sections/HomeworkSection/HomeworkSection";
-import ChangesSection from "./Sections/ChangesSection/ChangesSection";
+import AnnouncementsSection from "./Sections/ChangesSection/AnnouncementsSection";
 import { gql } from 'apollo-boost';
 import { useMutation } from '@apollo/react-hooks';
 import { WithTypename, Class, redactorOptions } from '../../../types';
@@ -69,7 +69,7 @@ const ClassPage: React.FC = () => {
                     <StudentsSection className={className} />
                     <ScheduleSection className={className} />
                     <HomeworkSection className={className} />
-                    <ChangesSection className={className} />
+                    <AnnouncementsSection className={className} />
                 </div>
             </div>
             {waitForConfirm &&

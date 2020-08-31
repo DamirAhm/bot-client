@@ -81,12 +81,12 @@ export type Class = {
     name: string;
     homework: homework[];
     schedule: string[][];
-    changes: change[];
+    announcements: announcement[];
     roleUpCodes: string[];
     fullName: string;
 };
 
-export type change = content;
+export type announcement = content;
 export type WithTypename<T> = T & { __typename: string };
 
 export type User = {

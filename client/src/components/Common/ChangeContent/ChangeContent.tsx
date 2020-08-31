@@ -127,7 +127,7 @@ export const ChangeContentProps: ChangeContentPropsType = {
 const ChangeContent = createContentFiller<ChangeContentPropsType>(
     ChangeContentProps,
     (state) => {
-        if (state.text.trim() === "" || state.attachments.length === 0) {
+        if (state.text.trim() === "" && state.attachments.length === 0) {
             return "Задание должно содержать текст или фотографии";
         }
     })

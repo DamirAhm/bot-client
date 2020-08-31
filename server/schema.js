@@ -103,21 +103,21 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 },
             } );
         }
-        //* Changes
+        //* Announcements
         {
             //? get
             ClassTC.addResolver( {
-                name: "getChanges",
-                type: `[${ClassTC.get( "changes" ).getType()}]`,
+                name: "getAnnouncements",
+                type: `[${ClassTC.get( "announcements" ).getType()}]`,
                 args: { className: "String!", date: "Date" },
                 resolve: async ( { source, args, context, info } ) => {
-                    return await DataBase.getChanges( args.className, args.date );
+                    return await DataBase.getAnnouncements( args.className, args.date );
                 },
             } );
             //? add
             ClassTC.addResolver( {
-                name: "addChange",
-                type: ClassTC.get( "changes" ).getType(),
+                name: "addAnnouncement",
+                type: ClassTC.get( "announcements" ).getType(),
                 args: {
                     student_id: "Int!",
                     className: "String!",
@@ -138,20 +138,17 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                             }
                         }
 
-                        const change = await DataBase.addChanges(
+                        const announcement = await DataBase.addAnnouncement(
                             className,
                             { attachments, text },
                             to,
                             false,
                             student_id
                         );
-                        if ( change ) {
-                            return await DataBase.getClassByName(
-                                className
-                            ).then( ( c ) =>
-                                c.changes.find(
-                                    ( ch ) =>
-                                        ch._id.toString() === change.toString()
+                        if ( announcement ) {
+                            return await DataBase.getClassByName( className ).then( ( c ) =>
+                                c.announcements.find(
+                                    ( ch ) => ch._id.toString() === announcement.toString()
                                 )
                             );
                         } else {
@@ -165,28 +162,28 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
             } );
             //? remove
             ClassTC.addResolver( {
-                name: "removeChange",
+                name: "removeAnnouncement",
                 type: "String",
-                args: { className: "String!", changeId: "String!" },
+                args: { className: "String!", announcementId: "String!" },
                 resolve: async ( { source, args } ) => {
-                    const result = await DataBase.removeChanges(
+                    const result = await DataBase.removeAnnouncement(
                         args.className,
-                        args.changeId
+                        args.announcementId
                     );
                     if ( result ) {
-                        return args.changeId;
+                        return args.announcementId;
                     }
                     return null;
                 },
             } );
             //? change
             ClassTC.addResolver( {
-                name: "updateChange",
-                type: ClassTC.get( "changes" ).getType(),
+                name: "updateAnnouncement",
+                type: ClassTC.get( "announcements" ).getType(),
                 args: {
                     className: "String!",
-                    changeId: "String!",
-                    updates: `${ClassTC.get( "changes" ).getInputType()}!`,
+                    announcementId: "String!",
+                    updates: `${ClassTC.get( "announcements" ).getInputType()}!`,
                 },
                 resolve: async ( { source, args, context, info } ) => {
                     const {
@@ -197,14 +194,14 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                             delete attachment._id;
                         }
                     }
-                    const updatedChange = await DataBase.updateChange(
+                    const updatedAnnouncement = await DataBase.updateAnnouncement(
                         args.className,
-                        args.changeId,
+                        args.announcementId,
                         args.updates
                     );
-                    if ( updatedChange ) {
-                        return updatedChange.find(
-                            ( e ) => e._id.toString() === args.changeId
+                    if ( updatedAnnouncement ) {
+                        return updatedAnnouncement.find(
+                            ( e ) => e._id.toString() === args.announcementId
                         );
                     } else {
                         return null;
@@ -212,16 +209,16 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 },
             } );
             ClassTC.addResolver( {
-                name: "removeOldChanges",
-                type: `[${ClassTC.get( "changes" ).getType()}]`,
+                name: "removeOldAnnouncements",
+                type: `[${ClassTC.get( "announcements" ).getType()}]`,
                 args: { className: "String!" },
                 resolve: async ( { _, args: { className } } ) => {
                     try {
-                        const actualChanges = await DataBase.removeOldChanges(
+                        const actualAnnouncements = await DataBase.removeOldAnnouncements(
                             className
                         );
 
-                        return actualChanges;
+                        return actualAnnouncements;
                     } catch ( e ) {
                         console.error( e );
                         return null;
@@ -622,7 +619,7 @@ schemaComposer.Query.addFields( {
     classConnection: ClassTC.getResolver( "connection" ),
     classPagination: ClassTC.getResolver( "pagination" ),
     getHomework: ClassTC.getResolver( "getHomework" ),
-    getChanges: ClassTC.getResolver( "getChanges" ),
+    getAnnouncements: ClassTC.getResolver( "getAnnouncements" ),
     getLessons: ClassTC.getResolver( "lessons" ),
     getRoles: StudentTC.getResolver( "roles" ),
     studentsForClass: StudentTC.getResolver( "getForClass" ),
@@ -652,10 +649,10 @@ schemaComposer.Mutation.addFields( {
     addHomework: ClassTC.getResolver( "addHomework" ),
     removeHomework: ClassTC.getResolver( "removeHomework" ),
     updateHomework: ClassTC.getResolver( "updateHomework" ),
-    addChange: ClassTC.getResolver( "addChange" ),
-    removeChange: ClassTC.getResolver( "removeChange" ),
-    updateChange: ClassTC.getResolver( "updateChange" ),
-    removeOldChanges: ClassTC.getResolver( "removeOldChanges" ),
+    addAnnouncement: ClassTC.getResolver( "addAnnouncement" ),
+    removeAnnouncement: ClassTC.getResolver( "removeAnnouncement" ),
+    updateAnnouncement: ClassTC.getResolver( "updateAnnouncement" ),
+    removeOldAnnouncements: ClassTC.getResolver( "removeOldAnnouncements" ),
     removeOldHomework: ClassTC.getResolver( "removeOldHomework" ),
 } );
 
