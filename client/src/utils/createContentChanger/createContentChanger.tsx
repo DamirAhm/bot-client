@@ -4,10 +4,16 @@ import { redactorOptions } from "../../types";
 
 import styles from "./ContentChanger.module.css";
 
+type ContentSectionComponent<T> = React.ComponentType<{
+    changeHandler: (value: T) => void,
+    value: T,
+    state: { [key: string]: any }
+}>;
+
 export type ContentSectionProps<T> = {
     title?: string,
-    Header?: JSX.Element | React.ComponentType<{ changeHandler: (value: T) => void, value: T }>
-    ContentComponent: React.ComponentType<{ changeHandler: (value: T) => void, value: T }>,
+    Header?: JSX.Element | ContentSectionComponent<T>
+    ContentComponent: ContentSectionComponent<T>,
     defaultValue?: T,
     validator?: (value: T) => string | undefined
 }
@@ -23,6 +29,7 @@ export type ContentChangerProps<T extends { [key: string]: any }> = {
     initState?: Partial<T>
     sectionClassName?: string
     titleClassName?: string
+    propsToSections?: { [key: string]: any }
 }
 
 const createContentFiller =
@@ -30,7 +37,7 @@ const createContentFiller =
         (contentFillers: T, validator?: (state: stateType<T>) => string | undefined): React.ComponentType<ContentChangerProps<stateType<T>>> => {
         return ({
             reject, confirm, onChange, initState = {} as Partial<stateType<T>>,
-            sectionClassName, titleClassName,
+            sectionClassName, titleClassName, propsToSections
         }) => {
             const stateFromDefaults: stateType<T> = Object.entries(contentFillers).reduce((acc, [key, c]) => ({ ...acc, [key]: c.defaultValue }), {} as stateType<T>);
             const [state, setState] = useState<stateType<T>>({ ...stateFromDefaults, ...initState });
@@ -64,6 +71,7 @@ const createContentFiller =
                     setErrors(newErrors);
                 }
             }
+
             const onReject = () => {
                 setErrors([]);
                 setState({ ...stateFromDefaults, ...initState });
@@ -100,6 +108,8 @@ const createContentFiller =
                                             onChange?.({ ...state, [stateKey]: value }, stateKey);
                                         }}
                                         value={state[stateKey]}
+                                        state={state}
+                                        {...propsToSections}
                                     />
                                     : { Header }
                                 }</>
@@ -111,6 +121,8 @@ const createContentFiller =
                                     onChange?.({ ...state, [stateKey]: value }, stateKey);
                                 }}
                                 value={state[stateKey]}
+                                state={state}
+                                {...propsToSections}
                             />
                         </section>
                     ))}

@@ -217,7 +217,7 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
                 <Suspender query={announcementsQuery}>
                     {(data: { announcements: WithTypename<announcement>[] }) => {
                         const parsedAnnouncements = parseContentByDate(data.announcements)[1];
-                        console.log(parseContentByDate(data.announcements));
+
                         return <div className={styles.content}>
                             {Object.keys(parsedAnnouncements).map(announcementDate =>
                                 <Accordion

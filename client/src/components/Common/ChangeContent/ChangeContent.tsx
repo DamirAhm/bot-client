@@ -8,6 +8,9 @@ import styles from './ChangeContent.module.css'
 import FileUploader from "../FileUploader/FileUploader";
 import DeletableAttachment from "../OpenableImage/DeletableAttachment";
 import createContentFiller, { ContentSectionProps } from "../../../utils/createContentChanger/createContentChanger";
+import { GET_SCHEDULE } from "../../Content/ClassPage/Sections/ScheduleSection/ScheduleSection";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@apollo/react-hooks/lib/useQuery";
 
 const parseAttachment = (photo: vkPhoto) => {
     return `photo${photo.owner_id}_${photo.id}`;
@@ -124,6 +127,7 @@ export const ChangeContentProps: ChangeContentPropsType = {
         defaultValue: ""
     }
 };
+
 const ChangeContent = createContentFiller<ChangeContentPropsType>(
     ChangeContentProps,
     (state) => {

@@ -79,7 +79,6 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
             },
             update: (proxy, result) => {
                 const data = proxy.readQuery<{ students: studentPreview[] }>({ query: GET_STUDENTS_FOR_CLASS, variables: { className } });
-                console.log(data, result)
                 if (data?.students && result.data?.removed) {
                     proxy.writeQuery({
                         query: GET_STUDENTS_FOR_CLASS,

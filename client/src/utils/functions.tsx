@@ -62,3 +62,18 @@ export function isToday(date: Date) {
     const datesAreSame = date.getDate() === new Date().getDate();
     return deltaIsLessThanDay && datesAreSame;
 }
+
+export function memoize(fn: (...props: any) => any) {
+    const cache = new Map();
+
+    return (...props: any) => {
+        const propsString = JSON.stringify(props);
+        if (cache.has(propsString)) return cache.get(propsString)
+
+        const res = fn(...props);
+
+        cache.set(propsString, res);
+
+        return res;
+    }
+}

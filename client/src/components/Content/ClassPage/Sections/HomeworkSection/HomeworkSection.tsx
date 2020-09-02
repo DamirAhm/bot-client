@@ -453,6 +453,7 @@ const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({ returnHomewor
                     initState={initContent}
                     confirm={(homework) => { returnHomework(homework); close() }}
                     reject={close}
+
                 />
             </div>
             , changeContentModalRoot)
