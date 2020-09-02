@@ -283,20 +283,20 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
                                         <HomeworkLayout
                                             homework={oldHw}
                                             initiallyOpened={false}
-                                            {...{
-                                                setHomeworkCreating, setInitContent,
-                                                update, remove
-                                            }}
+                                            setHomeworkCreating={setHomeworkCreating}
+                                            setInitContent={setInitContent}
+                                            update={update}
+                                            remove={remove}
                                         />
                                     </div>
                                 </Accordion>
                             }
                             <HomeworkLayout
                                 homework={newHw}
-                                {...{
-                                    setHomeworkCreating, setInitContent,
-                                    update, remove
-                                }}
+                                setHomeworkCreating={setHomeworkCreating}
+                                setInitContent={setInitContent}
+                                update={update}
+                                remove={remove}
                             />
                         </div>
                     }

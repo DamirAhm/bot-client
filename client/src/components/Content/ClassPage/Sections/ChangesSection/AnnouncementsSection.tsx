@@ -10,7 +10,7 @@ import { GoTriangleRight } from "react-icons/go";
 import ReactDOM from "react-dom";
 import ChangeContent from "../../../../Common/ChangeContent/ChangeContent";
 import ImgAlbum from "../../../../Common/OpenableImage/ImgAlbum";
-import { parseContentByDate, getDateStrFromDayMonthStr } from "../../../../../utils/functions";
+import { parseContentByDate, getDateStrFromDayMonthStr, objectForEach } from "../../../../../utils/functions";
 import Options from "../../../../Common/Options/Options";
 import { UserContext } from "../../../../../App";
 
@@ -78,6 +78,22 @@ const ADD_ANNOUNCEMENT = gql`
     }
 `
 
+const REMOVE_OLD_ANNOUNCEMENTS = gql`
+    mutation RemoveOldAnnouncements($className: String!) {
+        removeOldAnnouncements(className: $className) {
+            to
+            text
+            attachments {
+                url
+                value
+                _id
+            }
+            createdBy
+            _id
+        }
+    }
+`
+
 const AnnouncementsSection: React.FC<Props> = ({ className }) => {
     const [announcementCreating, setAnnouncementCreating] = useState(false);
     const [initContent, setInitContent] = useState({});
@@ -102,7 +118,6 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
             announcementId: string,
             updates: Partial<Omit<announcement, "attachments"> & { attachments: attachment[] }>
         }>(UPDATE_ANNOUNCEMENT);
-
     const [addAnnouncement] = useMutation<
         WithTypename<{
             addAnnouncement: WithTypename<announcement>
@@ -115,6 +130,27 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
             student_id: number
         }
     >(ADD_ANNOUNCEMENT)
+    const [removeOldAnnouncements] = useMutation<
+        { removeOldAnnouncements: announcement[] },
+        { className: string }
+    >(REMOVE_OLD_ANNOUNCEMENTS, {
+        variables: { className },
+        optimisticResponse: {
+            removeOldAnnouncements: announcementsQuery.data?.announcements.filter(({ to }) => Date.now() - Date.parse(to) <= 24 * 60 * 60 * 1000) || []
+        },
+        update: (proxy, mutation) => {
+            if (mutation && mutation.data?.removeOldAnnouncements) {
+                proxy.writeQuery({
+                    query: GET_ANNOUNCEMENTS,
+                    variables: { className },
+                    data: {
+                        announcements: mutation.data.removeOldAnnouncements
+                    }
+                })
+            }
+        }
+    });
+
 
     const remove = (announcementId: string | undefined) => {
         if (announcementId) {
@@ -216,39 +252,50 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
                     </div>}>
                 <Suspender query={announcementsQuery}>
                     {(data: { announcements: WithTypename<announcement>[] }) => {
-                        const parsedAnnouncements = parseContentByDate(data.announcements)[1];
+                        const [oldAnnouncements, actualAnnouncements] = parseContentByDate(data.announcements);
 
                         return <div className={styles.content}>
-                            {Object.keys(parsedAnnouncements).map(announcementDate =>
+                            {Object.keys(oldAnnouncements).length > 0 &&
                                 <Accordion
-                                    key={announcementDate}
+                                    initiallyOpened={false}
                                     Head={({ opened }) =>
-                                        <div className={styles.sectionHeader}>
-                                            <div className={styles.title}>
-                                                {announcementDate}
-                                                <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
-                                            </div>
-                                            <Add onClick={(e) => {
-                                                e.stopPropagation();
-                                                setAnnouncementCreating(true);
-                                                setInitContent({ to: getDateStrFromDayMonthStr(announcementDate) })
-                                            }} />
+                                        <div className={styles.oldContentHeader}>
+                                            <p className={`${styles.date} ${styles.accordion}`}>
+                                                Старые обьявления
+                                                    <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} />
+                                            </p>
+
+                                            <Options
+                                                include={redactorOptions.delete}
+                                                props={{
+                                                    allowOnlyRedactor: true,
+                                                    className: `remove ${styles.removeOldContent}`,
+                                                    size: 20,
+                                                    onClick: () => removeOldAnnouncements()
+                                                }}
+                                            />
                                         </div>
                                     }
                                 >
-                                    <>
-                                        <div className={`${styles.elements} ${styles.offseted}`}>
-                                            {parsedAnnouncements[announcementDate].map((announcement, i) =>
-                                                <Announcement
-                                                    updateAnnouncement={update}
-                                                    key={announcement._id}
-                                                    removeAnnouncement={remove}
-                                                    announcement={announcement} />
-                                            )}
-                                        </div>
-                                    </>
+                                    <div className={styles.offseted}>
+                                        <AnnouncementLayout
+                                            announcements={oldAnnouncements}
+                                            initiallyOpened={false}
+                                            setAnnouncementCreating={setAnnouncementCreating}
+                                            setInitContent={setInitContent}
+                                            update={update}
+                                            remove={remove}
+                                        />
+                                    </div>
                                 </Accordion>
-                            )}
+                            }
+                            <AnnouncementLayout
+                                announcements={actualAnnouncements}
+                                setAnnouncementCreating={setAnnouncementCreating}
+                                setInitContent={setInitContent}
+                                update={update}
+                                remove={remove}
+                            />
                         </div>
                     }
                     }
@@ -266,6 +313,56 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
         </>
     )
 }
+
+const AnnouncementLayout: React.FC<{
+    announcements: {
+        [day: string]: announcement[]
+    }
+    initiallyOpened?: boolean
+    setAnnouncementCreating: (state: boolean) => void
+    setInitContent: (initContent: Partial<announcement>) => void
+    update: (homeworkId: string | undefined, updates: Partial<announcement>) => void
+    remove: (homeworkId: string | undefined) => void
+}> = React.memo(({
+    announcements, remove, update,
+    setAnnouncementCreating, setInitContent,
+    initiallyOpened = true
+}) => {
+    return <>
+        {Object.keys(announcements).map(announcementDate =>
+            <Accordion
+                initiallyOpened={initiallyOpened}
+                key={announcementDate}
+                Head={({ opened }) =>
+                    <div className={styles.sectionHeader}>
+                        <div className={styles.title}>
+                            {announcementDate}
+                            <GoTriangleRight className={opened ? styles.triangle_opened : ""} size={15} />
+                        </div>
+                        <Add onClick={(e) => {
+                            e.stopPropagation();
+                            setAnnouncementCreating(true);
+                            setInitContent({ to: getDateStrFromDayMonthStr(announcementDate) })
+                        }} />
+                    </div>
+                }
+            >
+                <>
+                    <div className={`${styles.elements} ${styles.offseted}`}>
+                        {announcements[announcementDate].map((announcement, i) =>
+                            <Announcement
+                                updateAnnouncement={update}
+                                key={announcement._id}
+                                removeAnnouncement={remove}
+                                announcement={announcement} />
+                        )}
+                    </div>
+                </>
+            </Accordion>
+        )}
+    </>
+})
+
 const Announcement: React.FC<announcementProps> = ({ announcement, removeAnnouncement, updateAnnouncement }) => {
     const [updating, setUpdating] = useState(false);
 

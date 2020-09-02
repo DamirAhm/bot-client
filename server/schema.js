@@ -208,6 +208,7 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                     }
                 },
             } );
+            //? remove old
             ClassTC.addResolver( {
                 name: "removeOldAnnouncements",
                 type: `[${ClassTC.get( "announcements" ).getType()}]`,
