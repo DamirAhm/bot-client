@@ -18,17 +18,14 @@
     cursor: pointer;
 }
 
-.contentChanger section:not(:last-of-type) {
-    margin-bottom: 10px;
-    width: 1000px;
-    min-width: 600px;
-    max-width: 90vw;
-}
-
 .text,
 .title,
 .uploaderIcon * {
     color: var(--main);
+}
+
+.text {
+    width: 100%;
 }
 
 .title {
@@ -40,6 +37,7 @@
     padding: 5px;
     border-radius: 5px;
     color: var(--main);
+    width: min(60%, 200px);
 }
 .datePickerCalendar,
 .datePickerCalendar :global(.react-datepicker__current-month) {
@@ -69,6 +67,9 @@
     width: 100%;
     overflow: auto;
 }
+.attachmentsContainer img {
+    max-width: 80vw;
+}
 
 .uploaderIcon {
     cursor: pointer;
@@ -79,4 +80,11 @@
     padding: 10px;
     box-sizing: border-box;
     width: 100%;
+}
+
+@media screen and (max-width: 675px) {
+    .attachmentsContainer img {
+        object-fit: contain;
+        height: initial;
+    }
 }

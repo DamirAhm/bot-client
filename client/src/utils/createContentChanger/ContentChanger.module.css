@@ -1,11 +1,13 @@
 .contentChanger {
     background-color: var(--secondary);
     padding: 15px 20px;
+    width: 1000px;
+    max-width: 90vw;
 }
 .contentChanger section:not(:last-of-type) {
     margin-bottom: 10px;
-    width: 1000px;
-    min-width: 600px;
+    width: 100%;
+    min-width: 100px;
     max-width: 90vw;
 }
 

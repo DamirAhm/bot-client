@@ -118,7 +118,7 @@ export const ChangeContentProps: ChangeContentPropsType = {
                     onChange={e => {
                         changeHandler(e.target.value);
                     }}
-                    cols={60} rows={5}
+                    rows={5}
                 >
                     {value}
                 </textarea>
