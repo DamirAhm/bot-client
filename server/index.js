@@ -65,7 +65,7 @@ const server = new ApolloServer( {
 server.applyMiddleware( { app } );
 
 app.use( cors() );
-app.use( sirv( "build" ) );
+app.use( sirv( path.join(__dirname,"build") ) );
 app.use( compression() );
 
 app.post( "/saveAttachment", upload.array( "newAttachment" ), async ( req, res ) => {
@@ -90,7 +90,7 @@ app.post( "/saveAttachment", upload.array( "newAttachment" ), async ( req, res )
 } );
 
 app.get( "/*", ( req, res ) => {
-    res.sendFile( __dirname + "/build/index.html" );
+    res.sendFile(path.join(__dirname,"build/index.html"));
 } );
 
 app.listen( { port: process.env.PORT || 8080 }, () =>
