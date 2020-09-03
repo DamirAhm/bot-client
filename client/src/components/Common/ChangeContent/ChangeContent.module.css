@@ -33,6 +33,14 @@
     font-size: 1.8rem;
 }
 
+.toSection {
+    display: flex;
+    flex-wrap: wrap;
+}
+.toSection > * {
+    margin: 5px 0;
+}
+
 .datePickerInput {
     padding: 5px;
     border-radius: 5px;
@@ -46,6 +54,19 @@
 }
 .datePickerCalendar * {
     color: var(--main);
+}
+
+.onNextLesson {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid var(--main);
+    box-sizing: border-box;
+    color: var(--main);
+    font-weight: bolder;
+}
+.onNextLesson:hover {
+    background-color: var(--main);
+    color: var(--accent);
 }
 
 .outlined {
@@ -75,9 +96,9 @@
     cursor: pointer;
 }
 
-.text textarea {
+.text {
     resize: none;
-    padding: 10px;
+    padding: 5px;
     box-sizing: border-box;
     width: 100%;
 }

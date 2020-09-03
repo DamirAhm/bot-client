@@ -20,6 +20,49 @@ type ChangeHomeworkProps = {
     [K in keyof changableHomework]: ContentSectionProps<changableHomework[K]>
 }
 
+const findWeekDaysWithLesson = memoize((schedule: string[][], lesson: string): number[] => {
+    return schedule.reduce((acc, c, i) => { if (c.includes(lesson)) { acc.push(i + 1) }; return acc }, [] as number[]);
+})
+const shouldBeOutlined = memoize((schedule: string[][], lesson: string, weekDay: number) => {
+    return findWeekDaysWithLesson(schedule, lesson).includes(weekDay);
+})
+
+const findNextDayWithLesson = (schedule: string[][], lesson: string, currentWeekDay: number) => {
+    let lastIndex = -1;
+    if (schedule.slice(currentWeekDay).find((e) => e.includes(lesson))) {
+        lastIndex =
+            schedule
+                .slice(currentWeekDay)
+                .findIndex((e) => e.includes(lesson)) +
+            currentWeekDay +
+            1;
+    } else if (schedule.find((e) => e.includes(lesson))) {
+        lastIndex = schedule.findIndex((e) => e.includes(lesson)) + 1;
+    }
+    return lastIndex;
+};
+const findNextLessonDate = (
+    schedule: string[][],
+    lesson: string,
+    initDate = new Date()
+) => {
+    const nextLessonWeekDay = findNextDayWithLesson(schedule, lesson, initDate.getDay());
+
+    if (nextLessonWeekDay <= 7 && nextLessonWeekDay !== -1) {
+        const weekDay = initDate.getDay() || 7; //Чтобы воскресенье было 7 днем недели
+        const addition = nextLessonWeekDay <= weekDay ? 7 : 0; //Равно 7 если урок на следующей неделе
+
+        let date = initDate.getDate() + addition - (weekDay - nextLessonWeekDay);
+        let month = initDate.getMonth();
+
+        return new Date(initDate.getFullYear(), month, date);
+    } else if (nextLessonWeekDay === -1) {
+        return null;
+    } else {
+        throw new TypeError("Week day must be less or equal to 7");
+    }
+};
+
 const ChangeHomework = createContentFiller<ChangeHomeworkProps>({
     lesson: {
         title: "Урок",
@@ -75,18 +118,19 @@ const ChangeHomework = createContentFiller<ChangeHomeworkProps>({
             }, [query, query.data]);
 
             if (!lesson || query.loading) {
-                return <DatePickerWrapper changeHandler={changeHandler} value={value} />
+                return <ToSection changeHandler={changeHandler} value={value} />
             } else {
                 return <Suspender
-                    fallback={<DatePickerWrapper changeHandler={changeHandler} value={value} />}
+                    fallback={<ToSection changeHandler={changeHandler} value={value} />}
                     query={query}
                 >
                     <>
                         {schedule &&
-                            <DatePickerWrapper
+                            <ToSection
                                 changeHandler={changeHandler}
                                 value={value}
                                 renderDayContents={(day, date) => <OutlinedDay date={day} outlined={shouldBeOutlined(schedule, lesson, date.getDay())} />}
+                                nextLessonDate={findNextLessonDate(schedule, lesson, new Date(value))}
                             />
                         }
                     </>
@@ -96,43 +140,45 @@ const ChangeHomework = createContentFiller<ChangeHomeworkProps>({
         defaultValue: new Date().toISOString(),
         validator: (date) => { if (+date >= Date.now()) return "Дата на которую задано задание должно быть в будущем" }
     },
-}, (state) => {
-    if (state.text.trim() === "" && state.attachments.length === 0) {
-        return "Задание должно содержать текст или фотографии";
-    }
-})
-
-const findWeekDaysWithLesson = memoize((schedule: string[][], lesson: string): number[] => {
-    return schedule.reduce((acc, c, i) => { if (c.includes(lesson)) { acc.push(i + 1) }; return acc }, [] as number[]);
-})
-
-const shouldBeOutlined = memoize((schedule: string[][], lesson: string, weekDay: number) => {
-    return findWeekDaysWithLesson(schedule, lesson).includes(weekDay);
-})
+},
+    (state) => {
+        if (state.text.trim() === "" && state.attachments.length === 0) {
+            return "Задание должно содержать текст или фотографии";
+        }
+    })
 
 const OutlinedDay: React.FC<{ outlined: boolean, date?: number }> = ({ outlined, date }) => {
     return <span className={outlined ? styles.outlined : ""}>{date}</span>
 }
-const DatePickerWrapper: React.FC<{
+const ToSection: React.FC<{
     value: string,
     changeHandler: (date: string) => void,
     renderDayContents?: (day: number, date: Date) => JSX.Element
-}> = ({ value, changeHandler, renderDayContents }) => (
-    <DatePicker
-        selected={new Date(value)}
-        onChange={date => {
-            if (date !== null) {
-                changeHandler(date.toISOString());
-            }
-        }}
-        minDate={new Date()}
-        dateFormat={"dd/MM/yyyy"}
-        className={styles.datePickerInput}
-        showPopperArrow={false}
-        calendarClassName={styles.datePickerCalendar}
-        renderDayContents={renderDayContents}
-    />
-)
+    nextLessonDate?: Date | null
+}> = ({ value, changeHandler, renderDayContents, nextLessonDate }) => {
+
+
+    return <div className={styles.toSection}>
+        <DatePicker
+            selected={new Date(value)}
+            onChange={date => {
+                if (date !== null) {
+                    changeHandler(date.toISOString());
+                }
+            }}
+            minDate={new Date()}
+            dateFormat={"dd/MM/yyyy"}
+            className={styles.datePickerInput}
+            showPopperArrow={false}
+            calendarClassName={styles.datePickerCalendar}
+            renderDayContents={renderDayContents}
+        />
+
+        {nextLessonDate &&
+            <button className={styles.onNextLesson} onClick={() => changeHandler(nextLessonDate.toISOString())}>На следущий урок</button>
+        }
+    </div>
+}
 
 export default ChangeHomework;
 
