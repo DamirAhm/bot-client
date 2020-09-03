@@ -13,6 +13,22 @@ const customizationOptions = {};
 const StudentTC = composeWithMongoose( StudentModel, customizationOptions );
 const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
 
+//Custom fields
+{
+    //!Classes
+    {
+        ClassTC.addFields( {
+            studentsCount: {
+                type: 'Int',
+                description: 'Number of students',
+                resolve: async ( source ) => {
+                    return await DataBase.getClassBy_Id( source._id ).then( Class => Class.students.length )
+                },
+            },
+        } )
+    }
+}
+
 //Resolvers
 {
     //! Classes
@@ -544,14 +560,6 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
 {
     //! Classes
     {
-        StudentTC.addRelation( "class", {
-            resolver: () => ClassTC.getResolver( "findById" ),
-            prepareArgs: {
-                // resolver `findByIds` has `_ids` arg, let provide value to it
-                _id: ( source ) => source.class,
-            },
-            projection: { class: 1 }, // point fields in source object, which should be fetched from DB
-        } );
         ClassTC.addRelation( "students", {
             resolver: () => StudentTC.getResolver( "findByIds" ),
             prepareArgs: {
@@ -560,16 +568,17 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
             },
             projection: { class: 1 }, // point fields in source object, which should be fetched from DB
         } );
-        ClassTC.addRelation( "studentsCount", {
-            resolver: () => StudentTC.getResolver( "count" ),
-            prepareArgs: {
-                filter: ( source ) => ( { class: source._id } ),
-            },
-            projection: { _id: 1 },
-        } );
     }
     //! Students
     {
+        StudentTC.addRelation( "class", {
+            resolver: () => ClassTC.getResolver( "findById" ),
+            prepareArgs: {
+                // resolver `findByIds` has `_ids` arg, let provide value to it
+                _id: ( source ) => source.class,
+            },
+            projection: { class: 1 }, // point fields in source object, which should be fetched from DB
+        } );
         StudentTC.addRelation( "firstName", {
             resolver: () => StudentTC.getResolver( "firstName" ),
             prepareArgs: {
