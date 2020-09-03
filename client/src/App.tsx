@@ -1,16 +1,16 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { lazy, Suspense } from 'react';
 import Sidebar from "./components/Sidebar/Sidebar";
 import { Redirect, Route, Switch } from "react-router";
-import { roles, Student, User } from "./types";
+import { roles, User } from "./types";
 import withRedirect from "./HOCs/withAuth";
 import { gql } from "apollo-boost";
-import { useApolloClient } from "@apollo/react-hooks";
-import md5 from "md5";
+import useAuth from "./hooks/useAuth";
 
 const Classes = lazy(() => import("./components/Content/Classes/Classes"));
 const Students = lazy(() => import("./components/Content/Students/Students"));
 const StudentPage = lazy(() => import("./components/Content/StudentPage/StudentPage"));
 const ClassPage = lazy(() => import('./components/Content/ClassPage/ClassPage'));
+const Page404 = lazy(() => import("./components/Content/404/404"));
 
 const Auth = lazy(() => import("./components/Content/Auth/Auth"));
 
@@ -37,63 +37,7 @@ const GET_STUDENT = gql`
 `
 
 function App() {
-    const ApolloClient = useApolloClient();
-    const [user, setUser] = useState<User | null>(
-        process.env.NODE_ENV === "production"
-            ? null
-            : JSON.parse(process.env.REACT_APP_USER || "null") as User ||
-            {
-                role: (process.env.REACT_APP_ROLE || "ADMIN") as roles,
-                className: process.env.REACT_APP_CLASS_NAME || "10Б",
-                first_name: process.env.REACT_APP_FIRST_NAME || "Дамир",
-                last_name: process.env.REACT_APP_LAST_NAME || "Ахметзянов",
-                photo: process.env.REACT_APP_PHOTO || "/images/camera_200.png?ava=1",
-                photo_rec: process.env.REACT_APP_PHOTO_REC || "/images/camera_50.png?ava=1",
-                uid: process.env.REACT_APP_UID || 227667805,
-            }
-    );
-
-    const onUser = async ({ hash, session, ...user }: returnUserType) => {
-        const { data: { student: { role, className } } } = await ApolloClient.query<
-            { student: { role: roles, className: string } },
-            { filter: Partial<Student> }
-        >({ query: GET_STUDENT, variables: { filter: { vkId: user.uid } } });
-
-        const userWithRole: User = { ...user, role, className }
-
-        setUser(userWithRole);
-        localStorage.setItem("user", JSON.stringify(userWithRole));
-        localStorage.setItem("hash", hash)
-    }
-
-    useEffect(() => {
-        if (!user) {
-            const userItem = localStorage.getItem("user");
-            const hash = localStorage.getItem("hash");
-
-            const app_id = process.env.REACT_APP_APP_ID;
-            const secret = process.env.REACT_APP_SECRET;
-            if (userItem && hash) {
-                const parsedUser = JSON.parse(userItem);
-                if (typeof parsedUser === "object") {
-                    if (["first_name", "last_name", "uid", "photo_rec"].every(key => Object.keys(parsedUser).includes(key))) {
-                        if (hash === md5(app_id + parsedUser.uid + secret)) {
-                            setUser(parsedUser);
-                        } else {
-                            localStorage.removeItem("user");
-                            localStorage.removeItem("hash");
-                        }
-                    } else {
-                        localStorage.removeItem("user");
-                        localStorage.removeItem("hash");
-                    }
-                } else {
-                    localStorage.removeItem("user");
-                    localStorage.removeItem("hash");
-                }
-            }
-        }
-    }, [user]);
+    const [user, onUser, logOut] = useAuth();
 
     return (
         <UserContext.Provider value={{ isAuth: user !== null, ...user as User }}>
@@ -104,7 +48,7 @@ function App() {
                             <Auth setUser={onUser} />
                         </Suspense>
                         : <>
-                            <Sidebar setUser={setUser} />
+                            <Sidebar logOut={logOut} />
                             <div className="content">
                                 <Suspense fallback={<div> Loading... </div>}>
                                     <Switch>
@@ -117,6 +61,7 @@ function App() {
                                             } />
                                         <Route exact path="/students" component={() => withRedirect(Students)} />
                                         <Route path="/students/:vkId" component={() => withRedirect(StudentPage, true)} />
+                                        <Route path="/404" component={() => withRedirect(Page404, true)} />
                                         <Route path="*" render={() => <Redirect to={"/classes"} />} />
                                     </Switch>
                                 </Suspense>

@@ -1,0 +1,5 @@
+.container {
+    font-size: 2rem;
+    color: var(--main);
+    padding: 0 20px;
+}

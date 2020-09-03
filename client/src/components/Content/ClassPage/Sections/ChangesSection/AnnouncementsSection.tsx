@@ -136,7 +136,7 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
     >(REMOVE_OLD_ANNOUNCEMENTS, {
         variables: { className },
         optimisticResponse: {
-            removeOldAnnouncements: announcementsQuery.data?.announcements.filter(({ to }) => Date.now() - Date.parse(to) <= 24 * 60 * 60 * 1000) || []
+            removeOldAnnouncements: announcementsQuery.data?.announcements?.filter(({ to }) => Date.now() - Date.parse(to) <= 24 * 60 * 60 * 1000) || []
         },
         update: (proxy, mutation) => {
             if (mutation && mutation.data?.removeOldAnnouncements) {
@@ -251,52 +251,56 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
                         <Add onClick={(e) => { e.stopPropagation(); setAnnouncementCreating(true) }} />
                     </div>}>
                 <Suspender query={announcementsQuery}>
-                    {(data: { announcements: WithTypename<announcement>[] }) => {
-                        const [oldAnnouncements, actualAnnouncements] = parseContentByDate(data.announcements);
+                    {({ announcements }: { announcements?: WithTypename<announcement>[] }) => {
+                        if (announcements) {
+                            const [oldAnnouncements, actualAnnouncements] = parseContentByDate(announcements);
 
-                        return <div className={styles.content}>
-                            {Object.keys(oldAnnouncements).length > 0 &&
-                                <Accordion
-                                    initiallyOpened={false}
-                                    Head={({ opened }) =>
-                                        <div className={styles.oldContentHeader}>
-                                            <p className={`${styles.date} ${styles.accordion}`}>
-                                                Старые обьявления
+                            return <div className={styles.content}>
+                                {Object.keys(oldAnnouncements).length > 0 &&
+                                    <Accordion
+                                        initiallyOpened={false}
+                                        Head={({ opened }) =>
+                                            <div className={styles.oldContentHeader}>
+                                                <p className={`${styles.date} ${styles.accordion}`}>
+                                                    Старые обьявления
                                                     <GoTriangleRight size={15} className={opened ? styles.triangle_opened : ""} />
-                                            </p>
+                                                </p>
 
-                                            <Options
-                                                include={redactorOptions.delete}
-                                                props={{
-                                                    allowOnlyRedactor: true,
-                                                    className: `remove ${styles.removeOldContent}`,
-                                                    size: 20,
-                                                    onClick: () => removeOldAnnouncements()
-                                                }}
+                                                <Options
+                                                    include={redactorOptions.delete}
+                                                    props={{
+                                                        allowOnlyRedactor: true,
+                                                        className: `remove ${styles.removeOldContent}`,
+                                                        size: 20,
+                                                        onClick: () => removeOldAnnouncements()
+                                                    }}
+                                                />
+                                            </div>
+                                        }
+                                    >
+                                        <div className={styles.offseted}>
+                                            <AnnouncementLayout
+                                                announcements={oldAnnouncements}
+                                                initiallyOpened={false}
+                                                setAnnouncementCreating={setAnnouncementCreating}
+                                                setInitContent={setInitContent}
+                                                update={update}
+                                                remove={remove}
                                             />
                                         </div>
-                                    }
-                                >
-                                    <div className={styles.offseted}>
-                                        <AnnouncementLayout
-                                            announcements={oldAnnouncements}
-                                            initiallyOpened={false}
-                                            setAnnouncementCreating={setAnnouncementCreating}
-                                            setInitContent={setInitContent}
-                                            update={update}
-                                            remove={remove}
-                                        />
-                                    </div>
-                                </Accordion>
-                            }
-                            <AnnouncementLayout
-                                announcements={actualAnnouncements}
-                                setAnnouncementCreating={setAnnouncementCreating}
-                                setInitContent={setInitContent}
-                                update={update}
-                                remove={remove}
-                            />
-                        </div>
+                                    </Accordion>
+                                }
+                                <AnnouncementLayout
+                                    announcements={actualAnnouncements}
+                                    setAnnouncementCreating={setAnnouncementCreating}
+                                    setInitContent={setInitContent}
+                                    update={update}
+                                    remove={remove}
+                                />
+                            </div>
+                        } else {
+                            return null;
+                        }
                     }
                     }
                 </Suspender>

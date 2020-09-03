@@ -11,6 +11,7 @@ import Suspender from "../../Common/Suspender/Suspender";
 import { useParams } from "react-router-dom";
 import Options from "../../Common/Options/Options";
 import Confirm from "../../Common/Confirm/Confirm";
+import { RedirectTo404 } from "../404/404";
 
 export const GET_STUDENT = gql`
     query GetStudent($vkId: Float){
@@ -200,56 +201,61 @@ const StudentPage: React.FC = () => {
     return (
         <>
             <Suspender query={{ data, loading, error }}>
-                {(data: ({ studentOne: Student & { __typename: string } })) => {
-                    const { fullName, __typename, _id, ...info } = data.studentOne;
-                    info.lastHomeworkCheck = info.lastHomeworkCheck === "1970-01-01T00:00:00.000Z" ? "Никогда" : parseDate(info.lastHomeworkCheck, "YYYY.MMn.dd hh:mm");
+                {({ studentOne }: ({ studentOne?: Student & { __typename: string } })) => {
+                    if (studentOne) {
+                        const { fullName, __typename, _id, ...info } = studentOne;
+                        info.lastHomeworkCheck = info.lastHomeworkCheck === "1970-01-01T00:00:00.000Z" ? "Никогда" : parseDate(info.lastHomeworkCheck, "YYYY.MMn.dd hh:mm");
 
-                    return <div className={styles.student}>
-                        <div className={styles.header}>
-                            <div className={styles.info}>
-                                <div className={styles.name}> {fullName} </div>
+                        return <div className={styles.student}>
+                            <div className={styles.header}>
+                                <div className={styles.info}>
+                                    <div className={styles.name}> {fullName} </div>
+                                </div>
+                                <div className={styles.icons}>
+                                    {changing
+                                        ? <Options
+                                            include={[redactorOptions.reject, redactorOptions.confirm]}
+                                            props={{
+                                                [redactorOptions.reject]: {
+                                                    className: styles.icon + " negative",
+                                                    onClick: () => { setDiff({}); setChanging(false) },
+                                                },
+                                                [redactorOptions.confirm]: {
+                                                    className: styles.icon + " positive",
+                                                    onClick: () => { updateStudent(); setChanging(false) },
+                                                    allowOnlyAdmin: true,
+                                                }
+                                            }}
+                                            size={iconSize}
+                                        />
+                                        : <Options
+                                            include={[redactorOptions.change, redactorOptions.delete]}
+                                            props={{
+                                                [redactorOptions.change]: {
+                                                    onClick: () => setChanging(true),
+                                                    className: `${styles.icon} ${styles.pen}`,
+                                                    size: iconSize * 0.8
+                                                },
+                                                [redactorOptions.delete]: {
+                                                    onClick: () => setWaitForConfirm(true),
+                                                    className: `${styles.icon} remove`,
+                                                }
+                                            }}
+                                            size={iconSize}
+                                            withRoleControl
+                                            allowOnlyAdmin
+                                        />
+                                    }
+                                </div>
                             </div>
-                            <div className={styles.icons}>
-                                {changing
-                                    ? <Options
-                                        include={[redactorOptions.reject, redactorOptions.confirm]}
-                                        props={{
-                                            [redactorOptions.reject]: {
-                                                className: styles.icon + " negative",
-                                                onClick: () => { setDiff({}); setChanging(false) },
-                                            },
-                                            [redactorOptions.confirm]: {
-                                                className: styles.icon + " positive",
-                                                onClick: () => { updateStudent(); setChanging(false) },
-                                                allowOnlyAdmin: true,
-                                            }
-                                        }}
-                                        size={iconSize}
-                                    />
-                                    : <Options
-                                        include={[redactorOptions.change, redactorOptions.delete]}
-                                        props={{
-                                            [redactorOptions.change]: {
-                                                onClick: () => setChanging(true),
-                                                className: `${styles.icon} ${styles.pen}`,
-                                                size: iconSize * 0.8
-                                            },
-                                            [redactorOptions.delete]: {
-                                                onClick: () => setWaitForConfirm(true),
-                                                className: `${styles.icon} remove`,
-                                            }
-                                        }}
-                                        size={iconSize}
-                                        withRoleControl
-                                        allowOnlyAdmin
-                                    />
-                                }
+                            <div className={styles.body}>
+                                {Object.entries(info).map(entrie => <StudentInfo name={entrie[0]} value={entrie[1]} isChanging={changing} key={`${entrie[0]}`} changeHandler={changeHandler} />)}
                             </div>
                         </div>
-                        <div className={styles.body}>
-                            {Object.entries(info).map(entrie => <StudentInfo name={entrie[0]} value={entrie[1]} isChanging={changing} key={`${entrie[0]}`} changeHandler={changeHandler} />)}
-                        </div>
-                    </div>
+                    }
+                    else {
+                        return <RedirectTo404 />
+                    }
                 }
                 }
             </Suspender>

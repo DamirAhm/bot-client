@@ -11,13 +11,8 @@ import { UserContext } from "../../App";
 import { useContext } from "react";
 
 const UserInfo: React.FC<
-    { userInfo: Pick<User, "photo_rec" | "first_name" | "last_name">, resetUser: () => void }
-> = ({ userInfo: { first_name, last_name, photo_rec }, resetUser }) => {
-    const logOut = () => {
-        resetUser();
-        localStorage.removeItem("user");
-    }
-
+    { userInfo: Pick<User, "photo_rec" | "first_name" | "last_name">, logOut: () => void }
+> = ({ userInfo: { first_name, last_name, photo_rec }, logOut }) => {
     return <div className={styles.userInfo}>
         <img src={"https://vk.com" + photo_rec} alt="Фото пользователя" />
         <span className={styles.userName}>{first_name} {last_name}</span>
@@ -25,7 +20,7 @@ const UserInfo: React.FC<
     </div>
 }
 
-const Sidebar: React.FC<{ setUser: (user: User | null) => void }> = ({ setUser }) => {
+const Sidebar: React.FC<{ logOut: () => void }> = ({ logOut }) => {
     const { first_name, last_name, photo_rec, role, className, uid } = useContext(UserContext);
 
     const userInfo = { first_name, last_name, photo_rec };
@@ -50,7 +45,7 @@ const Sidebar: React.FC<{ setUser: (user: User | null) => void }> = ({ setUser }
             }
             {first_name && last_name && photo_rec &&
                 <NavLink to={`/students/${uid}`} className={styles.userInfo}>
-                    <UserInfo userInfo={userInfo} resetUser={() => setUser(null)} />
+                    <UserInfo userInfo={userInfo} logOut={logOut} />
                 </NavLink>
             }
         </div>
