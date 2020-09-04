@@ -20,13 +20,13 @@ const Suspender: React.FC<Props> = ({ query, children, queries, fallback = <div>
     if (query) {
         queries = [query];
     }
-
+    console.log(queries);
     if (queries && queries.length) {
         if (queries.some(q => q.error)) return <div> {
             queries.map((q, i) => {
                 if (q.error) {
                     if (ErrorElement) {
-                        return typeof ErrorElement === "function" ? <ErrorElement error={q.error} /> : ErrorElement
+                        return typeof ErrorElement === "function" ? <ErrorElement key={q.error.stack} error={q.error} /> : ErrorElement
                     }
                     return <span key={"SuspenderErrorSpan" + i}> {q.error && q.error.message}</span>
                 }

@@ -23,7 +23,7 @@ const REMOVE_CLASS = gql`
 `
 const GET_CLASS = gql`
     query GetClass($className: String!) {
-        classOne(filter: {className: $className}) {
+        classOne(filter: {name: $className}) {
             _id
         }
     }
@@ -64,31 +64,32 @@ const ClassPage: React.FC = () => {
 
     return (
         <>
-            <Suspender query={query} ErrorElement={<RedirectTo404 />} />
-            <div className={styles.class}>
-                <div className={styles.header}>
-                    <div className={styles.className}> {className} </div>
-                    <Options
-                        include={redactorOptions.delete}
-                        props={{
-                            onClick: () => setWaitForConfirm(true),
-                            size: 30,
-                            className: "remove",
-                            style: { cursor: "pointer" },
-                            allowOnlyAdmin: true
-                        }}
-                    />
+            <Suspender query={query} ErrorElement={() => <RedirectTo404 />}>
+                <div className={styles.class}>
+                    <div className={styles.header}>
+                        <div className={styles.className}> {className} </div>
+                        <Options
+                            include={redactorOptions.delete}
+                            props={{
+                                onClick: () => setWaitForConfirm(true),
+                                size: 30,
+                                className: "remove",
+                                style: { cursor: "pointer" },
+                                allowOnlyAdmin: true
+                            }}
+                        />
+                    </div>
+                    <div className={styles.content}>
+                        <StudentsSection className={className} />
+                        <ScheduleSection className={className} />
+                        <HomeworkSection className={className} />
+                        <AnnouncementsSection className={className} />
+                    </div>
                 </div>
-                <div className={styles.content}>
-                    <StudentsSection className={className} />
-                    <ScheduleSection className={className} />
-                    <HomeworkSection className={className} />
-                    <AnnouncementsSection className={className} />
-                </div>
-            </div>
-            {waitForConfirm &&
-                <Confirm text={`Вы уверены что хотите удалить ${className} класс? 😕`} onConfirm={remove} returnRes={() => setWaitForConfirm(false)} />
-            }
+                {waitForConfirm &&
+                    <Confirm text={`Вы уверены что хотите удалить ${className} класс? 😕`} onConfirm={remove} returnRes={() => setWaitForConfirm(false)} />
+                }
+            </Suspender>
         </>
     )
 }
