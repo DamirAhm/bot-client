@@ -32,18 +32,17 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
     {
         StudentTC.addFields( {
             className: {
-                type: 'String!',
+                type: 'String',
                 resolve: async ( source ) => {
-                    console.log( source );
                     if ( source.class ) {
                         return await DataBase.getClassBy_Id( source.class ).then( Class => Class.name )
                     } else {
-                        return "Нету";
+                        return null;
                     }
                 },
             },
             firstName: {
-                type: "String!",
+                type: "String",
                 resolve: async ( source ) => {
                     const student = await DataBase.getStudentByVkId( source.vkId );
                     if ( student && student.firstName ) {
@@ -61,7 +60,7 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 },
             },
             secondName: {
-                type: "String!",
+                type: "String",
                 resolve: async ( source ) => {
                     const student = await DataBase.getStudentByVkId( source.vkId );
                     if ( student && student.secondName ) {
@@ -79,7 +78,7 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 }
             },
             fullName: {
-                type: "String!",
+                type: "String",
                 resolve: async ( source ) => {
                     const student = await DataBase.getStudentByVkId( source.vkId );
                     if ( student && student.fullName ) {

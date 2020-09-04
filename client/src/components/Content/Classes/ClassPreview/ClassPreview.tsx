@@ -12,7 +12,7 @@ import { useState } from "react";
 type Props = {
     className: string,
     studentsCount: number,
-    searchText: string
+    searchText?: string
 }
 
 // language=GraphQL
@@ -26,7 +26,7 @@ const DELETE_CLASS = gql`
     }
 `;
 //TODO добавить модалку спрашивающую уверен ли ты в удалении класса
-const ClassPreview: React.FC<Props> = ({ className, studentsCount, searchText }) => {
+const ClassPreview: React.FC<Props> = ({ className, studentsCount, searchText = "" }) => {
     const [deleteClass, { error, data }] = useMutation<{ classRemoveOne: { record: { name: string } } },
         { className: string }>
         (DELETE_CLASS, {
@@ -63,8 +63,10 @@ const ClassPreview: React.FC<Props> = ({ className, studentsCount, searchText })
                     props={{
                         onClick: () => setWaitForConfirm(true),
                         size: 20,
-                        className: "remove"
+                        className: "remove",
                     }}
+                    withRoleControl
+                    allowOnlyAdmin
                 />
             </div>
             {waitForConfirm &&

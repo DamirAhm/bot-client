@@ -205,6 +205,7 @@ const StudentPage: React.FC = () => {
                     if (studentOne) {
                         const { fullName, __typename, _id, ...info } = studentOne;
                         info.lastHomeworkCheck = info.lastHomeworkCheck === "1970-01-01T00:00:00.000Z" ? "Никогда" : parseDate(info.lastHomeworkCheck, "YYYY.MMn.dd hh:mm");
+                        info.className = info.className === null ? "Нету" : info.className;
 
                         return <div className={styles.student}>
                             <div className={styles.header}>

@@ -53,7 +53,7 @@ const Options: React.FC<Props> = ({
 
     const { role = roles.student } = useContext(UserContext);
 
-    if (withRoleControl && role !== roles.admin && (allowOnlyAdmin || role !== roles.contributor)) {
+    if (withRoleControl && ((allowOnlyAdmin && role !== roles.admin) || role !== roles.contributor)) {
         return null
     }
 

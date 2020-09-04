@@ -310,7 +310,7 @@ const StudentPicker: React.FC<{
         >
             <span className={styles.chooser_name}>{highlighter(student.fullName)}</span>
             <span className={styles.chooser_vkId}>{highlighter(student.vkId)}</span>
-            <span className={styles.chooser_className}>{highlighter(student.className)}</span>
+            <span className={styles.chooser_className}>{highlighter(student.className = "Нету")}</span>
         </div>
     )
 }
