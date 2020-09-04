@@ -39,7 +39,7 @@ const CHANGE_SCHEDULE = gql`
     }
 `
 
-type scheduleData = { schedule: string[][], lessonsList: string[] };
+type scheduleData = { schedule: string[][] | null, lessonsList: string[] | null };
 
 const ScheduleSection: React.FC<Props> = ({ className }) => {
     const [isAnyLessonDragging, setIsAnyLessonDragging] = useState(false);
@@ -118,7 +118,7 @@ const ScheduleSection: React.FC<Props> = ({ className }) => {
         <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
             <InfoSection name={"Расписание"}>
                 <Suspender queries={[scheduleQuery, lessonsQuery]}>
-                    {scheduleData && scheduleData.schedule !== undefined && scheduleData.lessonsList !== undefined &&
+                    {scheduleDataExists(scheduleData) &&
                         <div className={styles.days}>
                             {scheduleData.schedule.map((day, i) => (
                                 <ScheduleDay
@@ -274,3 +274,11 @@ const Lesson: React.FC<LessonProps> = ({ changing, dayIndex, lesson, index, chan
 }
 
 export default ScheduleSection;
+
+function scheduleDataExists(data: Partial<scheduleData> | null): data is { schedule: string[][], lessonsList: string[] } {
+    return !!data &&
+        data.schedule !== undefined &&
+        data.lessonsList !== undefined &&
+        data.schedule !== null &&
+        data.lessonsList !== null;
+}

@@ -1,8 +1,17 @@
 import { useApolloClient } from "@apollo/react-hooks";
+import { gql } from "apollo-boost";
 import md5 from "md5";
 import { useEffect, useState } from "react";
-import { GET_STUDENT } from "../components/Content/StudentPage/StudentPage";
 import { User, roles, Student } from "../types";
+
+const GET_STUDENT_CLASS_NAME_AND_ROLE = gql`
+    query GetStudentClassName($filter: FilterFindOneStudentInput!){
+        studentOne(filter: $filter) {
+            className
+            role
+        }
+    }
+`
 
 const useAuth = () => {
     const ApolloClient = useApolloClient();
@@ -13,7 +22,7 @@ const useAuth = () => {
             : JSON.parse(process.env.REACT_APP_USER || "null") as User ||
             {
                 role: (process.env.REACT_APP_ROLE || "ADMIN") as roles,
-                className: process.env.REACT_APP_CLASS_NAME || "10Б",
+                className: process.env.REACT_APP_CLASS_NAME || "Нету",
                 first_name: process.env.REACT_APP_FIRST_NAME || "Дамир",
                 last_name: process.env.REACT_APP_LAST_NAME || "Ахметзянов",
                 photo: process.env.REACT_APP_PHOTO || "/images/camera_200.png?ava=1",
@@ -26,10 +35,16 @@ const useAuth = () => {
         const { data: { student: { role, className } } } = await ApolloClient.query<
             { student: { role: roles, className: string } },
             { filter: Partial<Student> }
-        >({ query: GET_STUDENT, variables: { filter: { vkId: user.uid } } });
+        >({
+            query: GET_STUDENT_CLASS_NAME_AND_ROLE,
+            variables: {
+                filter: {
+                    vkId: user.uid
+                }
+            }
+        });
 
         const userWithRole: User = { ...user, role, className }
-
         setUser(userWithRole);
         localStorage.setItem("user", JSON.stringify(userWithRole));
         localStorage.setItem("hash", hash)

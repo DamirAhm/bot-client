@@ -28,7 +28,6 @@ const REMOVE_STUDENT_FROM_CLASS = gql`
 const GET_STUDENTS_FOR_CLASS = gql`
     fragment StudentPreview on Student {
         vkId
-        className
         role
         fullName
         _id
@@ -143,7 +142,7 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
         setSearchString(str);
         setFilter(st => st.fullName.toLowerCase().search(str) !== -1 || st.role.toLocaleLowerCase().search(str) !== -1)
     }
-
+    console.log(items);
     return (
         <InfoSection name="Ученики" defaultSearchString={searchString} updateSearchString={changeHandler} className={styles.studentsSection}>
             <>

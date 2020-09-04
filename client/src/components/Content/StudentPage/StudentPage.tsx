@@ -173,7 +173,7 @@ const StudentPage: React.FC = () => {
         if (Object.getOwnPropertyNames(diff).length) {
             const settings = diff.settings;
             delete diff.settings;
-            console.log({ ...diff, settings })
+
             updater({
                 variables: { vkId, record: { ...diff, settings } },
                 optimisticResponse: {

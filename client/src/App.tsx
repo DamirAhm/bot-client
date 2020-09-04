@@ -27,15 +27,6 @@ export const UserContext = React.createContext<
     uid: NaN
 });
 
-const GET_STUDENT = gql`
-    query GET_STUDENT($filter: FilterFindOneStudentInput!) {
-        student: studentOne(filter: $filter) {
-            role
-            className
-        } 
-    }
-`
-
 function App() {
     const [user, onUser, logOut] = useAuth();
 

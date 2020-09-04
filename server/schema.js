@@ -19,12 +19,86 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
     {
         ClassTC.addFields( {
             studentsCount: {
-                type: 'Int',
+                type: 'Int!',
                 description: 'Number of students',
                 resolve: async ( source ) => {
                     return await DataBase.getClassBy_Id( source._id ).then( Class => Class.students.length )
                 },
             },
+        } )
+    }
+
+    //!Students
+    {
+        StudentTC.addFields( {
+            className: {
+                type: 'String!',
+                resolve: async ( source ) => {
+                    console.log( source );
+                    if ( source.class ) {
+                        return await DataBase.getClassBy_Id( source.class ).then( Class => Class.name )
+                    } else {
+                        return "Нету";
+                    }
+                },
+            },
+            firstName: {
+                type: "String!",
+                resolve: async ( source ) => {
+                    const student = await DataBase.getStudentByVkId( source.vkId );
+                    if ( student && student.firstName ) {
+                        return student.firstName;
+                    } else if ( student ) {
+                        const firstName = await vk
+                            .getUser( source.vkId )
+                            .then( ( res ) => res[ 0 ].first_name );
+                        student.firstName = firstName;
+                        student.save();
+                        return firstName;
+                    } else {
+                        return null;
+                    }
+                },
+            },
+            secondName: {
+                type: "String!",
+                resolve: async ( source ) => {
+                    const student = await DataBase.getStudentByVkId( source.vkId );
+                    if ( student && student.secondName ) {
+                        return student.secondName;
+                    } else if ( student ) {
+                        const secondName = await vk
+                            .getUser( source.vkId )
+                            .then( ( res ) => res[ 0 ].last_name );
+                        student.lastName = secondName;
+                        student.save();
+                        return secondName;
+                    } else {
+                        return null;
+                    }
+                }
+            },
+            fullName: {
+                type: "String!",
+                resolve: async ( source ) => {
+                    const student = await DataBase.getStudentByVkId( source.vkId );
+                    if ( student && student.fullName ) {
+                        return student.fullName;
+                    } else if ( student ) {
+                        const fullName = await vk
+                            .getUser( source.vkId )
+                            .then( ( res ) => res[ 0 ] )
+                            .then(
+                                ( res ) => res.first_name + " " + res.last_name
+                            );
+                        student.fullName = fullName;
+                        student.save();
+                        return fullName;
+                    } else {
+                        return null;
+                    }
+                },
+            }
         } )
     }
 }
@@ -65,29 +139,6 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 },
             } );
         }
-        //* Properties
-        {
-            //? name
-            ClassTC.addResolver( {
-                name: "name",
-                type: "String",
-                args: { class_id: "String!" },
-                resolve: async ( { source, args, context, info } ) => {
-                    if ( args.class_id ) {
-                        const Class = await DataBase.getClassBy_Id(
-                            args.class_id
-                        );
-                        if ( Class !== null ) {
-                            return Class.name;
-                        } else {
-                            return "Неверное имя класса";
-                        }
-                    } else {
-                        return "Нету";
-                    }
-                },
-            } );
-        }
         //* Schedule
         {
             //? get
@@ -97,7 +148,12 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 args: { className: "String!" },
                 resolve: async ( { source, args, context, info } ) => {
                     const Class = await DataBase.getClassByName( args.className );
-                    return Class.schedule;
+
+                    if ( Class ) {
+                        return Class.schedule;
+                    } else {
+                        return null;
+                    }
                 },
             } );
             //? change
@@ -171,7 +227,7 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                             return null;
                         }
                     } catch ( e ) {
-                        console.error( e );
+                        // console.error( e );
                     }
                     return { attachments, text, to, className, _id: "123122" };
                 },
@@ -237,7 +293,7 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
 
                         return actualAnnouncements;
                     } catch ( e ) {
-                        console.error( e );
+                        // console.error( e );
                         return null;
                     }
                 },
@@ -364,7 +420,7 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
 
                         return actualHomework;
                     } catch ( e ) {
-                        console.error( e );
+                        // console.error( e );
                         return null;
                     }
                 },
@@ -398,75 +454,6 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 args: { vkId: "Int!" },
                 resolve: async ( { source, args, context, info } ) => {
                     return await DataBase.createStudent( args.vkId );
-                },
-            } );
-        }
-        //* Properties
-        {
-            //? First name
-            StudentTC.addResolver( {
-                name: "firstName",
-                type: "String",
-                args: { vkId: "String!" },
-                resolve: async ( { source, args, context, info } ) => {
-                    const student = await DataBase.getStudentByVkId( args.vkId );
-                    if ( student && student.firstName ) {
-                        return student.firstName;
-                    } else if ( student ) {
-                        const firstName = await vk
-                            .getUser( args.vkId )
-                            .then( ( res ) => res[ 0 ].first_name );
-                        student.firstName = firstName;
-                        student.save();
-                        return firstName;
-                    } else {
-                        return null;
-                    }
-                },
-            } );
-            //? Second name
-            StudentTC.addResolver( {
-                name: "secondName",
-                type: "String",
-                args: { vkId: "String!" },
-                resolve: async ( { source, args, context, info } ) => {
-                    const student = await DataBase.getStudentByVkId( args.vkId );
-                    if ( student && student.secondName ) {
-                        return student.secondName;
-                    } else if ( student ) {
-                        const secondName = await vk
-                            .getUser( args.vkId )
-                            .then( ( res ) => res[ 0 ].last_name );
-                        student.lastName = secondName;
-                        student.save();
-                        return secondName;
-                    } else {
-                        return null;
-                    }
-                },
-            } );
-            //? Full name
-            StudentTC.addResolver( {
-                name: "fullName",
-                type: "String",
-                args: { vkId: "String!" },
-                resolve: async ( { source, args, context, info } ) => {
-                    const student = await DataBase.getStudentByVkId( args.vkId );
-                    if ( student && student.fullName ) {
-                        return student.fullName;
-                    } else if ( student ) {
-                        const fullName = await vk
-                            .getUser( args.vkId )
-                            .then( ( res ) => res[ 0 ] )
-                            .then(
-                                ( res ) => res.first_name + " " + res.last_name
-                            );
-                        student.fullName = fullName;
-                        student.save();
-                        return fullName;
-                    } else {
-                        return null;
-                    }
                 },
             } );
         }
@@ -526,9 +513,14 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 args: { className: "String" },
                 resolve: async ( { source, args, context, info } ) => {
                     const Class = await DataBase.getClassByName( args.className );
-                    return await StudentModel.find( {
-                        _id: { $in: Class.students },
-                    } );
+
+                    if ( Class ) {
+                        return await StudentModel.find( {
+                            _id: { $in: Class.students },
+                        } );
+                    } else {
+                        return null;
+                    }
                 },
             } );
         }
@@ -578,37 +570,6 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
                 _id: ( source ) => source.class,
             },
             projection: { class: 1 }, // point fields in source object, which should be fetched from DB
-        } );
-        StudentTC.addRelation( "firstName", {
-            resolver: () => StudentTC.getResolver( "firstName" ),
-            prepareArgs: {
-                // resolver `findByIds` has `_ids` arg, let provide value to it
-                vkId: ( source ) => source.vkId,
-            },
-            projection: { vkId: 1 }, // point fields in source object, which should be fetched from DB
-        } );
-        StudentTC.addRelation( "secondName", {
-            resolver: () => StudentTC.getResolver( "secondName" ),
-            prepareArgs: {
-                // resolver `findByIds` has `_ids` arg, let provide value to it
-                vkId: ( source ) => source.vkId,
-            },
-            projection: { vkId: 1 }, // point fields in source object, which should be fetched from DB
-        } );
-        StudentTC.addRelation( "fullName", {
-            resolver: () => StudentTC.getResolver( "fullName" ),
-            prepareArgs: {
-                // resolver `findByIds` has `_ids` arg, let provide value to it
-                vkId: ( source ) => source.vkId,
-            },
-            projection: { vkId: 1 }, // point fields in source object, which should be fetched from DB
-        } );
-        StudentTC.addRelation( "className", {
-            resolver: () => ClassTC.getResolver( "name" ),
-            prepareArgs: {
-                class_id: ( source ) => source.class,
-            },
-            projection: { class: 1 },
         } );
     }
 }
