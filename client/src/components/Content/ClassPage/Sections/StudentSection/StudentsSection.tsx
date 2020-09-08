@@ -20,12 +20,23 @@ type Props = {
 	className: string;
 };
 
-const REMOVE_STUDENT_FROM_CLASS = gql`
+export const REMOVE_STUDENT_FROM_CLASS = gql`
 	mutation RemoveStudentFromClass($vkId: Int!) {
-		removed: removeStudentFromClass(vkId: $vkId)
+		removed: removeStudentFromClass(vkId: $vkId) {
+			vkId
+			className
+			role
+			settings {
+				notificationsEnabled
+				notificationTime
+			}
+			lastHomeworkCheck
+			fullName
+			_id
+		}
 	}
 `;
-const GET_STUDENTS_FOR_CLASS = gql`
+export const GET_STUDENTS_FOR_CLASS = gql`
 	fragment StudentPreview on Student {
 		vkId
 		role
@@ -38,7 +49,7 @@ const GET_STUDENTS_FOR_CLASS = gql`
 		}
 	}
 `;
-const ADD_STUDENT_TO_CLASS = gql`
+export const ADD_STUDENT_TO_CLASS = gql`
 	fragment StudentPreview on Student {
 		vkId
 		className
@@ -54,7 +65,7 @@ const ADD_STUDENT_TO_CLASS = gql`
 `;
 
 const StudentsSection: React.FC<Props> = ({ className }) => {
-	const { data, loading, error } = useQuery<{ students: studentPreview[] }>(
+	const { data, loading, error } = useQuery<{ students?: studentPreview[] }>(
 		GET_STUDENTS_FOR_CLASS,
 		{ variables: { className } },
 	);

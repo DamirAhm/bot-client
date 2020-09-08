@@ -1,77 +1,88 @@
 import { useApolloClient } from "@apollo/react-hooks";
 import md5 from "md5";
 import { useEffect, useState } from "react";
-import { GET_STUDENT } from "../components/Content/StudentPage/StudentPage";
-import { User, Student } from "../types";
+import { GET_STUDENT_BY_VK_ID } from "../components/Content/StudentPage/StudentPage";
+import { User, Student, setStateProp } from "../types";
 
 const useAuth = () => {
     const ApolloClient = useApolloClient();
 
-    const [user, setUser] = useState<User | null>(null
-        // process.env.NODE_ENV === "production"
-        //     ? null
-        //     : JSON.parse(process.env.REACT_APP_USER || "null") as User
-    );
+    const [user, setUser] = useState<User | null>(null);
 
-    const onUser = async ({ hash, session, ...user }: returnUserType) => {
+    const getFullUser = async (vkUser: Omit<returnUserType, "hash" | "session">): Promise<User | null> => {
         const { data: { studentOne } } = await ApolloClient.query<
             { studentOne?: Student },
-            { filter: Partial<Student> }
+            { vkId: number }
         >({
-            query: GET_STUDENT,
+            query: GET_STUDENT_BY_VK_ID,
             variables: {
-                filter: {
-                    vkId: user.uid
-                }
+                vkId: vkUser.uid
             }
         });
 
         if (studentOne) {
-            const { role, className } = studentOne;
+            const { className, role } = studentOne;
 
-            const userWithRole: User = { ...user, role, className }
-            setUser(userWithRole);
-            localStorage.setItem("user", JSON.stringify(user));
-            localStorage.setItem("hash", hash)
+            return { ...vkUser, className, role };
+        } else {
+            return null;
         }
     }
+
+    const onUser = async ({ hash, session, ...user }: returnUserType) => {
+        const fullUser = await getFullUser(user);
+
+        setUser(fullUser);
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("hash", hash)
+    }
+
     const logOut = () => {
         setUser(null);
         cleanStorage()
     }
 
     useEffect(() => {
-        if (!user) {
-            let userSetted = false;
+        const userFromStorage = getUserFromStorage();
 
-            const userItem = localStorage.getItem("user");
-            const hash = localStorage.getItem("hash");
-
-            const app_id = process.env.REACT_APP_APP_ID;
-            const secret = process.env.REACT_APP_SECRET;
-            if (userItem && hash) {
-                const parsedUser = JSON.parse(userItem);
-                if (typeof parsedUser === "object") {
-                    if (["first_name", "last_name", "uid", "photo_rec"].every(key => Object.keys(parsedUser).includes(key))) {
-                        console.log(md5(app_id + parsedUser.uid + secret))
-                        if (hash === md5(app_id + parsedUser.uid + secret)) {
-                            userSetted = true;
-                            setUser(parsedUser);
-                        }
-                    }
-                }
-            }
-
-            if (!userSetted) {
-                cleanStorage();
-            }
+        if (userFromStorage !== null) {
+            onUser(userFromStorage)
         }
-    }, [user]);
+    })
 
-    return [user, onUser, logOut, setUser] as const;
+    const setUserThatCanReceiveFunctions = (valueOrFn: setStateProp<User | null>) => {
+        if (typeof valueOrFn === "function") {
+            setUser(valueOrFn(user));
+        } else {
+            setUser(valueOrFn);
+        }
+    }
+
+    return [user, onUser, logOut, setUserThatCanReceiveFunctions] as const;
 }
 
 export default useAuth;
+
+function getUserFromStorage() {
+    const userItem = localStorage.getItem("user");
+    const hash = localStorage.getItem("hash");
+
+    const app_id = process.env.REACT_APP_APP_ID;
+    const secret = process.env.REACT_APP_SECRET;
+    if (userItem && hash) {
+        const parsedUser = JSON.parse(userItem);
+        if (typeof parsedUser === "object") {
+            if (["first_name", "last_name", "uid", "photo_rec"].every(key => Object.keys(parsedUser).includes(key))) {
+                if (hash === md5(app_id + parsedUser.uid + secret)) {
+                    return parsedUser;
+                }
+            }
+        }
+    }
+
+    cleanStorage();
+    return null;
+}
 
 function cleanStorage() {
     localStorage.removeItem("user");

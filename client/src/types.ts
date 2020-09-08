@@ -9,6 +9,7 @@ export enum redactorOptions {
     confirm = "CONFIRM",
     reject = "REJECT",
     add = "ADD",
+    exit = "EXIT",
 }
 
 export const lessons = [
@@ -29,7 +30,7 @@ export const lessons = [
 ];
 
 export type Student = {
-    class?: string;
+    class?: string | null;
     role: roles;
     vkId: number;
     settings: studentSettings;
@@ -96,3 +97,23 @@ export type User = {
     role: roles;
     className?: string;
 };
+
+export type setStateProp<T> = T | ((user: T) => T);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

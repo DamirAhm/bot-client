@@ -518,10 +518,16 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
             //? Remove from class
             StudentTC.addResolver( {
                 name: "removeStudentFromClass",
-                type: "Boolean",
+                type: "Student!",
                 args: { vkId: "Int!" },
                 resolve: async ( { source, args, context, info } ) => {
-                    return await DataBase.removeStudentFromClass( args.vkId );
+                    const res = await DataBase.removeStudentFromClass( args.vkId );
+
+                    if ( res ) {
+                        return await DataBase.getStudentByVkId( args.vkId );
+                    } else {
+                        return null;
+                    }
                 },
             } );
         }

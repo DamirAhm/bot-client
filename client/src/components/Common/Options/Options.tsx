@@ -1,80 +1,104 @@
-import React, { useContext } from 'react'
-import { UserContext } from "../../../App";
+import React, { useContext } from 'react';
+import { UserContext } from '../../../App';
 
-import { FaPen } from "react-icons/fa";
-import { MdClose, MdCheck, MdAdd } from "react-icons/md";
-import { IoIosTrash } from "react-icons/io";
+import { FaPen } from 'react-icons/fa';
+import { MdClose, MdCheck, MdAdd, MdExitToApp } from 'react-icons/md';
+import { IoIosTrash } from 'react-icons/io';
 
-import { IconBaseProps } from "react-icons/lib";
-import { redactorOptions, roles } from "../../../types"
+import { IconBaseProps } from 'react-icons/lib';
+import { redactorOptions, roles } from '../../../types';
+
+type includeProps =
+	| { include: redactorOptions; props?: IconBaseProps & iconSpecialProps }
+	| { include: redactorOptions[]; props?: { [key: string]: IconBaseProps & iconSpecialProps } };
 
 type Props = {
-    include: redactorOptions[] | redactorOptions
-    props?: { [key: string]: IconBaseProps & iconSpecialProps } | IconBaseProps & iconSpecialProps
-    withRoleControl?: boolean
-    allowOnlyAdmin?: boolean
-} & IconBaseProps;
+	withRoleControl?: boolean;
+	allowOnlyAdmin?: boolean;
+} & includeProps &
+	IconBaseProps;
 
 export type iconSpecialProps = {
-    allowOnlyAdmin?: boolean
-    allowOnlyRedactor?: boolean
-    renderIf?: () => boolean
-}
+	allowOnlyAdmin?: boolean;
+	allowOnlyRedactor?: boolean;
+	renderIf?: () => boolean;
+};
 
 const OptionsElements = {
-    [redactorOptions.delete]: IoIosTrash,
-    [redactorOptions.change]: FaPen,
-    [redactorOptions.confirm]: MdCheck,
-    [redactorOptions.reject]: MdClose,
-    [redactorOptions.add]: MdAdd
-}
+	[redactorOptions.delete]: IoIosTrash,
+	[redactorOptions.change]: FaPen,
+	[redactorOptions.confirm]: MdCheck,
+	[redactorOptions.reject]: MdClose,
+	[redactorOptions.add]: MdAdd,
+	[redactorOptions.exit]: MdExitToApp,
+};
 
 const isSoloIconProps = (
-    props: { [key: string]: IconBaseProps & iconSpecialProps } | IconBaseProps & iconSpecialProps
+	props: { [key: string]: IconBaseProps & iconSpecialProps } | (IconBaseProps & iconSpecialProps),
 ): props is IconBaseProps & iconSpecialProps => {
-    const options = Object.values(redactorOptions);
-    const keys = Object.keys(props);
+	const options = Object.values(redactorOptions);
+	const keys = Object.keys(props);
 
-    let flag = true;
+	let flag = true;
 
-    for (const opt of options) {
-        if (keys.includes(opt)) flag = false;
-    }
+	for (const opt of options) {
+		if (keys.includes(opt)) flag = false;
+	}
 
-    return flag;
-}
+	return flag;
+};
 
 const Options: React.FC<Props> = ({
-    include, props, withRoleControl = false,
-    allowOnlyAdmin = false, ...iconProps
+	include,
+	props,
+	withRoleControl = false,
+	allowOnlyAdmin = false,
+	...iconProps
 }) => {
-    if (props && isSoloIconProps(props) && typeof include === 'string') props = { [include]: props };
-    if (typeof include === "string") include = [include];
+	if (typeof include === 'string') {
+		props = { [include]: props };
+		include = [include] as redactorOptions[];
+	}
 
-    const { role = roles.student } = useContext(UserContext);
+	const { role = roles.student } = useContext(UserContext);
 
-    if (withRoleControl && ((allowOnlyAdmin && role !== roles.admin) || role !== roles.contributor)) {
-        return null
-    }
+	if (
+		withRoleControl &&
+		((allowOnlyAdmin && role !== roles.admin) || role !== roles.contributor)
+	) {
+		return null;
+	}
 
-    return (
-        <>
-            {include.map((e, i) => {
-                if (props && isSoloIconProps(props)) {
-                    throw new Error("If you pass props for one icon you must pass string of icon, not an array")
-                }
+	return (
+		<>
+			{include.map((e, i) => {
+				if (props && isSoloIconProps(props)) {
+					throw new Error(
+						'If you pass props for one icon you must pass string of icon, not an array',
+					);
+				}
 
-                const { allowOnlyAdmin, allowOnlyRedactor, renderIf, ...restProps } = (props?.[e] || {});
-                if (
-                    (allowOnlyRedactor && ![roles.admin, roles.contributor].includes(role)) ||
-                    (allowOnlyAdmin && role !== roles.admin) ||
-                    (renderIf && !renderIf())
-                ) return null;
-                return <button key={i}> {React.createElement(OptionsElements[e], { ...iconProps, ...restProps, ["data-testid"]: e })} </button>
-            }
-            )}
-        </>
-    )
-}
+				const { allowOnlyAdmin, allowOnlyRedactor, renderIf, ...restProps } =
+					props?.[e] || {};
+				if (
+					(allowOnlyRedactor && ![roles.admin, roles.contributor].includes(role)) ||
+					(allowOnlyAdmin && role !== roles.admin) ||
+					(renderIf && !renderIf())
+				)
+					return null;
+				return (
+					<button key={i}>
+						{' '}
+						{React.createElement(OptionsElements[e], {
+							...iconProps,
+							...restProps,
+							['data-testid']: e,
+						})}{' '}
+					</button>
+				);
+			})}
+		</>
+	);
+};
 
-export default React.memo(Options)
+export default React.memo(Options);
