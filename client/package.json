@@ -5,6 +5,7 @@
     "dependencies": {
         "@apollo/client": "^3.1.2",
         "@apollo/react-hooks": "^3.1.5",
+        "@graphql-codegen/typescript-react-apollo": "^2.0.6",
         "@types/jest": "^24.0.0",
         "@types/md5": "^2.2.0",
         "@types/node": "^12.0.0",
@@ -31,16 +32,23 @@
     "devDependencies": {
         "@testing-library/jest-dom": "^4.2.4",
         "@testing-library/react": "^9.3.2",
-        "@testing-library/user-event": "^7.1.2"
+        "@testing-library/user-event": "^7.1.2",
+        "@graphql-codegen/typescript": "1.17.8",
+        "@graphql-codegen/typescript-operations": "1.17.8",
+        "@graphql-codegen/typescript-graphql-files-modules": "1.17.8",
+        "@graphql-codegen/fragment-matcher": "1.17.8",
+        "@graphql-codegen/cli": "1.17.8"
     },
     "scripts": {
         "start": "react-scripts start",
+        "vk-tunnel-secure": "vk-tunnel --insecure=1 --http-protocol=https --ws-protocol=wss --host=localhost --port=3000",
         "vk-tunnel": "vk-tunnel --insecure=1 --http-protocol=http --ws-protocol=ws --host=localhost --port=3000",
         "build": "CI=false react-scripts build",
         "test": "env CI=true react-scripts test --no-watchman --all",
         "test:dev": "react-scripts test",
         "eject": "react-scripts eject",
-        "postbuild": "cp -r ./build ../server/"
+        "postbuild": "cp -r ./build ../server/",
+        "codegen": "graphql-codegen --config codegen.yml"
     },
     "eslintConfig": {
         "extends": "react-app"

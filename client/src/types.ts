@@ -29,13 +29,13 @@ export const lessons = [
 ];
 
 export type Student = {
-    class: string;
+    class?: string;
     role: roles;
     vkId: number;
     settings: studentSettings;
     lastHomeworkCheck: string;
-    fullName: string;
-    className: string;
+    fullName?: string;
+    className?: string;
     _id: string;
 };
 
@@ -82,8 +82,6 @@ export type Class = {
     homework: homework[];
     schedule: string[][];
     announcements: announcement[];
-    roleUpCodes: string[];
-    fullName: string;
 };
 
 export type announcement = content;
@@ -96,5 +94,5 @@ export type User = {
     photo: string;
     photo_rec: string;
     role: roles;
-    className: string;
+    className?: string;
 };

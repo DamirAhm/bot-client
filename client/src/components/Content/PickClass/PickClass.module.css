@@ -1,0 +1,34 @@
+.container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    height: min(100%, 350px);
+}
+
+.title {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: var(--main);
+}
+
+.class {
+    width: max(60%, 100px);
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    background-color: var(--main);
+    font-size: 1.6rem;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-weight: bolder;
+}
+.class:hover {
+    color: var(--main);
+    background-color: var(--primary);
+    border: 2px solid var(--main);
+}

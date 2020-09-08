@@ -33,67 +33,89 @@ const ClassTC = composeWithMongoose( ClassModel, customizationOptions );
         StudentTC.addFields( {
             className: {
                 type: 'String',
+                projection: { class: 1 },
                 resolve: async ( source ) => {
-                    if ( source.class ) {
-                        return await DataBase.getClassBy_Id( source.class ).then( Class => Class.name )
-                    } else {
+                    try {
+                        console.log( source );
+                        if ( source.class ) {
+                            console.log( await DataBase.getClassBy_Id( source.class ) );
+                            return await DataBase.getClassBy_Id( source.class ).then( Class => Class.name )
+                        } else {
+                            return null;
+                        }
+                    } catch ( e ) {
                         return null;
                     }
                 },
             },
             firstName: {
                 type: "String",
+                projection: { vkId: 1 },
                 resolve: async ( source ) => {
-                    const student = await DataBase.getStudentByVkId( source.vkId );
-                    if ( student && student.firstName ) {
-                        return student.firstName;
-                    } else if ( student ) {
-                        const firstName = await vk
-                            .getUser( source.vkId )
-                            .then( ( res ) => res[ 0 ].first_name );
-                        student.firstName = firstName;
-                        student.save();
-                        return firstName;
-                    } else {
+                    try {
+                        const student = await DataBase.getStudentBy_Id( source._id );
+                        if ( student && student.firstName ) {
+                            return student.firstName;
+                        } else if ( student ) {
+                            const firstName = await vk
+                                .getUser( source.vkId )
+                                .then( ( res ) => res[ 0 ].first_name );
+                            student.firstName = firstName;
+                            student.save();
+                            return firstName;
+                        } else {
+                            return null;
+                        }
+                    } catch ( e ) {
                         return null;
                     }
                 },
             },
             secondName: {
                 type: "String",
+                projection: { vkId: 1 },
                 resolve: async ( source ) => {
-                    const student = await DataBase.getStudentByVkId( source.vkId );
-                    if ( student && student.secondName ) {
-                        return student.secondName;
-                    } else if ( student ) {
-                        const secondName = await vk
-                            .getUser( source.vkId )
-                            .then( ( res ) => res[ 0 ].last_name );
-                        student.lastName = secondName;
-                        student.save();
-                        return secondName;
-                    } else {
+                    try {
+                        const student = await DataBase.getStudentBy_Id( source._id );
+                        if ( student && student.secondName ) {
+                            return student.secondName;
+                        } else if ( student ) {
+                            const secondName = await vk
+                                .getUser( source.vkId )
+                                .then( ( res ) => res[ 0 ].last_name );
+                            student.lastName = secondName;
+                            student.save();
+                            return secondName;
+                        } else {
+                            return null;
+                        }
+                    } catch ( e ) {
                         return null;
                     }
                 }
             },
             fullName: {
                 type: "String",
+                projection: { vkId: 1 },
                 resolve: async ( source ) => {
-                    const student = await DataBase.getStudentByVkId( source.vkId );
-                    if ( student && student.fullName ) {
-                        return student.fullName;
-                    } else if ( student ) {
-                        const fullName = await vk
-                            .getUser( source.vkId )
-                            .then( ( res ) => res[ 0 ] )
-                            .then(
-                                ( res ) => res.first_name + " " + res.last_name
-                            );
-                        student.fullName = fullName;
-                        student.save();
-                        return fullName;
-                    } else {
+                    try {
+                        const student = await DataBase.getStudentBy_Id( source._id );
+                        if ( student && student.fullName ) {
+                            return student.fullName;
+                        } else if ( student ) {
+                            const fullName = await vk
+                                .getUser( source.vkId )
+                                .then( ( res ) => res[ 0 ] )
+                                .then(
+                                    ( res ) => res.first_name + " " + res.last_name
+                                );
+                            student.fullName = fullName;
+                            student.save();
+                            return fullName;
+                        } else {
+                            return null;
+                        }
+                    } catch ( e ) {
                         return null;
                     }
                 },

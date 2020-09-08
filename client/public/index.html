@@ -1,44 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#2E2F47" />
-        <meta name="background-color" content="#D1DEE4" />
-        <meta
-            name="description"
-            content="Этот сайт поможет вам смотреть и добавлять(если вы редактор класса) домашнее задание и изменения в расписании"
-        />
-        <meta
-            name="keywords"
-            content="ДЗ, задание, домашнее, бот помощник, информация, классы, изменения, расписание, damirahm, смотреть"
-        />
-        <link rel="apple-touch-icon" href="%PUBLIC_URL%/favicon.ico" />
-        <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-        <title>Домашнее задание</title>
-        <script
-            src="https://vk.com/js/api/openapi.js?168"
-            type="text/javascript"
-        ></script>
-    </head>
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2E2F47" />
+    <meta name="background-color" content="#D1DEE4" />
+    <meta name="description"
+        content="Этот сайт поможет вам смотреть и добавлять(если вы редактор класса) домашнее задание и изменения в расписании" />
+    <meta name="keywords"
+        content="ДЗ, задание, домашнее, бот помощник, информация, классы, изменения, расписание, damirahm, смотреть" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-    <body>
-        <noscript>You need to enable JavaScript to run this app.</noscript>
-        <div id="root"></div>
-        <div id="chooseStudentModal"></div>
-        <div id="changeContentModal"></div>
-        <div id="photoModal"></div>
-        <div id="deleteModal"></div>
-        <div id="confirmModal"></div>
+    <title>Домашнее задание</title>
+    <script type="text/javascript" src="https://vk.com/js/api/openapi.js?168"></script>
+</head>
 
-        <script type="text/javascript">
-            VK.init({
+<body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <div id="chooseStudentModal"></div>
+    <div id="changeContentModal"></div>
+    <div id="photoModal"></div>
+    <div id="deleteModal"></div>
+    <div id="confirmModal"></div>
+
+    <script type="text/javascript">
+        if ( "VK" in window ) {
+            VK.init( {
                 apiId: 7561699,
-            });
-        </script>
-        <!--
+            } );
+        }
+    </script>
+    <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
 
@@ -48,5 +44,7 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
       
-    --></body>
+    -->
+</body>
+
 </html>
