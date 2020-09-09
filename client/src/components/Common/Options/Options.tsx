@@ -64,7 +64,8 @@ const Options: React.FC<Props> = ({
 
 	if (
 		withRoleControl &&
-		((allowOnlyAdmin && role !== roles.admin) || role !== roles.contributor)
+		(role !== roles.contributor || (role === roles.contributor && !allowOnlyAdmin)) &&
+		role !== roles.admin
 	) {
 		return null;
 	}
@@ -88,12 +89,11 @@ const Options: React.FC<Props> = ({
 					return null;
 				return (
 					<button key={i}>
-						{' '}
 						{React.createElement(OptionsElements[e], {
 							...iconProps,
 							...restProps,
 							['data-testid']: e,
-						})}{' '}
+						})}
 					</button>
 				);
 			})}

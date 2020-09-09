@@ -468,7 +468,7 @@ const HomeworkLayout: React.FC<{
 
 const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework }) => {
 	const [changing, setChanging] = useState(false);
-
+	console.log('OPTIONS');
 	return (
 		<div
 			className={`${styles.container} ${
@@ -479,7 +479,6 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
 			<div key={homework._id} className={styles.element}>
 				{homework.attachments.length > 0 && (
 					<>
-						{' '}
 						{homework.attachments.length <= 2 ? (
 							<div
 								className={styles.attachments}
@@ -499,25 +498,10 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
 									)}
 								/>
 							</div>
-						)}{' '}
+						)}
 					</>
 				)}
 				{homework.text && <p className={styles.text}> {homework.text} </p>}
-				{changing &&
-					changeContentModalRoot &&
-					ReactDOM.createPortal(
-						<div className="modal" onMouseDown={() => setChanging(false)}>
-							<ChangeHomework
-								initState={homework}
-								confirm={(newHomework) => {
-									updateHomework(homework._id, newHomework);
-									setChanging(false);
-								}}
-								reject={() => setChanging(false)}
-							/>
-						</div>,
-						changeContentModalRoot,
-					)}
 			</div>
 			<div className={styles.controls}>
 				<Options
@@ -537,6 +521,22 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
 					withRoleControl
 				/>
 			</div>
+
+			{changing &&
+				changeContentModalRoot &&
+				ReactDOM.createPortal(
+					<div className="modal" onMouseDown={() => setChanging(false)}>
+						<ChangeHomework
+							initState={homework}
+							confirm={(newHomework) => {
+								updateHomework(homework._id, newHomework);
+								setChanging(false);
+							}}
+							reject={() => setChanging(false)}
+						/>
+					</div>,
+					changeContentModalRoot,
+				)}
 		</div>
 	);
 };
