@@ -146,22 +146,24 @@ const ClassPage: React.FC = () => {
 							<div className={styles.class}>
 								<div className={styles.header}>
 									<div className={styles.className}> {className} </div>
-									<Options
-										include={[redactorOptions.delete, redactorOptions.exit]}
-										props={{
-											[redactorOptions.delete]: {
-												onClick: () => setWaitForConfirm(true),
-												allowOnlyAdmin: true,
-											},
-											[redactorOptions.exit]: {
-												onClick: () => leaveFromClass(),
-												renderIf: () => className === userClassName,
-											},
-										}}
-										className={'remove'}
-										style={{ cursor: 'pointer' }}
-										size={30}
-									/>
+									<div>
+										<Options
+											include={[redactorOptions.delete, redactorOptions.exit]}
+											props={{
+												[redactorOptions.delete]: {
+													onClick: () => setWaitForConfirm(true),
+													allowOnlyAdmin: true,
+												},
+												[redactorOptions.exit]: {
+													onClick: () => leaveFromClass(),
+													renderIf: () => className === userClassName,
+												},
+											}}
+											className={'remove'}
+											style={{ cursor: 'pointer' }}
+											size={30}
+										/>
+									</div>
 								</div>
 								<div className={styles.content}>
 									<StudentsSection className={className} />
