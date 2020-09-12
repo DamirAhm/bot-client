@@ -39,6 +39,15 @@ export type Student = {
     className?: string;
     _id: string;
 };
+export type StudentInfoType = {
+    class?: string | null;
+    role: roles;
+    vkId: number;
+    settings: studentSettings;
+    lastHomeworkCheck: string;
+    fullName?: string;
+    className?: string;
+}
 
 export type studentSettings = {
     notificationsEnabled: boolean;

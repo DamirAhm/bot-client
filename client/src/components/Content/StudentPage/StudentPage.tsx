@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import styles from './StudentPage.module.css';
 import { gql } from 'apollo-boost';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { redactorOptions, Student } from '../../../types';
+import { redactorOptions, Student, StudentInfoType } from '../../../types';
 import StudentInfo from './StudentInfo/StudentInfo';
-import { parseDate } from '../../../utils/date';
 import { Redirect } from 'react-router';
 import { GET_STUDENTS } from '../Students/Students';
 import Suspender from '../../Common/Suspender/Suspender';
@@ -22,6 +21,7 @@ export const GET_STUDENT_BY_VK_ID = gql`
 			settings {
 				notificationsEnabled
 				notificationTime
+				daysForNotification
 			}
 			lastHomeworkCheck
 			fullName
@@ -221,11 +221,6 @@ const StudentPage: React.FC = () => {
 				{({ studentOne }: { studentOne?: Student & { __typename: string } }) => {
 					if (studentOne) {
 						const { fullName, __typename, _id, ...info } = studentOne;
-						info.lastHomeworkCheck =
-							info.lastHomeworkCheck === '1970-01-01T00:00:00.000Z'
-								? 'Никогда'
-								: parseDate(info.lastHomeworkCheck, 'YYYY.MMn.dd hh:mm');
-						info.className = info.className === null ? 'Нету' : info.className;
 
 						return (
 							<div className={styles.student}>
@@ -233,66 +228,59 @@ const StudentPage: React.FC = () => {
 									<div className={styles.info}>
 										<div className={styles.name}> {fullName} </div>
 									</div>
-									<div className={styles.icons}>
-										{changing ? (
-											<Options
-												include={[
-													redactorOptions.reject,
-													redactorOptions.confirm,
-												]}
-												props={{
-													[redactorOptions.reject]: {
-														className: styles.icon + ' negative',
-														onClick: () => {
-															setDiff({});
-															setChanging(false);
-														},
-													},
-													[redactorOptions.confirm]: {
-														className: styles.icon + ' positive',
-														onClick: () => {
-															updateStudent();
-															setChanging(false);
-														},
-														allowOnlyAdmin: true,
-													},
-												}}
-												size={iconSize}
-											/>
-										) : (
-											<Options
-												include={[
-													redactorOptions.change,
-													redactorOptions.delete,
-												]}
-												props={{
-													[redactorOptions.change]: {
-														onClick: () => setChanging(true),
-														className: `${styles.icon} ${styles.pen}`,
-														size: iconSize * 0.8,
-													},
-													[redactorOptions.delete]: {
-														onClick: () => setWaitForConfirm(true),
-														className: `${styles.icon} remove`,
-													},
-												}}
-												size={iconSize}
-												withRoleControl
-												allowOnlyAdmin
-											/>
-										)}
-									</div>
 								</div>
 								<div className={styles.body}>
 									{Object.entries(info).map((entrie) => (
 										<StudentInfo
-											name={entrie[0]}
+											name={
+												entrie[0] as
+													| keyof StudentInfoType
+													| keyof StudentInfoType['settings']
+											}
 											value={entrie[1]}
 											isChanging={changing}
 											key={`${entrie[0]}`}
 											changeHandler={changeHandler}
 										/>
 									))}
+								</div>
+								<div className={styles.icons}>
+									<Options
+										include={
+											changing
+												? [redactorOptions.reject, redactorOptions.confirm]
+												: [redactorOptions.change, redactorOptions.delete]
+										}
+										props={{
+											[redactorOptions.reject]: {
+												className: styles.icon + ' negative',
+												onClick: () => {
+													setDiff({});
+													setChanging(false);
+												},
+											},
+											[redactorOptions.confirm]: {
+												className: styles.icon + ' positive',
+												onClick: () => {
+													updateStudent();
+													setChanging(false);
+												},
+												allowOnlyAdmin: true,
+											},
+											[redactorOptions.change]: {
+												onClick: () => setChanging(true),
+												className: `${styles.icon} ${styles.pen}`,
+												size: iconSize * 0.8,
+												allowOnlyAdmin: true,
+											},
+											[redactorOptions.delete]: {
+												onClick: () => setWaitForConfirm(true),
+												className: `${styles.icon} remove`,
+												allowOnlyAdmin: true,
+											},
+										}}
+										size={iconSize}
+									/>
 								</div>
 							</div>
 						);

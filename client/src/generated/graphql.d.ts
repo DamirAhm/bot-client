@@ -239,6 +239,7 @@ export type StudentSettings = {
   __typename?: 'StudentSettings';
   notificationsEnabled?: Maybe<Scalars['Boolean']>;
   notificationTime?: Maybe<Scalars['String']>;
+  daysForNotification?: Maybe<Array<Maybe<Scalars['Float']>>>;
 };
 
 export type FilterFindOneStudentInput = {
@@ -262,6 +263,7 @@ export type FilterFindOneStudentInput = {
 export type StudentSettingsInput = {
   notificationsEnabled?: Maybe<Scalars['Boolean']>;
   notificationTime?: Maybe<Scalars['String']>;
+  daysForNotification?: Maybe<Array<Maybe<Scalars['Float']>>>;
 };
 
 /** For performance reason this type contains only *indexed* fields. */
@@ -691,7 +693,7 @@ export type Mutation = {
   classRemoveMany?: Maybe<RemoveManyClassPayload>;
   changeDay?: Maybe<Class>;
   changeSettings?: Maybe<Scalars['Boolean']>;
-  removeStudentFromClass?: Maybe<Scalars['Boolean']>;
+  removeStudentFromClass: Student;
   changeClass?: Maybe<Student>;
   addHomework?: Maybe<ClassHomework>;
   removeHomework?: Maybe<Scalars['String']>;
@@ -878,7 +880,7 @@ export type MutationRemoveOldHomeworkArgs = {
 
 export type CreateManyStudentInput = {
   class?: Maybe<Scalars['MongoID']>;
-  role?: Maybe<EnumStudentRole>;
+  role: EnumStudentRole;
   vkId: Scalars['Float'];
   settings?: Maybe<StudentSettingsInput>;
   lastHomeworkCheck?: Maybe<Scalars['Date']>;
