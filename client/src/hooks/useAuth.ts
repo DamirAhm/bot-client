@@ -69,6 +69,7 @@ function getUserFromStorage() {
 
     const app_id = process.env.REACT_APP_APP_ID;
     const secret = process.env.REACT_APP_SECRET;
+
     if (userItem && hash) {
         const parsedUser = JSON.parse(userItem);
         if (typeof parsedUser === "object") {

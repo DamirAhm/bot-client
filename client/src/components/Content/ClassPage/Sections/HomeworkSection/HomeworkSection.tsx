@@ -468,7 +468,7 @@ const HomeworkLayout: React.FC<{
 
 const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework }) => {
 	const [changing, setChanging] = useState(false);
-	console.log('OPTIONS');
+
 	return (
 		<div
 			className={`${styles.container} ${
@@ -510,12 +510,12 @@ const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework })
 						[redactorOptions.change]: {
 							onClick: () => setChanging(true),
 							className: `${styles.pen}`,
-							size: 15,
+							size: 20,
 						},
 						[redactorOptions.delete]: {
 							onClick: () => removeHomework(homework._id),
 							className: `${styles.remove}`,
-							size: 20,
+							size: 25,
 						},
 					}}
 					withRoleControl

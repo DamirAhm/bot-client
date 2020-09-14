@@ -249,7 +249,7 @@ const StudentPage: React.FC = () => {
 										include={
 											changing
 												? [redactorOptions.reject, redactorOptions.confirm]
-												: [redactorOptions.change, redactorOptions.delete]
+												: [redactorOptions.delete, redactorOptions.change]
 										}
 										props={{
 											[redactorOptions.reject]: {
@@ -270,7 +270,7 @@ const StudentPage: React.FC = () => {
 											[redactorOptions.change]: {
 												onClick: () => setChanging(true),
 												className: `${styles.icon} ${styles.pen}`,
-												size: iconSize * 0.8,
+												size: iconSize * 0.64,
 												allowOnlyAdmin: true,
 											},
 											[redactorOptions.delete]: {
