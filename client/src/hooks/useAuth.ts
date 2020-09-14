@@ -48,7 +48,7 @@ const useAuth = () => {
         if (userFromStorage !== null) {
             onUser(userFromStorage)
         }
-    })
+    }, [])
 
     const setUserThatCanReceiveFunctions = (valueOrFn: setStateProp<User | null>) => {
         if (typeof valueOrFn === "function") {
@@ -75,7 +75,7 @@ function getUserFromStorage() {
         if (typeof parsedUser === "object") {
             if (["first_name", "last_name", "uid", "photo_rec"].every(key => Object.keys(parsedUser).includes(key))) {
                 if (hash === md5(app_id + parsedUser.uid + secret)) {
-                    return parsedUser;
+                    return { ...parsedUser, hash: md5(app_id + parsedUser.uid + secret) };
                 }
             }
         }
@@ -86,6 +86,7 @@ function getUserFromStorage() {
 }
 
 function cleanStorage() {
+    console.log('CLEAN')
     localStorage.removeItem("user");
     localStorage.removeItem("hash");
 }

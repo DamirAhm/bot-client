@@ -48,8 +48,6 @@ const StudentInfo: React.FC<Props> = ({ name, value, changeHandler, isChanging }
 	if (!['__typename', null, '_id'].includes(name)) {
 		const text = convertValue(value, name);
 
-		console.log(name, text);
-
 		return (
 			<div className={styles.info}>
 				{!isChanging || name === 'vkId' ? (
