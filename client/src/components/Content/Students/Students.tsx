@@ -7,6 +7,7 @@ import StudentPreview from './StudentPreview/StudentPreview';
 import useList from '../../../hooks/useList';
 import Filters from '../../Filters/Filters';
 import Suspender from '../../Common/Suspender/Suspender';
+import { changeTitle } from '../../../utils/functions';
 
 export const GET_STUDENTS = gql`
 	{
@@ -56,12 +57,6 @@ const Students: React.FC = () => {
 		},
 	];
 
-	useEffect(() => {
-		if (data?.students) {
-			setItems(data.students);
-		}
-	}, [data, setItems]);
-
 	const setSearchText = (str: string): void => {
 		str = str.toLowerCase();
 		setText(str);
@@ -81,6 +76,17 @@ const Students: React.FC = () => {
 			setSort(() => 1);
 		}
 	};
+
+	useEffect(() => {
+		if (data?.students) {
+			setItems(data.students);
+		}
+	}, [data, setItems]);
+
+	useEffect(() => {
+		changeTitle('Ученики');
+	}, []);
+
 	return (
 		<div>
 			<Filters

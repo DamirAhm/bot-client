@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './StudentPage.module.css';
 import { gql } from 'apollo-boost';
 import { useQuery, useMutation } from '@apollo/react-hooks';
@@ -11,6 +11,7 @@ import { useParams } from 'react-router-dom';
 import Options from '../../Common/Options/Options';
 import Confirm from '../../Common/Confirm/Confirm';
 import { RedirectTo404 } from '../404/404';
+import { changeTitle } from '../../../utils/functions';
 
 export const GET_STUDENT_BY_VK_ID = gql`
 	query StudentByVkId($vkId: Float!) {
@@ -211,10 +212,17 @@ const StudentPage: React.FC = () => {
 		}
 	};
 
+	useEffect(() => {
+		if (data?.studentOne.fullName) {
+			changeTitle(data?.studentOne.fullName);
+		} else {
+			changeTitle('Ученик');
+		}
+	}, [data]);
+
 	if (removed) {
 		return <Redirect to={`/students/`} />;
 	}
-
 	return (
 		<>
 			<Suspender query={{ data, loading, error }}>

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import styles from './ClassPage.module.css';
 import StudentsSection, {
 	GET_STUDENTS_FOR_CLASS,
@@ -18,6 +18,7 @@ import Suspender from '../../Common/Suspender/Suspender';
 import { RedirectTo404 } from '../404/404';
 import { UserContext } from '../../../App';
 import { studentPreview } from '../Students/Students';
+import { changeTitle } from '../../../utils/functions';
 
 const REMOVE_CLASS = gql`
 	mutation RemoveClass($className: String!) {
@@ -136,6 +137,10 @@ const ClassPage: React.FC = () => {
 			},
 		});
 	};
+
+	useEffect(() => {
+		changeTitle(`${className} класс`);
+	}, []);
 
 	return (
 		<>
