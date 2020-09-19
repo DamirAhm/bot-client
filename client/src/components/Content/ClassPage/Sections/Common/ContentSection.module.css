@@ -49,12 +49,15 @@
 .sectionHeader * {
 	color: var(--main);
 }
-
 .sectionHeader .addContent {
 	visibility: hidden;
 }
 :global(accordion) > .sectionHeader .addContent,
 .sectionHeader:hover .addContent {
+	visibility: visible;
+}
+
+.contentHeader .addContent {
 	visibility: visible;
 }
 
