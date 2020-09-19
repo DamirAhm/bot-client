@@ -3,7 +3,13 @@ import styles from './StudentInfo.module.css';
 import { changeHandler } from './Changer';
 import Changer from './Changer';
 import { parseDate } from '../../../../utils/date';
-import { StudentInfoType } from '../../../../types';
+import { roles, StudentInfoType } from '../../../../types';
+
+export const RoleNames: { [key: string]: string } = {
+	[roles.admin]: 'Админ',
+	[roles.contributor]: 'Редактор',
+	[roles.student]: 'Ученик',
+};
 
 type Props = {
 	name: keyof StudentInfoType | keyof StudentInfoType['settings'];
@@ -27,9 +33,20 @@ const convertValue = (
 	value: string | boolean | object | Date | number | null,
 	name: keyof StudentInfoType | keyof StudentInfoType['settings'],
 ) => {
-	if (name === 'className') return value ?? 'Нету';
-	else if (name === 'lastHomeworkCheck' && typeof value === 'string') {
-		return parseDate(new Date(value), 'dd MM YYYY hh:mm');
+	switch (name) {
+		case 'className': {
+			return value ?? 'Нету';
+		}
+		case 'lastHomeworkCheck': {
+			if (typeof value === 'string') {
+				return parseDate(new Date(value), 'dd MM YYYY hh:mm');
+			}
+		}
+		case 'role': {
+			if (typeof value === 'string') {
+				return RoleNames[value];
+			}
+		}
 	}
 
 	if (typeof value === 'boolean') return value ? 'Да' : 'Нет';

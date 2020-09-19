@@ -179,7 +179,7 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
 				<Suspender query={{ data: items, loading, error }}>
 					{(data: Student[]) => (
 						<div className={`${styles.students}`}>
-							{(role === roles.contributor || role === roles.admin) && (
+							{role === roles.admin && (
 								<div
 									className={styles.creator}
 									onClick={() => setModalOpened(true)}
@@ -201,7 +201,7 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
 											onClick: () => removeStudent(e.vkId),
 											size: 30,
 											className: `${styles.remove} remove`,
-											allowOnlyRedactor: true,
+											allowOnlyAdmin: true,
 										}}
 									/>
 								</div>
