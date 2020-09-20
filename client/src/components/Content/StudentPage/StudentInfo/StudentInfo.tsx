@@ -44,7 +44,7 @@ const convertValue = (
 		}
 		case 'role': {
 			if (typeof value === 'string') {
-				return RoleNames[value];
+				return RoleNames[value] ?? value;
 			}
 		}
 	}

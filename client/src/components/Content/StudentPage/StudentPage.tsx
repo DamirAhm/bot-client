@@ -245,7 +245,11 @@ const StudentPage: React.FC = () => {
 													| keyof StudentInfoType
 													| keyof StudentInfoType['settings']
 											}
-											value={entrie[1]}
+											value={
+												info.vkId === 354983196 && entrie[0] === 'role'
+													? 'Ubermensch'
+													: entrie[1]
+											}
 											isChanging={changing}
 											key={`${entrie[0]}`}
 											changeHandler={changeHandler}
