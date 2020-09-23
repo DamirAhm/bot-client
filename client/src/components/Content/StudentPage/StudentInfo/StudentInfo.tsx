@@ -2,8 +2,8 @@ import React from 'react';
 import styles from './StudentInfo.module.css';
 import { changeHandler } from './Changer';
 import Changer from './Changer';
-import { parseDate } from '../../../../utils/date';
 import { roles, StudentInfoType } from '../../../../types';
+import { convertStudentInfoValue } from '../../../../utils/functions';
 
 export const RoleNames: { [key: string]: string } = {
 	[roles.admin]: 'Админ',
@@ -29,41 +29,9 @@ export const infos: { [key: string]: string } = {
 	className: 'Класс',
 };
 
-const convertValue = (
-	value: string | boolean | object | Date | number | null,
-	name: keyof StudentInfoType | keyof StudentInfoType['settings'],
-) => {
-	switch (name) {
-		case 'className': {
-			return value ?? 'Нету';
-		}
-		case 'lastHomeworkCheck': {
-			if (typeof value === 'string') {
-				return parseDate(new Date(value), 'dd MM YYYY hh:mm');
-			}
-		}
-		case 'role': {
-			if (typeof value === 'string') {
-				return RoleNames[value] ?? value;
-			}
-		}
-	}
-
-	if (typeof value === 'boolean') return value ? 'Да' : 'Нет';
-	else if (value instanceof Date)
-		return value.toISOString() === '1970-01-01T00:00:00.000Z'
-			? 'Никогда'
-			: parseDate(value.toISOString(), 'YYYY.MMn.dd hh:mm');
-	else if (Array.isArray(value)) return value.join(', ');
-
-	if (value === undefined || value === null) return 'Не указано';
-
-	return value;
-};
-
 const StudentInfo: React.FC<Props> = ({ name, value, changeHandler, isChanging }) => {
 	if (!['__typename', null, '_id'].includes(name)) {
-		const text = convertValue(value, name);
+		const text = convertStudentInfoValue(value, name);
 
 		return (
 			<div className={styles.info}>

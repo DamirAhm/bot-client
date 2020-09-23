@@ -8,6 +8,7 @@ import useList from '../../../hooks/useList';
 import Filters from '../../Filters/Filters';
 import Suspender from '../../Common/Suspender/Suspender';
 import { changeTitle } from '../../../utils/functions';
+import { RoleNames } from '../StudentPage/StudentInfo/StudentInfo';
 
 export const GET_STUDENTS = gql`
 	{
@@ -63,8 +64,8 @@ const Students: React.FC = () => {
 		setFilter(({ fullName = '', className = '', role }) => {
 			return (
 				fullName.toLowerCase().search(str) !== -1 ||
-				className.toLowerCase().search(str) !== -1 ||
-				role.toLowerCase().search(str) !== -1
+				(className ?? 'Нету').toLowerCase().search(str) !== -1 ||
+				RoleNames[role].toLowerCase().search(str) !== -1
 			);
 		});
 	};

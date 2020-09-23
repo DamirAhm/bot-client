@@ -1,5 +1,6 @@
 import React from 'react';
-import { content } from '../types';
+import { RoleNames } from '../components/Content/StudentPage/StudentInfo/StudentInfo';
+import { content, StudentInfoType } from '../types';
 import { parseDate, months } from './date';
 
 type c = content;
@@ -80,6 +81,51 @@ export function isToday(date: Date) {
 		Math.abs(date.getTime() - new Date().getTime()) <= 24 * 60 * 60 * 1000;
 	const datesAreSame = date.getDate() === new Date().getDate();
 	return deltaIsLessThanDay && datesAreSame;
+}
+
+type convertSettings = {
+	shortenName?: boolean;
+};
+
+export function convertStudentInfoValue(
+	value: string | boolean | object | Date | number | null | undefined,
+	name: keyof StudentInfoType | keyof StudentInfoType['settings'],
+): string {
+	switch (name) {
+		case 'className': {
+			if (typeof value === 'string') {
+				return value;
+			}
+			return 'Нету';
+		}
+		case 'lastHomeworkCheck': {
+			if (typeof value === 'string') {
+				return parseDate(new Date(value), 'dd MM YYYY hh:mm');
+			}
+		}
+		case 'role': {
+			if (typeof value === 'string') {
+				return RoleNames[value] ?? value;
+			}
+		}
+	}
+
+	if (typeof value === 'boolean') return value ? 'Да' : 'Нет';
+	else if (value instanceof Date)
+		return value.toISOString() === '1970-01-01T00:00:00.000Z'
+			? 'Никогда'
+			: parseDate(value.toISOString(), 'YYYY.MMn.dd hh:mm');
+	else if (Array.isArray(value)) return value.join(', ');
+
+	if (value === undefined || value === null) return 'Не указано';
+
+	return JSON.stringify(value);
+}
+export function getPrettyName(name: string, shortenName: boolean = false) {
+	if (!name) return 'Error empty name';
+
+	if (shortenName) return name.split(' ')[0][0].toUpperCase() + ' ' + name.split(' ')[1];
+	else return name.split(' ')[0] + ' ' + (name.split(' ')[1][0].toUpperCase() || '');
 }
 
 export function memoize(fn: (...props: any) => any) {

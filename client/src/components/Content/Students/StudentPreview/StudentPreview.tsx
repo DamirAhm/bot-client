@@ -1,12 +1,16 @@
 import React, { memo } from 'react';
 import styles from './StudentPreview.module.css';
-import { highlightSearch } from '../../../../utils/functions';
+import {
+	convertStudentInfoValue,
+	getPrettyName,
+	highlightSearch,
+} from '../../../../utils/functions';
 import { Link } from 'react-router-dom';
 import { studentPreview } from '../Students';
 
 type Props = {
 	searchText?: string;
-	visibleInfo?: (keyof studentPreview)[];
+	visibleInfo?: (keyof Omit<studentPreview, '_id'>)[];
 } & studentPreview;
 
 const StudentPreview: React.FC<Props> = ({
@@ -25,13 +29,19 @@ const StudentPreview: React.FC<Props> = ({
 				{visibleInfo.map((key) => (
 					<span key={key} className={`${styles.info} ${styles[key]}`}>
 						{highlighter(
-							key === 'fullName'
-								? getPrettyName(
-										info.fullName || '',
-										info.fullName?.split(' ')[0].search(searchText || '') ===
-											-1,
-								  )
-								: String(info[key]),
+							(() => {
+								const value = info[key];
+								if (key === 'fullName' && typeof value === 'string') {
+									return getPrettyName(
+										value || '',
+										value
+											?.split(' ')[0]
+											.toLowerCase()
+											.search(searchText?.toLowerCase() || '') === -1,
+									);
+								}
+								return convertStudentInfoValue(value, key);
+							})(),
 						)}
 					</span>
 				))}
@@ -41,10 +51,3 @@ const StudentPreview: React.FC<Props> = ({
 };
 
 export default memo(StudentPreview);
-
-function getPrettyName(name: string, shortenName: boolean = false) {
-	if (!name) return 'Error empty name';
-
-	if (shortenName) return name.split(' ')[0][0].toUpperCase() + ' ' + name.split(' ')[1];
-	else return name.split(' ')[0] + ' ' + (name.split(' ')[1][0].toUpperCase() || '');
-}
