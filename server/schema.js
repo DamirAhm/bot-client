@@ -22,9 +22,7 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 				type: 'Int!',
 				description: 'Number of students',
 				resolve: async (source) => {
-					return await DataBase.getClassBy_Id(source._id).then(
-						(Class) => Class.students.length,
-					);
+					return await DataBase.getStudentsCount(source.name);
 				},
 			},
 		});
