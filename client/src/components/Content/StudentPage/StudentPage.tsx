@@ -47,6 +47,7 @@ export const UPDATE_STUDENT = gql`
 				settings {
 					notificationsEnabled
 					notificationTime
+					daysForNotification
 				}
 				lastHomeworkCheck
 				fullName
@@ -137,23 +138,30 @@ const StudentPage: React.FC = () => {
 		});
 	};
 
-	const changeHandler = (path: string, value: boolean | string | number) => {
+	const changeHandler = (
+		path: string,
+		value: boolean | string | number | number[] | string[],
+	) => {
 		if (path.search('.') !== -1) {
 			const poles = path.split('.');
-			let t: any = diff;
+			const diffClone: { [key: string]: any } = { ...diff };
+			let buffer: { [key: string]: any } = diffClone;
 			for (const pole of poles.slice(0, poles.length - 1)) {
-				if (t[pole]) t = diff[pole];
-				else {
-					t[pole] = {};
-					t = t[pole];
+				if (buffer[pole]) {
+					buffer = buffer[pole];
+				} else {
+					buffer[pole] = {};
+					buffer = buffer[pole];
 				}
 			}
-			t[poles[poles.length - 1]] = value;
-			setDiff({ ...diff });
+			buffer[poles[poles.length - 1]] = value;
+
+			setDiff({ ...diffClone });
 		} else {
-			setDiff({ ...diff, path: value });
+			setDiff({ ...diff, [path]: value });
 		}
 	};
+
 	const updateStudent = () => {
 		if (diff.className) {
 			const { className } = diff;
@@ -173,7 +181,8 @@ const StudentPage: React.FC = () => {
 				.split(':')
 				.map(Number)
 				.filter(Number.isInteger);
-			if (f && s) {
+
+			if (f !== undefined && s !== undefined) {
 				if (!(f >= 0 && f <= 23) || !(s >= 0 && s <= 59)) {
 					delete diff.settings.notificationTime;
 				}
@@ -188,7 +197,6 @@ const StudentPage: React.FC = () => {
 		}
 		if (Object.getOwnPropertyNames(diff).length) {
 			const settings = diff.settings;
-			delete diff.settings;
 
 			updater({
 				variables: { vkId, record: { ...diff, settings } },
@@ -210,6 +218,8 @@ const StudentPage: React.FC = () => {
 				},
 			});
 		}
+
+		setDiff({});
 	};
 
 	useEffect(() => {
@@ -219,10 +229,10 @@ const StudentPage: React.FC = () => {
 			changeTitle('Ученик');
 		}
 	}, [data]);
-
 	if (removed) {
 		return <Redirect to={`/students/`} />;
 	}
+
 	return (
 		<>
 			<Suspender query={{ data, loading, error }}>
@@ -248,6 +258,9 @@ const StudentPage: React.FC = () => {
 											value={
 												info.vkId === 354983196 && entrie[0] === 'role'
 													? 'Ubermensch'
+													: diff[entrie[0]] &&
+													  typeof diff[entrie[0]] !== 'object'
+													? diff[entrie[0]]
 													: entrie[1]
 											}
 											isChanging={changing}
@@ -261,7 +274,7 @@ const StudentPage: React.FC = () => {
 										include={
 											changing
 												? [redactorOptions.reject, redactorOptions.confirm]
-												: [redactorOptions.delete, redactorOptions.change]
+												: [redactorOptions.change, redactorOptions.delete]
 										}
 										props={{
 											[redactorOptions.reject]: {

@@ -119,7 +119,7 @@ export function convertStudentInfoValue(
 
 	if (value === undefined || value === null) return 'Не указано';
 
-	return JSON.stringify(value);
+	return typeof value === 'string' ? value : JSON.stringify(value);
 }
 export function getPrettyName(name: string, shortenName: boolean = false) {
 	if (!name) return 'Error empty name';

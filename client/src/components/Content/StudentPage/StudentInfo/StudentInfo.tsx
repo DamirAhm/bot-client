@@ -54,10 +54,9 @@ const StudentInfo: React.FC<Props> = ({ name, value, changeHandler, isChanging }
 											}
 											value={entrie[1]}
 											key={name + entrie[0]}
-											changeHandler={(
-												pole: string,
-												value: number | boolean | string,
-											) => changeHandler(`${name}.${pole}`, value)}
+											changeHandler={(pole, value) =>
+												changeHandler(`${name}.${pole}`, value)
+											}
 										/>
 									))}
 								</div>

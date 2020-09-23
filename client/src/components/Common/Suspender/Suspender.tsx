@@ -54,8 +54,8 @@ const Suspender: React.FC<Props> = ({
 					})}{' '}
 				</div>
 			);
-		if (queries.some((q) => q.loading)) return fallback;
-		else if (queries.every((q) => q.data)) {
+		else if (queries.some((q) => q.loading)) return fallback;
+		else if (queries.some((q) => q.data)) {
 			if (typeof children === 'function') return children(...queries.map((q) => q.data));
 			else return children;
 		}
