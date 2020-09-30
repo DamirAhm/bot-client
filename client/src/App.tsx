@@ -95,7 +95,9 @@ function App() {
 										/>
 										<Route
 											path="*"
-											render={() => <Redirect to={'/classes'} />}
+											render={() => (
+												<Redirect to={`${user.schoolName}/classes`} />
+											)}
 										/>
 									</Switch>
 								</Suspense>

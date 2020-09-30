@@ -9,8 +9,8 @@
 }
 
 .link {
-	display: grid;
-	grid-template-columns: repeat(4, 1fr);
+	display: flex;
+	justify-content: space-between;
 	width: 100%;
 	font-size: 1.6rem;
 	border-radius: 18px;
