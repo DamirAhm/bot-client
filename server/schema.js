@@ -1,8 +1,9 @@
 // @ts-nocheck
 const { composeWithMongoose } = require('graphql-compose-mongoose');
-const { schemaComposer } = require('graphql-compose');
+const { schemaComposer, sc } = require('graphql-compose');
 const StudentModel = require('bot-database/Models/StudentModel');
 const ClassModel = require('bot-database/Models/ClassModel');
+const SchoolModel = require('bot-database/Models/SchoolModel');
 const { DataBase: DB, Roles, Lessons, VK_API } = require('bot-database');
 const config = require('./config.json');
 
@@ -12,6 +13,7 @@ const vk = new VK_API(config['VK_API_KEY']);
 const customizationOptions = {};
 const StudentTC = composeWithMongoose(StudentModel, customizationOptions);
 const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
+const SchoolTC = composeWithMongoose(SchoolModel, customizationOptions);
 
 //Custom fields
 {
@@ -21,8 +23,10 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 			studentsCount: {
 				type: 'Int!',
 				description: 'Number of students',
+				prepareArgs: { name: 1, schoolName: 1 },
 				resolve: async (source) => {
-					return await DataBase.getStudentsCount(source.name);
+					const Class = await DataBase.getClassBy_Id(source._id);
+					return await DataBase.getStudentsCount(Class.name, Class.schoolName);
 				},
 			},
 		});
@@ -31,6 +35,23 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 	//!Students
 	{
 		StudentTC.addFields({
+			schoolName: {
+				type: 'String',
+				projection: { class: 1 },
+				resolve: async (source) => {
+					try {
+						if (source.class) {
+							return await DataBase.getClassBy_Id(source.class).then(
+								(Class) => Class.schoolName,
+							);
+						} else {
+							return null;
+						}
+					} catch (e) {
+						return null;
+					}
+				},
+			},
 			className: {
 				type: 'String',
 				projection: { class: 1 },
@@ -132,18 +153,19 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 			ClassTC.addResolver({
 				name: 'classCreateOne',
 				type: ClassTC.getType(),
-				args: { className: 'String!' },
-				resolve: async ({ source, args, context, info }) => {
-					return await DataBase.createClass(args.className);
+				args: { className: 'String!', schoolName: 'String!' },
+				resolve: async ({ args: { className, schoolName } }) => {
+					return await DataBase.createClass(className, schoolName);
 				},
 			});
 			//? remove
 			ClassTC.addResolver({
 				name: 'removeOne',
 				type: ClassTC.getType(),
-				args: { className: 'String!' },
-				resolve: async ({ source, args, context, info }) => {
-					const Class = await DataBase.getClassByName(args.className);
+				args: { className: 'String!', schoolName: 'String!' },
+				resolve: async ({ args: { className, schoolName } }) => {
+					const School = await DataBase.getSchoolByName(schoolName);
+					const Class = await DataBase.getClassByName(className, schoolName);
 					const students = Class.students;
 					if (students.length > 0) {
 						for (let student of students) {
@@ -151,8 +173,21 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 							await Student.updateOne({ class: null });
 						}
 					}
+					await School.updateOne({
+						classes: School.classes.filter((classId) => classId !== Class._id),
+					});
 					await Class.deleteOne();
 					return Class;
+				},
+			});
+			//?getForSchool
+			ClassTC.addResolver({
+				name: 'classesForSchool',
+				type: `[${ClassTC.getType()}]`,
+				args: { schoolName: 'String' },
+				resolve: async ({ args: { schoolName } }) => {
+					const Classes = await DataBase.getClassesForSchool(schoolName);
+					return Classes || [];
 				},
 			});
 		}
@@ -162,9 +197,9 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 			ClassTC.addResolver({
 				name: 'getSchedule',
 				type: '[ [ String ] ]',
-				args: { className: 'String!' },
-				resolve: async ({ source, args, context, info }) => {
-					const Class = await DataBase.getClassByName(args.className);
+				args: { className: 'String!', schoolName: 'String!' },
+				resolve: async ({ args: { className, schoolName } }) => {
+					const Class = await DataBase.getClassByName(className, schoolName);
 
 					if (Class) {
 						return Class.schedule;
@@ -181,10 +216,11 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 					className: 'String!',
 					dayIndex: 'Int!',
 					newSchedule: '[String]!',
+					schoolName: 'String!',
 				},
-				resolve: async ({ source, args, context, info }) => {
-					await DataBase.changeDay(args.className, args.dayIndex, args.newSchedule);
-					return await DataBase.getClassByName(args.className);
+				resolve: async ({ args: { className, schoolName, dayIndex, newSchedule } }) => {
+					await DataBase.changeDay({ className, schoolName }, dayIndex, newSchedule);
+					return await DataBase.getClassByName(className, schoolName);
 				},
 			});
 		}
@@ -194,9 +230,9 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 			ClassTC.addResolver({
 				name: 'getAnnouncements',
 				type: `[${ClassTC.get('announcements').getType()}]`,
-				args: { className: 'String!', date: 'Date' },
-				resolve: async ({ source, args, context, info }) => {
-					return await DataBase.getAnnouncements(args.className, args.date);
+				args: { className: 'String!', date: 'Date', schoolName: 'String!' },
+				resolve: async ({ args: { className, schoolName, date } }) => {
+					return await DataBase.getAnnouncements({ className, schoolName }, date);
 				},
 			});
 			//? add
@@ -209,10 +245,10 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 					text: 'String!',
 					to: 'String',
 					attachments: `[${ClassTC.get('homework.attachments').getInputType()}]!`,
+					schoolName: 'String!',
 				},
 				resolve: async ({
-					source,
-					args: { attachments, text, to, className, student_id },
+					args: { attachments, text, to, className, student_id, schoolName },
 				}) => {
 					try {
 						if (attachments) {
@@ -221,40 +257,41 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 							}
 						}
 
-						const announcement = await DataBase.addAnnouncement(
-							className,
+						const announcement_Id = await DataBase.addAnnouncement(
+							{ className, schoolName },
 							{ attachments, text },
-							to,
+							new Date(to),
 							false,
 							student_id,
 						);
-						if (announcement) {
-							return await DataBase.getClassByName(className).then((c) =>
+
+						if (announcement_Id) {
+							return await DataBase.getClassByName(className, schoolName).then((c) =>
 								c.announcements.find(
-									(ch) => ch._id.toString() === announcement.toString(),
+									(ch) => ch._id.toString() === announcement_Id.toString(),
 								),
 							);
 						} else {
 							return null;
 						}
 					} catch (e) {
-						// console.error( e );
+						console.error(e);
+						return null;
 					}
-					return { attachments, text, to, className, _id: '123122' };
 				},
 			});
 			//? remove
 			ClassTC.addResolver({
 				name: 'removeAnnouncement',
 				type: 'String',
-				args: { className: 'String!', announcementId: 'String!' },
-				resolve: async ({ source, args }) => {
+				args: { className: 'String!', announcementId: 'String!', schoolName: 'String!' },
+				resolve: async ({ args: { className, schoolName, announcementId } }) => {
 					const result = await DataBase.removeAnnouncement(
-						args.className,
-						args.announcementId,
+						{ className, schoolName },
+						announcementId,
 					);
 					if (result) {
-						return args.announcementId;
+						return announcementId;
 					}
 					return null;
 				},
@@ -267,25 +304,22 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 					className: 'String!',
 					announcementId: 'String!',
 					updates: `${ClassTC.get('announcements').getInputType()}!`,
+					schoolName: 'String!',
 				},
-				resolve: async ({ source, args, context, info }) => {
-					const {
-						updates: { attachments },
-					} = args;
+				resolve: async ({ args: { className, schoolName, announcementId, updates } }) => {
+					const { attachments } = updates;
 					if (attachments) {
 						for (const attachment of attachments) {
 							delete attachment._id;
 						}
 					}
 					const updatedAnnouncement = await DataBase.updateAnnouncement(
-						args.className,
-						args.announcementId,
-						args.updates,
+						{ className, schoolName },
+						announcementId,
+						updates,
 					);
 					if (updatedAnnouncement) {
-						return updatedAnnouncement.find(
-							(e) => e._id.toString() === args.announcementId,
-						);
+						return updatedAnnouncement.find((e) => e._id.toString() === announcementId);
 					} else {
 						return null;
 					}
@@ -295,16 +329,17 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 			ClassTC.addResolver({
 				name: 'removeOldAnnouncements',
 				type: `[${ClassTC.get('announcements').getType()}]`,
-				args: { className: 'String!' },
-				resolve: async ({ _, args: { className } }) => {
+				args: { className: 'String!', schoolName: 'String!' },
+				resolve: async ({ args: { className, schoolName } }) => {
 					try {
-						const actualAnnouncements = await DataBase.removeOldAnnouncements(
+						const actualAnnouncements = await DataBase.removeOldAnnouncements({
 							className,
-						);
+							schoolName,
+						});
 
 						return actualAnnouncements;
 					} catch (e) {
-						// console.error( e );
+						console.error(e);
 						return null;
 					}
 				},
@@ -316,19 +351,19 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 			ClassTC.addResolver({
 				name: 'getHomework',
 				type: `[${ClassTC.get('homework').getType()}]`,
-				args: { className: 'String!', date: 'Date' },
-				resolve: async ({ source, args, context, info }) => {
-					return (await DataBase.getHomework(args.className, args.date)) || [];
+				args: { className: 'String!', date: 'Date', schoolName: 'String!' },
+				resolve: async ({ args: { className, schoolName, date } }) => {
+					return (await DataBase.getHomework({ className, schoolName }, date)) || [];
 				},
 			});
 			//? remove
 			ClassTC.addResolver({
 				name: 'removeHomework',
 				type: 'String',
-				args: { className: 'String!', homeworkId: 'String!' },
-				resolve: async ({ source, args, context, info }) => {
-					await DataBase.removeHomework(args.className, args.homeworkId);
-					return args.homeworkId;
+				args: { className: 'String!', homeworkId: 'String!', schoolName: 'String!' },
+				resolve: async ({ args: { className, schoolName, homeworkId } }) => {
+					await DataBase.removeHomework({ className, schoolName }, homeworkId);
+					return homeworkId;
 				},
 			});
 			//TODO replace return of addHomework from _id to object
@@ -343,22 +378,23 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 					to: 'String',
 					lesson: 'String!',
 					attachments: `[${ClassTC.get('homework.attachments').getInputType()}]!`,
+					schoolName: 'String!',
 				}, //TODO think about attachments
-				resolve: async ({ source, args }) => {
-					if (args.attachments) {
-						for (const attachment of args.attachments) {
+				resolve: async ({ args, args: { className, schoolName, attachments, text } }) => {
+					if (attachments) {
+						for (const attachment of attachments) {
 							delete attachment._id;
 						}
 					}
 					const id = await DataBase.addHomework(
-						args.className,
+						{ className, schoolName },
 						args.lesson,
-						{ text: args.text, attachments: args.attachments },
+						{ text, attachments },
 						args.student_id,
 						args.to,
 					);
 					if (id) {
-						const hw = await DataBase.getClassByName(args.className).then((cl) =>
+						const hw = await DataBase.getClassByName(className, schoolName).then((cl) =>
 							cl.homework.find((e) => e._id.toString() === id.toString()),
 						);
 
@@ -375,25 +411,24 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 					className: 'String!',
 					homeworkId: 'String!',
 					updates: ClassTC.get('homework').getInputType(),
+					schoolName: 'String!',
 				},
-				resolve: async ({ source, args, context, info }) => {
-					const Class = await DataBase.getClassByName(args.className);
-					if (
-						Class.homework.find((e) => e._id.toString() === args.homeworkId.toString())
-					) {
-						if (args.updates.attachments) {
-							for (const attachment of args.updates.attachments) {
+				resolve: async ({ args: { className, schoolName, homeworkId, updates } }) => {
+					const Class = await DataBase.getClassByName(className, schoolName);
+					if (Class.homework.find((e) => e._id.toString() === homeworkId.toString())) {
+						if (updates.attachments) {
+							for (const attachment of updates.attachments) {
 								delete attachment._id;
 							}
 						}
 						const updatedHomework = await DataBase.updateHomework(
-							args.className,
-							args.homeworkId,
-							{ ...args.updates },
+							{ className, schoolName },
+							homeworkId,
+							updates,
 						);
 
 						return updatedHomework.find(
-							(e) => e._id.toString() === args.homeworkId.toString(),
+							(e) => e._id.toString() === homeworkId.toString(),
 						);
 					} else {
 						return null;
@@ -404,10 +439,13 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 			ClassTC.addResolver({
 				name: 'removeOldHomework',
 				type: `[${ClassTC.get('homework').getType()}]`,
-				args: { className: 'String!' },
-				resolve: async ({ _, args: { className } }) => {
+				args: { className: 'String!', schoolName: 'String!' },
+				resolve: async ({ args: { className, schoolName } }) => {
 					try {
-						const actualHomework = await DataBase.removeOldHomework(className);
+						const actualHomework = await DataBase.removeOldHomework({
+							className,
+							schoolName,
+						});
 
 						return actualHomework;
 					} catch (e) {
@@ -428,11 +466,11 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 				name: 'removeOne',
 				type: StudentTC.getType(),
 				args: { vkId: 'Int!' },
-				resolve: async ({ source, args, context, info }) => {
-					const Student = await DataBase.getStudentByVkId(args.vkId);
+				resolve: async ({ args: { vkId } }) => {
+					const Student = await DataBase.getStudentByVkId(vkId);
 					const Class = Student.class;
 					if (Class) {
-						await DataBase.removeStudentFromClass(args.vkId);
+						await DataBase.removeStudentFromClass(vkId);
 					}
 					await Student.deleteOne();
 					return Student;
@@ -443,8 +481,8 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 				name: 'studentCreateOne',
 				type: StudentTC.getType(),
 				args: { vkId: 'Int!' },
-				resolve: async ({ source, args, context, info }) => {
-					return await DataBase.createStudent(args.vkId);
+				resolve: async ({ args: { vkId } }) => {
+					return await DataBase.createStudent(vkId);
 				},
 			});
 		}
@@ -458,8 +496,8 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 					vkId: 'Int!',
 					diffObject: StudentTC.get('settings').getInputType(),
 				},
-				resolve: async ({ source, args, context, info }) => {
-					return await DataBase.changeSettings(args.vkId, args.diffObject);
+				resolve: async ({ args: { vkId, diffObject } }) => {
+					return await DataBase.changeSettings(vkId, diffObject);
 				},
 			});
 		}
@@ -469,14 +507,14 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 			StudentTC.addResolver({
 				name: 'changeClass',
 				type: StudentTC.getType(),
-				args: { vkId: 'Int!', newClassName: 'String!' },
-				resolve: async ({ source, args, context, info }) => {
-					if (args.newClassName !== 'Нету') {
-						await DataBase.changeClass(args.vkId, args.newClassName);
+				args: { vkId: 'Int!', newClassName: 'String!', schoolName: 'String!' },
+				resolve: async ({ args: { vkId, newClassName, schoolName } }) => {
+					if (newClassName !== 'Нету') {
+						await DataBase.changeClass(vkId, newClassName, schoolName);
 					} else {
-						await DataBase.removeStudentFromClass(args.vkId);
+						await DataBase.removeStudentFromClass(vkId);
 					}
-					return await DataBase.getStudentByVkId(args.vkId);
+					return await DataBase.getStudentByVkId(vkId);
 				},
 			});
 			//? Remove from class
@@ -484,11 +522,11 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 				name: 'removeStudentFromClass',
 				type: 'Student!',
 				args: { vkId: 'Int!' },
-				resolve: async ({ source, args, context, info }) => {
-					const res = await DataBase.removeStudentFromClass(args.vkId);
+				resolve: async ({ args: { vkId } }) => {
+					const res = await DataBase.removeStudentFromClass(vkId);
 
 					if (res) {
-						return await DataBase.getStudentByVkId(args.vkId);
+						return await DataBase.getStudentByVkId(vkId);
 					} else {
 						return null;
 					}
@@ -501,20 +539,51 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 			StudentTC.addResolver({
 				name: 'getForClass',
 				type: '[Student]',
-				args: { className: 'String' },
-				resolve: async ({ source, args, context, info }) => {
-					const Class = await DataBase.getClassByName(args.className);
+				args: { className: 'String', schoolName: 'String!' },
+				resolve: async ({ args: { schoolName, className } }) => {
+					const studentIds = await DataBase.getStudentsFromClass(className, schoolName);
 
-					if (Class) {
-						return await StudentModel.find({
-							_id: { $in: Class.students },
-						});
+					if (studentIds) {
+						const studentPromises = studentIds.map((vkId) =>
+							DataBase.getStudentByVkId(vkId),
+						);
+
+						const students = [];
+
+						for await (const i of studentPromises) students.push(i);
+						return students;
 					} else {
 						return null;
 					}
 				},
 			});
+			StudentTC.addResolver({
+				name: 'studentsForSchool',
+				args: { schoolName: 'String' },
+				type: `[${StudentTC.getType()}]`,
+				resolve: async ({ args: { schoolName } }) => {
+					if (schoolName) {
+						return await DataBase.getStudentsForSchool(schoolName);
+					} else {
+						return await DataBase.getAllStudents();
+					}
+				},
+			});
 		}
+	}
+
+	//!Schools
+	{
+		//* Ovreride
+		//? create
+		SchoolTC.addResolver({
+			name: 'schoolCreateOne',
+			type: ClassTC.getType(),
+			args: { schoolName: 'String!' },
+			resolve: async ({ args: { schoolName } }) => {
+				return await DataBase.createSchool(schoolName);
+			},
+		});
 	}
 
 	//! Common
@@ -524,7 +593,7 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 			name: 'lessons',
 			type: '[String]',
 			args: {},
-			resolve: async ({ source, args, context, info }) => {
+			resolve: async () => {
 				return Lessons;
 			},
 		});
@@ -532,7 +601,7 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 			name: 'roles',
 			type: '[String]',
 			args: {},
-			resolve: async ({ source, args, context, info }) => {
+			resolve: async () => {
 				return Object.values(Roles);
 			},
 		});
@@ -546,10 +615,9 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 		ClassTC.addRelation('students', {
 			resolver: () => StudentTC.getResolver('findByIds'),
 			prepareArgs: {
-				// resolver `findByIds` has `_ids` arg, let provide value to it
 				_ids: (source) => source.students,
 			},
-			projection: { class: 1 }, // point fields in source object, which should be fetched from DB
+			projection: { students: 1 },
 		});
 	}
 	//! Students
@@ -563,6 +631,17 @@ const ClassTC = composeWithMongoose(ClassModel, customizationOptions);
 			projection: { class: 1 }, // point fields in source object, which should be fetched from DB
 		});
 	}
+	//!Schools
+	{
+		SchoolTC.addRelation('classes', {
+			resolver: () => ClassTC.getResolver('findByIds'),
+			prepareArgs: {
+				// resolver `findByIds` has `_ids` arg, let provide value to it
+				_ids: (source) => source.classes,
+			},
+			projection: { classes: 1 }, // point fields in source object, which should be fetched from DB
+		});
+	}
 }
 
 schemaComposer.Query.addFields({
@@ -573,13 +652,22 @@ schemaComposer.Query.addFields({
 	studentCount: StudentTC.getResolver('count'),
 	studentConnection: StudentTC.getResolver('connection'),
 	studentPagination: StudentTC.getResolver('pagination'),
+	studentsFromSchool: StudentTC.getResolver('studentsForSchool'),
 	classById: ClassTC.getResolver('findById'),
 	classByIds: ClassTC.getResolver('findByIds'),
 	classOne: ClassTC.getResolver('findOne'),
 	classMany: ClassTC.getResolver('findMany'),
+	classesForSchool: ClassTC.getResolver('classesForSchool'),
 	classCount: ClassTC.getResolver('count'),
 	classConnection: ClassTC.getResolver('connection'),
 	classPagination: ClassTC.getResolver('pagination'),
+	schoolById: SchoolTC.getResolver('findById'),
+	schoolByIds: SchoolTC.getResolver('findByIds'),
+	schoolOne: SchoolTC.getResolver('findOne'),
+	schoolMany: SchoolTC.getResolver('findMany'),
+	schoolCount: SchoolTC.getResolver('count'),
+	schoolConnection: SchoolTC.getResolver('connection'),
+	schoolPagination: SchoolTC.getResolver('pagination'),
 	getHomework: ClassTC.getResolver('getHomework'),
 	getAnnouncements: ClassTC.getResolver('getAnnouncements'),
 	getLessons: ClassTC.getResolver('lessons'),
@@ -604,6 +692,14 @@ schemaComposer.Mutation.addFields({
 	classRemoveById: ClassTC.getResolver('removeById'),
 	classRemoveOne: ClassTC.getResolver('removeOne'),
 	classRemoveMany: ClassTC.getResolver('removeMany'),
+	schoolCreateOne: SchoolTC.getResolver('schoolCreateOne'),
+	schoolCreateMany: SchoolTC.getResolver('createMany'),
+	schoolUpdateById: SchoolTC.getResolver('updateById'),
+	schoolUpdateOne: SchoolTC.getResolver('updateOne'),
+	schoolUpdateMany: SchoolTC.getResolver('updateMany'),
+	schoolRemoveById: SchoolTC.getResolver('removeById'),
+	schoolRemoveOne: SchoolTC.getResolver('removeOne'),
+	schoolRemoveMany: SchoolTC.getResolver('removeMany'),
 	changeDay: ClassTC.getResolver('changeDay'),
 	changeSettings: StudentTC.getResolver('changeSettings'),
 	removeStudentFromClass: StudentTC.getResolver('removeStudentFromClass'),

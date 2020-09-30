@@ -11,12 +11,13 @@ import { changeTitle } from '../../../utils/functions';
 import { RoleNames } from '../StudentPage/StudentInfo/StudentInfo';
 
 export const GET_STUDENTS = gql`
-	{
+	query GetStudents {
 		students: studentMany {
 			vkId
 			className
 			role
 			fullName
+			schoolName
 			_id
 		}
 	}
@@ -27,6 +28,7 @@ export type studentPreview = {
 	className?: string;
 	role: roles;
 	fullName?: string;
+	schoolName: string;
 	_id: string;
 };
 
@@ -42,7 +44,13 @@ const Students: React.FC = () => {
 	const sorts: sort<studentPreview>[] = [
 		{
 			name: 'Классу',
-			sort: ({ fullName: aName = '' }, { fullName: bName = '' }) => (aName > bName ? 1 : -1),
+			sort: ({ className: aName = '' }, { className: bName = '' }) =>
+				aName > bName ? 1 : -1,
+		},
+		{
+			name: 'Школе',
+			sort: ({ schoolName: aName = '' }, { schoolName: bName = '' }) =>
+				aName > bName ? 1 : -1,
 		},
 		{
 			name: 'Роли',

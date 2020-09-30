@@ -15,7 +15,7 @@ type Props = {
 
 const StudentPreview: React.FC<Props> = ({
 	searchText,
-	visibleInfo = ['fullName', 'role', 'className'],
+	visibleInfo = ['fullName', 'role', 'className', 'schoolName'],
 	children,
 	...info
 }) => {
@@ -27,7 +27,12 @@ const StudentPreview: React.FC<Props> = ({
 		<div className={`${styles.preview}`}>
 			<Link to={`/students/${info.vkId}`} className={`${styles.link}`}>
 				{visibleInfo.map((key) => (
-					<span key={key} className={`${styles.info} ${styles[key]}`}>
+					<span
+						key={key}
+						className={`${styles.info} ${styles[key]} ${
+							key === 'fullName' ? 'jc-start' : 'jc-end'
+						}`}
+					>
 						{highlighter(
 							(() => {
 								const value = info[key];

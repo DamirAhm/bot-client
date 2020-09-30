@@ -27,6 +27,7 @@ export const infos: { [key: string]: string } = {
 	daysForNotification: 'Напоминать за',
 	lastHomeworkCheck: 'Последняя проверка дз',
 	className: 'Класс',
+	schoolName: 'Школа',
 };
 
 const StudentInfo: React.FC<Props> = ({ name, value, changeHandler, isChanging }) => {
@@ -35,7 +36,7 @@ const StudentInfo: React.FC<Props> = ({ name, value, changeHandler, isChanging }
 
 		return (
 			<div className={styles.info}>
-				{!isChanging || name === 'vkId' ? (
+				{!isChanging || name === 'vkId' || name === 'schoolName' ? (
 					<div className={`${styles.showing}`}>
 						{typeof value == 'object' &&
 						value !== null &&
@@ -78,7 +79,6 @@ const StudentInfo: React.FC<Props> = ({ name, value, changeHandler, isChanging }
 				{!isChanging ? (
 					<div className={`${styles.showing}`}>
 						<div className={styles.value}>
-							{' '}
 							{infos[name] || name}: {'Не указано'}
 						</div>
 					</div>

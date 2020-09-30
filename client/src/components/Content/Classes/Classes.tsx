@@ -9,10 +9,11 @@ import { sort } from '../Students/Students';
 import useList from '../../../hooks/useList';
 import Suspender from '../../Common/Suspender/Suspender';
 import { changeTitle } from '../../../utils/functions';
+import { useParams } from 'react-router-dom';
 
 export const GET_CLASSES = gql`
-	query GetClasses {
-		classes: classMany {
+	query GetClasses($schoolName: String!) {
+		classes: classesForSchool(schoolName: $schoolName) {
 			studentsCount
 			name
 			__typename
@@ -27,10 +28,15 @@ export type classesData = {
 export type classPreview = {
 	studentsCount: number;
 	name: string;
+	schoolName: string;
 };
 
 const Classes: React.FC = () => {
-	const query = useQuery<classesData>(GET_CLASSES);
+	const { schoolName } = useParams<{ schoolName: string }>();
+	const query = useQuery<classesData, { schoolName: string }>(GET_CLASSES, {
+		variables: { schoolName },
+	});
+
 	const { items, setFilter, setSort, setItems } = useList<classPreview>([]);
 	const [searchText, setText] = useState('');
 	const sorts: sort[] = [

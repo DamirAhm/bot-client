@@ -39,7 +39,7 @@ function App() {
 				<div className={`app`}>
 					{user === null ? (
 						<Suspense fallback={<div>loading...</div>}>
-							<Auth setUser={onUser} />
+							{!localStorage.getItem('user') && <Auth setUser={onUser} />}
 						</Suspense>
 					) : (
 						<>
@@ -49,7 +49,7 @@ function App() {
 									<Switch>
 										<Route
 											exact
-											path="/pickClass"
+											path="/:schoolName/pickClass"
 											component={() =>
 												user.className ? (
 													withRedirect(
@@ -57,18 +57,20 @@ function App() {
 														user.className === null,
 													)
 												) : (
-													<Redirect to={`/classes/${user.className}`} />
+													<Redirect
+														to={`${user.schoolName}/classes/${user.className}`}
+													/>
 												)
 											}
 										/>
 										<Route
 											exact
-											path="/classes"
+											path="/:schoolName/classes"
 											component={() => withRedirect(<Classes />)}
 										/>
 										<Route
 											exact
-											path="/classes/:className"
+											path="/:schoolName/classes/:className"
 											render={(props) =>
 												withRedirect(
 													<ClassPage />,

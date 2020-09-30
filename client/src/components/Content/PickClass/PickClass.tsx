@@ -1,7 +1,7 @@
 import { useApolloClient, useMutation, useQuery } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
 import React, { useContext } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { UserContext } from '../../../App';
 import { Student, User } from '../../../types';
 import Suspender from '../../Common/Suspender/Suspender';
@@ -14,7 +14,10 @@ import styles from './PickClass.module.css';
 type fn<T> = (value: T) => T;
 
 const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUser }) => {
-	const query = useQuery<{ classes: classPreview[] }>(GET_CLASSES);
+	const { schoolName } = useParams<{ schoolName: string }>();
+	const query = useQuery<{ classes: classPreview[] }, { schoolName: string }>(GET_CLASSES, {
+		variables: { schoolName },
+	});
 	const [changeClass] = useMutation<
 		{
 			changeClass: Partial<Student> & { __typename: string };

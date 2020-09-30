@@ -73,7 +73,12 @@ export const parseDate = (dateStr: string | Date, format: string): string => {
                         break;
                     }
                     case "d": {
-                        if (ms.length === 2) {
+                        if (ms.length === 1) {
+                            format = format.replace(
+                                /d+/i,
+                                String(date.getDate())
+                            );
+                        } else if (ms.length === 2) {
                             format = format.replace(
                                 /d+/i,
                                 date.getDate() < 10
@@ -81,7 +86,7 @@ export const parseDate = (dateStr: string | Date, format: string): string => {
                                     : String(date.getDate())
                             );
                         } else {
-                            throw new Error("Day must be 2 length");
+                            throw new Error("Day must be 2 or 1 length");
                         }
                         break;
                     }

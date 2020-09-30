@@ -9,7 +9,7 @@ const withRedirect = (
 ): JSX.Element => {
 	return (
 		<UserContext.Consumer>
-			{({ isAuth, role, className }) => (
+			{({ isAuth, role, className, schoolName }) => (
 				<>
 					{isAuth ? (
 						<>
@@ -21,7 +21,11 @@ const withRedirect = (
 								)
 							) : (
 								<Redirect
-									to={className !== null ? `/classes/${className}` : '/pickClass'}
+									to={
+										className !== null
+											? `/${schoolName}/classes/${className}`
+											: `/${schoolName}/pickClass`
+									}
 								/>
 							)}
 						</>

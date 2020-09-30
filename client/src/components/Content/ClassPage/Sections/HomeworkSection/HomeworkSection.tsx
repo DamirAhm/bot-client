@@ -17,12 +17,10 @@ import {
 import Options from '../../../../Common/Options/Options';
 import ChangeHomework from '../../../../Common/ChangeContent/ChangeHomework';
 import { UserContext } from '../../../../../App';
+import { useParams } from 'react-router-dom';
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
-type Props = {
-	className: string;
-};
 type taskProps = {
 	homework: homework;
 	removeHomework: (homeworkId: string | undefined) => void;
@@ -30,8 +28,8 @@ type taskProps = {
 };
 
 const GET_HOMEWORK = gql`
-	query GetHomework($className: String!) {
-		homework: getHomework(className: $className) {
+	query GetHomework($className: String!, $schoolName: String!) {
+		homework: getHomework(className: $className, schoolName: $schoolName) {
 			text
 			createdBy
 			to
@@ -48,8 +46,8 @@ const GET_HOMEWORK = gql`
 `;
 
 const REMOVE_TASK = gql`
-	mutation RemoveTask($className: String!, $homeworkId: String!) {
-		removeHomework(homeworkId: $homeworkId, className: $className)
+	mutation RemoveTask($className: String!, $homeworkId: String!, $schoolName: String!) {
+		removeHomework(homeworkId: $homeworkId, className: $className, schoolName: $schoolName)
 	}
 `;
 
@@ -58,8 +56,14 @@ const CHANGE_HOMEWORK = gql`
 		$className: String!
 		$homeworkId: String!
 		$updates: ClassHomeworkInput!
+		$schoolName: String!
 	) {
-		updateHomework(className: $className, homeworkId: $homeworkId, updates: $updates) {
+		updateHomework(
+			className: $className
+			homeworkId: $homeworkId
+			updates: $updates
+			schoolName: $schoolName
+		) {
 			_id
 			text
 			attachments {
@@ -69,12 +73,14 @@ const CHANGE_HOMEWORK = gql`
 			}
 			to
 			lesson
+			__typename
 		}
 	}
 `;
 
 const ADD_HOMEWORK = gql`
 	mutation addHomework(
+		$schoolName: String!
 		$className: String!
 		$text: String!
 		$to: String
@@ -89,23 +95,25 @@ const ADD_HOMEWORK = gql`
 			lesson: $lesson
 			attachments: $attachments
 			student_id: $student_id
+			schoolName: $schoolName
 		) {
-			__typename
-			text
 			_id
+			text
 			lesson
 			to
 			attachments {
 				url
 				value
 			}
+			__typename
 		}
 	}
 `;
 
 const REMOVE_OLD_HOMEWORK = gql`
-	mutation RemoveOldHomework($className: String!) {
-		removeOldHomework(className: $className) {
+	mutation RemoveOldHomework($className: String!, $schoolName: String!) {
+		removeOldHomework(className: $className, schoolName: $schoolName) {
+			_id
 			to
 			text
 			attachments {
@@ -114,17 +122,22 @@ const REMOVE_OLD_HOMEWORK = gql`
 				_id
 			}
 			lesson
-			_id
 			createdBy
+			__typename
 		}
 	}
 `;
 
-const HomeworkSection: React.FC<Props> = ({ className }) => {
+const HomeworkSection: React.FC<{}> = ({}) => {
+	const { schoolName, className } = useParams<{ schoolName: string; className: string }>();
+
 	const [homeworkCreating, setHomeworkCreating] = useState(false);
 	const [initContent, setInitContent] = useState({});
-	const homeworkQuery = useQuery<{ homework: homework[] }, { className: string }>(GET_HOMEWORK, {
-		variables: { className },
+	const homeworkQuery = useQuery<
+		{ homework: homework[] },
+		{ className: string; schoolName: string }
+	>(GET_HOMEWORK, {
+		variables: { className, schoolName },
 	});
 	const { uid } = useContext(UserContext);
 
@@ -135,6 +148,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
 		{
 			className: string;
 			homeworkId: string;
+			schoolName: string;
 		}
 	>(REMOVE_TASK);
 	const [updateHomework] = useMutation<
@@ -143,6 +157,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
 		}>,
 		{
 			className: string;
+			schoolName: string;
 			homeworkId: string;
 			updates: Partial<Omit<homework, 'attachments'> & { attachments: attachment[] }>;
 		}
@@ -154,6 +169,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
 		}>,
 		{
 			className: string;
+			schoolName: string;
 			text: string;
 			lesson: string;
 			attachments: attachment[];
@@ -163,9 +179,9 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
 	>(ADD_HOMEWORK);
 	const [removeOldHomework] = useMutation<
 		{ removeOldHomework: homework[] },
-		{ className: string }
+		{ className: string; schoolName: string }
 	>(REMOVE_OLD_HOMEWORK, {
-		variables: { className },
+		variables: { className, schoolName },
 		optimisticResponse: {
 			removeOldHomework:
 				homeworkQuery.data?.homework.filter(
@@ -176,7 +192,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
 			if (mutation && mutation.data?.removeOldHomework) {
 				proxy.writeQuery({
 					query: GET_HOMEWORK,
-					variables: { className },
+					variables: { className, schoolName },
 					data: {
 						homework: mutation.data.removeOldHomework,
 					},
@@ -188,7 +204,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
 	const remove = (homeworkId: string | undefined) => {
 		if (homeworkId) {
 			removeHomework({
-				variables: { className, homeworkId },
+				variables: { className, homeworkId, schoolName },
 				optimisticResponse: {
 					__typename: 'Mutation',
 					removeHomework: homeworkId,
@@ -196,13 +212,13 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
 				update: (proxy, res) => {
 					const data = proxy.readQuery<{ homework: homework[] }>({
 						query: GET_HOMEWORK,
-						variables: { className },
+						variables: { className, schoolName },
 					});
 
 					if (res?.data) {
 						proxy.writeQuery({
 							query: GET_HOMEWORK,
-							variables: { className },
+							variables: { className, schoolName },
 							data: {
 								homework:
 									data?.homework.filter((hw) => hw._id !== homeworkId) || [],
@@ -220,6 +236,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
 			updateHomework({
 				variables: {
 					className,
+					schoolName,
 					homeworkId,
 					updates: {
 						...updatesWithoutTypename,
@@ -238,13 +255,13 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
 				update: (proxy, res) => {
 					const data = proxy.readQuery<{ homework: homework[] }>({
 						query: GET_HOMEWORK,
-						variables: { className },
+						variables: { className, schoolName },
 					});
 
 					if (res?.data) {
 						proxy.writeQuery({
 							query: GET_HOMEWORK,
-							variables: { className },
+							variables: { className, schoolName },
 							data: {
 								homework:
 									data?.homework.map((hw) =>
@@ -262,6 +279,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
 			variables: {
 				...homeworkData,
 				className,
+				schoolName,
 				attachments: homeworkData.attachments.map(({ __typename, ...att }) => att),
 				student_id: uid,
 			},
@@ -276,7 +294,7 @@ const HomeworkSection: React.FC<Props> = ({ className }) => {
 			refetchQueries: [
 				{
 					query: GET_HOMEWORK,
-					variables: { className },
+					variables: { className, schoolName },
 				},
 			],
 		});

@@ -14,11 +14,9 @@ import { UserContext } from '../../../../../App';
 import { useContext } from 'react';
 import Filters from '../../../../Filters/Filters';
 import { highlightSearch } from '../../../../../utils/functions';
+import { useParams } from 'react-router-dom';
 
 const modalEl = document.getElementById('chooseStudentModal');
-type Props = {
-	className: string;
-};
 
 export const REMOVE_STUDENT_FROM_CLASS = gql`
 	mutation RemoveStudentFromClass($vkId: Int!) {
@@ -43,8 +41,8 @@ export const GET_STUDENTS_FOR_CLASS = gql`
 		fullName
 		_id
 	}
-	query GetStudents($className: String!) {
-		students: studentsForClass(className: $className) {
+	query GetStudents($className: String!, $schoolName: String!) {
+		students: studentsForClass(className: $className, schoolName: $schoolName) {
 			...StudentPreview
 		}
 	}
@@ -57,18 +55,20 @@ export const ADD_STUDENT_TO_CLASS = gql`
 		fullName
 		_id
 	}
-	mutation AddStudentToClass($vkId: Int!, $className: String!) {
-		student: changeClass(vkId: $vkId, newClassName: $className) {
+	mutation AddStudentToClass($vkId: Int!, $className: String!, $schoolName: String!) {
+		student: changeClass(vkId: $vkId, newClassName: $className, schoolName: $schoolName) {
 			...StudentPreview
 		}
 	}
 `;
 
-const StudentsSection: React.FC<Props> = ({ className }) => {
-	const { data, loading, error } = useQuery<{ students?: studentPreview[] }>(
-		GET_STUDENTS_FOR_CLASS,
-		{ variables: { className } },
-	);
+const StudentsSection: React.FC<{}> = ({}) => {
+	const { className, schoolName } = useParams<{ className: string; schoolName: string }>();
+
+	const { data, loading, error } = useQuery<
+		{ students?: studentPreview[] },
+		{ schoolName: string; className: string }
+	>(GET_STUDENTS_FOR_CLASS, { variables: { className, schoolName } });
 
 	const [remove] = useMutation<{ removed: boolean }, { vkId: number }>(REMOVE_STUDENT_FROM_CLASS);
 	const [changeClass] = useMutation<
@@ -78,6 +78,7 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
 		{
 			vkId: number;
 			className: string;
+			schoolName: string;
 		}
 	>(ADD_STUDENT_TO_CLASS);
 
@@ -96,12 +97,12 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
 			update: (proxy, result) => {
 				const data = proxy.readQuery<{ students: studentPreview[] }>({
 					query: GET_STUDENTS_FOR_CLASS,
-					variables: { className },
+					variables: { className, schoolName },
 				});
 				if (data?.students && result.data?.removed) {
 					proxy.writeQuery({
 						query: GET_STUDENTS_FOR_CLASS,
-						variables: { className },
+						variables: { className, schoolName },
 						data: {
 							students: data?.students.filter((e) => e.vkId !== vkId),
 						},
@@ -112,7 +113,7 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
 	};
 	const addToClass = (student: studentPreview) => {
 		changeClass({
-			variables: { vkId: student.vkId, className },
+			variables: { vkId: student.vkId, className, schoolName },
 			optimisticResponse: {
 				__typename: 'Mutation',
 				student: {
@@ -125,6 +126,7 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
 					query: GET_STUDENTS_FOR_CLASS,
 					variables: {
 						className,
+						schoolName,
 					},
 				});
 
@@ -134,14 +136,14 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
 					if (data?.students && result.data?.student) {
 						proxy.writeQuery({
 							query: GET_STUDENTS_FOR_CLASS,
-							variables: { className },
+							variables: { className, schoolName },
 							data: {
 								students: data.students.concat([result.data.student]),
 							},
 						});
 						proxy.writeQuery({
 							query: GET_STUDENTS_FOR_CLASS,
-							variables: { className: student.className },
+							variables: { className: student.className, schoolName },
 							data: {
 								students: data.students.filter(
 									({ _id }) => _id !== resData.student._id,
@@ -179,13 +181,12 @@ const StudentsSection: React.FC<Props> = ({ className }) => {
 				<Suspender query={{ data: items, loading, error }}>
 					{(data: Student[]) => (
 						<div className={`${styles.students}`}>
-							{role === roles.admin && (
+							{role === roles.admin && searchString === '' && (
 								<div
 									className={styles.creator}
 									onClick={() => setModalOpened(true)}
 								>
-									{' '}
-									Добавить ученика{' '}
+									Добавить ученика
 								</div>
 							)}
 							{data.map((e) => (
@@ -230,8 +231,9 @@ const GET_STUDENTS_FOR_CHOOSING = gql`
 		fullName
 		_id
 	}
-	{
-		students: studentMany {
+
+	query GetStudentsForChoosing($schoolName: String!) {
+		students: studentsFromSchool(schoolName: $schoolName) {
 			...StudentPreview
 		}
 	}
@@ -244,12 +246,9 @@ type StudentModalProps = {
 	className: string;
 };
 
-const StudentModal: React.FC<StudentModalProps> = ({
-	closeModal,
-	addStudent,
-	styles,
-	className,
-}) => {
+const StudentModal: React.FC<StudentModalProps> = ({ closeModal, addStudent, styles }) => {
+	const { schoolName, className } = useParams<{ schoolName: string; className: string }>();
+
 	const sorts: sort[] = [
 		{
 			name: 'Имени',
@@ -275,7 +274,12 @@ const StudentModal: React.FC<StudentModalProps> = ({
 		},
 	];
 
-	const query = useQuery<{ students: studentPreview[] }>(GET_STUDENTS_FOR_CHOOSING);
+	const onlyFromSchool = useState(true);
+
+	const query = useQuery<{ students: studentPreview[]; schoolName?: string }>(
+		GET_STUDENTS_FOR_CHOOSING,
+		{ variables: { schoolName: onlyFromSchool ? schoolName : undefined } },
+	);
 	const [searchText, setText] = useState('');
 	const { items, setFilter, setSort, setItems } = useList<studentPreview>(
 		[],
@@ -313,8 +317,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
 			<div className={'modal'} onClick={closeModal}>
 				<div className={styles.chooseStudent} onClick={(e) => e.stopPropagation()}>
 					<span className={styles.title}>
-						{' '}
-						Выберите ученика которого необходимо добавить{' '}
+						Выберите ученика которого необходимо добавить
 					</span>
 					<Suspender query={query}>
 						<div className={styles.studentsChooser}>
@@ -324,7 +327,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
 								sortsList={sorts}
 								setSort={setSorting}
 							/>
-							<div className={styles.chooser}>
+							<div className={`${styles.chooser} ${styles.tableHead}`}>
 								<span className={styles.chooser_name}>Имя</span>
 								<span className={styles.chooser_vkId}>vkId</span>
 								<span className={styles.chooser_className}>Класс</span>
@@ -354,7 +357,12 @@ const StudentPicker: React.FC<{
 	student: studentPreview;
 	onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 	searchText: string;
-}> = ({ student: { fullName = 'Имя', vkId, className = 'Нету' }, onClick, searchText }) => {
+}> = ({ student: { fullName = 'Имя', vkId }, onClick, searchText }) => {
+	const { className = 'Нету', schoolName = 'Нету' } = useParams<{
+		className: string;
+		schoolName: string;
+	}>();
+
 	const highlighter = (str: string | number) => {
 		return highlightSearch(str.toString(), searchText);
 	};
@@ -364,6 +372,7 @@ const StudentPicker: React.FC<{
 			<span className={styles.chooser_name}>{highlighter(fullName)}</span>
 			<span className={styles.chooser_vkId}>{highlighter(vkId)}</span>
 			<span className={styles.chooser_className}>{highlighter(className)}</span>
+			<span className={styles.chooser_className}>{highlighter(schoolName)}</span>
 		</div>
 	);
 };

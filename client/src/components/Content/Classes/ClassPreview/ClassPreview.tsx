@@ -1,79 +1,89 @@
-import React, { memo } from "react";
-import styles from "./ClassPreview.module.css";
-import { gql } from "apollo-boost";
-import { useMutation } from "@apollo/react-hooks";
-import { highlightSearch } from "../../../../utils/functions";
-import { Link } from "react-router-dom";
-import { redactorOptions } from "../../../../types";
-import Options from "../../../Common/Options/Options";
-import Confirm from "../../../Common/Confirm/Confirm";
-import { useState } from "react";
+import React, { memo } from 'react';
+import styles from './ClassPreview.module.css';
+import { gql } from 'apollo-boost';
+import { useMutation } from '@apollo/react-hooks';
+import { highlightSearch } from '../../../../utils/functions';
+import { Link, useParams } from 'react-router-dom';
+import { redactorOptions } from '../../../../types';
+import Options from '../../../Common/Options/Options';
+import Confirm from '../../../Common/Confirm/Confirm';
+import { useState } from 'react';
 
 type Props = {
-    className: string,
-    studentsCount: number,
-    searchText?: string
-}
+	className: string;
+	studentsCount: number;
+	searchText?: string;
+};
 
 // language=GraphQL
 const DELETE_CLASS = gql`
-    mutation RemoveOne($className: String!){
-        classRemoveOne(className: $className) {
-            name
-            __typename
-        }
-        deleteClass(name: $className) @client
-    }
+	mutation RemoveOne($className: String!, $schoolName: String!) {
+		classRemoveOne(className: $className, schoolName: $schoolName) {
+			name
+			__typename
+		}
+		deleteClass(className: $className, schoolName: $schoolName) @client {
+			_id
+		}
+	}
 `;
 //TODO добавить модалку спрашивающую уверен ли ты в удалении класса
-const ClassPreview: React.FC<Props> = ({ className, studentsCount, searchText = "" }) => {
-    const [deleteClass, { error, data }] = useMutation<{ classRemoveOne: { record: { name: string } } },
-        { className: string }>
-        (DELETE_CLASS, {
-            variables: { className }
-        }
-        );
+const ClassPreview: React.FC<Props> = ({ className, studentsCount, searchText = '' }) => {
+	const { schoolName } = useParams<{ schoolName: string }>();
 
-    const [waitForConfirm, setWaitForConfirm] = useState(false);
+	const [deleteClass, { error, data }] = useMutation<
+		{ classRemoveOne: { record: { name: string } } },
+		{ className: string; schoolName: string }
+	>(DELETE_CLASS, {
+		variables: { className, schoolName },
+	});
 
-    const highlighter = (str: string) => {
-        return highlightSearch(str, searchText);
-    };
+	const [waitForConfirm, setWaitForConfirm] = useState(false);
 
-    if (error) console.error(error);
-    if (data) {
-        return (
-            <div className={styles.preview} style={{ backgroundColor: "var(--secondary)" }}>
-                <div className={styles.firstRow} />
-                <div className={styles.secondRow} />
-            </div>
-        )
-    }
+	const highlighter = (str: string) => {
+		return highlightSearch(str, searchText);
+	};
 
-    return (
-        <>
-            <div className={styles.preview}>
-                <Link to={`/classes/${className}`} className={styles.link}>
-                    <p className={styles.name}> {highlighter(className)} </p>
-                    <div className={styles.count}> Учеников: {highlighter(String(studentsCount))} </div>
-                    <div></div>
-                </Link>
-                <Options
-                    include={redactorOptions.delete}
-                    props={{
-                        onClick: () => setWaitForConfirm(true),
-                        size: 20,
-                        className: "remove",
-                    }}
-                    withRoleControl
-                    allowOnlyAdmin
-                />
-            </div>
-            {waitForConfirm &&
-                <Confirm text={`Вы уверены что хотите удалить ${className} класс`} onConfirm={() => deleteClass()} returnRes={() => setWaitForConfirm(false)} />
-            }
-        </>
-    )
+	if (error) console.error(error);
+	if (data) {
+		return (
+			<div className={styles.preview} style={{ backgroundColor: 'var(--secondary)' }}>
+				<div className={styles.firstRow} />
+				<div className={styles.secondRow} />
+			</div>
+		);
+	}
+
+	return (
+		<>
+			<div className={styles.preview}>
+				<Link to={`/${schoolName}/classes/${className}`} className={styles.link}>
+					<p className={styles.name}> {highlighter(className)} </p>
+					<div className={styles.count}>
+						Учеников: {highlighter(String(studentsCount))}
+					</div>
+					<div></div>
+				</Link>
+				<Options
+					include={redactorOptions.delete}
+					props={{
+						onClick: () => setWaitForConfirm(true),
+						size: 20,
+						className: 'remove',
+					}}
+					withRoleControl
+					allowOnlyAdmin
+				/>
+			</div>
+			{waitForConfirm && (
+				<Confirm
+					text={`Вы уверены что хотите удалить ${className} класс`}
+					onConfirm={() => deleteClass()}
+					returnRes={() => setWaitForConfirm(false)}
+				/>
+			)}
+		</>
+	);
 };
 
 export default memo(ClassPreview);

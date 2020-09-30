@@ -1,157 +1,162 @@
 .students > * {
-    margin-bottom: 20px;
+	margin-bottom: 20px;
 }
 
 .students {
-    max-height: 300px;
-    overflow: auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    color: var(--accent);
-    justify-items: center;
-    overflow-x: hidden;
+	max-height: 300px;
+	overflow: auto;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	color: var(--accent);
+	justify-items: center;
+	overflow-x: hidden;
 }
 
 .student {
-    display: flex;
-    align-items: center;
-    color: var(--accent);
-    width: 100%;
-    min-width: 200px;
-    align-self: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
+	display: flex;
+	align-items: center;
+	color: var(--accent);
+	width: 100%;
+	min-width: 200px;
+	align-self: center;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+	max-width: 550px;
 }
 
 .remove {
-    padding-left: 10px;
-    box-sizing: content-box;
-    cursor: pointer;
-    display: flex;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    right: 0.1%;
+	padding-left: 10px;
+	box-sizing: content-box;
+	cursor: pointer;
+	display: flex;
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	right: 0.1%;
 }
 
 .creator {
-    background-color: var(--main);
-    display: flex;
-    width: 80%;
-    border-radius: 18px;
-    justify-content: center;
-    box-sizing: border-box;
-    align-items: center;
-    font-size: 1.6rem;
-    cursor: pointer;
-    padding: 17px;
+	background-color: var(--main);
+	display: flex;
+	width: 80%;
+	border-radius: 18px;
+	justify-content: center;
+	box-sizing: border-box;
+	align-items: center;
+	font-size: 1.6rem;
+	cursor: pointer;
+	padding: 17px;
+}
+
+.tableHead {
+	cursor: default !important;
 }
 
 .chooseStudent {
-    height: 60%;
-    min-height: 300px;
-    width: 25%;
-    min-width: 200px;
-    background-color: var(--secondary);
-    overflow: auto;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    margin: 20px 0;
+	height: 60%;
+	min-height: 300px;
+	width: 25%;
+	min-width: 200px;
+	background-color: var(--secondary);
+	overflow: auto;
+	padding: 20px;
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+	margin: 20px 0;
 }
 
 .title {
-    color: var(--main);
-    font-size: 1.8rem;
-    margin-bottom: 10px;
-    font-weight: bolder;
-    text-align: center;
+	color: var(--main);
+	font-size: 1.8rem;
+	margin-bottom: 10px;
+	font-weight: bolder;
+	text-align: center;
 }
 
 .studentsChooser {
-    width: 100%;
+	width: 100%;
 }
 
 .chooser {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 10px;
-    margin: 10px 0;
-    border-radius: 10px;
-    background-color: var(--main);
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	padding: 10px 10px;
+	margin: 10px 0;
+	border-radius: 10px;
+	background-color: var(--main);
 }
 
 .chooser:not(:first-child) {
-    cursor: pointer;
+	cursor: pointer;
 }
 
 .chooser span {
-    font-size: 1.6rem;
-    align-self: center;
+	font-size: 1.6rem;
+	align-self: center;
 }
 
 .chooser_name {
-    width: 50%;
+	width: 50%;
 }
 .chooser_vkId {
-    width: 30%;
-    text-align: center;
+	width: 30%;
+	text-align: center;
 }
 .chooser_className {
-    width: 20%;
-    text-align: right;
+	width: 20%;
+	text-align: right;
 }
 
 .filters {
-    width: 80%;
-    margin: 0 auto;
+	width: 80%;
+	margin: 0 auto;
 }
 
 @media screen and (max-width: 1300px) {
-    .chooseStudent {
-        width: 50%;
-    }
+	.chooseStudent {
+		width: 50%;
+	}
 }
 
 @media screen and (max-width: 1000px) {
-    .chooseStudent {
-        width: 65%;
-    }
+	.chooseStudent {
+		width: 65%;
+	}
 }
 
 @media screen and (max-width: 776px) {
-    .chooseStudent {
-        width: 90%;
-    }
-    .filters {
-        width: 100%;
-    }
-    .students {
-        grid-template-columns: 1fr;
-    }
-    .remove {
-        right: min(3%, 20px);
-    }
+	.chooseStudent {
+		width: 90%;
+	}
+	.filters {
+		width: 100%;
+	}
+	.students {
+		grid-template-columns: 1fr;
+	}
+	.remove {
+		right: min(3%, 20px);
+	}
 }
 
 @media screen and (max-width: 500px) {
-    .remove {
-        transform: translateY(-50%) scale(0.9);
-        right: 0.1%;
-    }
+	.remove {
+		transform: translateY(-50%) scale(0.9);
+		right: 0.1%;
+	}
 }
 
 @media screen and (max-width: 400px) {
-    .chooser span {
-        font-size: 1rem;
-        font-weight: 700;
-    }
+	.chooser span {
+		font-size: 1rem;
+		font-weight: 700;
+	}
 
-    .remove {
-        right: -2%;
-    }
+	.remove {
+		right: -2%;
+	}
 }

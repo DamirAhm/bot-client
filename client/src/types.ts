@@ -37,6 +37,7 @@ export type Student = {
     lastHomeworkCheck: string;
     fullName?: string;
     className?: string;
+    schoolName: string;
     _id: string;
 };
 export type StudentInfoType = {
@@ -47,6 +48,7 @@ export type StudentInfoType = {
     lastHomeworkCheck: string;
     fullName?: string;
     className?: string;
+    schoolName: string;
 }
 
 export type studentSettings = {
@@ -92,6 +94,7 @@ export type Class = {
     homework: homework[];
     schedule: string[][];
     announcements: announcement[];
+    schoolName: string;
 };
 
 export type announcement = content;
@@ -105,6 +108,7 @@ export type User = {
     photo_rec: string;
     role: roles;
     className?: string;
+    schoolName?: string;
 };
 
 export type setStateProp<T> = T | ((user: T) => T);

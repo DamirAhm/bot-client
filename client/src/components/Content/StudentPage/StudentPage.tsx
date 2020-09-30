@@ -18,6 +18,7 @@ export const GET_STUDENT_BY_VK_ID = gql`
 		studentOne(filter: { vkId: $vkId }) {
 			vkId
 			className
+			schoolName
 			role
 			settings {
 				notificationsEnabled

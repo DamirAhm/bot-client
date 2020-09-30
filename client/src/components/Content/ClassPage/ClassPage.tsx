@@ -18,34 +18,39 @@ import Suspender from '../../Common/Suspender/Suspender';
 import { RedirectTo404 } from '../404/404';
 import { UserContext } from '../../../App';
 import { studentPreview } from '../Students/Students';
-import { changeTitle } from '../../../utils/functions';
+import { changeTitle, parseSchoolName } from '../../../utils/functions';
 
 const REMOVE_CLASS = gql`
-	mutation RemoveClass($className: String!) {
-		classRemoveOne(className: $className) {
+	mutation RemoveClass($className: String!, $schoolName: String!) {
+		classRemoveOne(className: $className, schoolName: $schoolName) {
 			name
+			schoolName
 		}
 	}
 `;
 const GET_CLASS = gql`
-	query GetClass($className: String!) {
-		classOne(filter: { name: $className }) {
+	query GetClass($className: String!, $schoolName: String!) {
+		classOne(filter: { name: $className, schoolName: $schoolName }) {
 			_id
 		}
 	}
 `;
 
 const ClassPage: React.FC = () => {
-	const { className } = useParams<{ className: string }>();
+	const { className, schoolName } = useParams<{ className: string; schoolName: string }>();
 	const { uid, className: userClassName, setUser } = useContext(UserContext);
 
-	const query = useQuery<{ classOne: Class | null }, { className: string }>(GET_CLASS, {
-		variables: { className },
-	});
+	const query = useQuery<{ classOne: Class | null }, { className: string; schoolName: string }>(
+		GET_CLASS,
+		{
+			variables: { className, schoolName },
+		},
+	);
 	const [removeClass] = useMutation<
-		WithTypename<{ classRemoveOne: WithTypename<{ name: string }> }>,
-		{ className: string }
+		WithTypename<{ classRemoveOne: WithTypename<{ name: string; schoolName: string }> }>,
+		{ className: string; schoolName: string }
 	>(REMOVE_CLASS);
+
 	const [leaveFromClass] = useMutation<{ removed: Student | null }, { vkId: number }>(
 		REMOVE_STUDENT_FROM_CLASS,
 		{
@@ -55,19 +60,20 @@ const ClassPage: React.FC = () => {
 					try {
 						const classesQuery = proxy.readQuery<
 							{ classes?: classPreview[] },
-							{ className: string }
+							{ schoolName: string }
 						>({
 							query: GET_CLASSES,
 							variables: {
-								className,
+								schoolName,
 							},
 						});
+
 						if (classesQuery?.classes) {
 							proxy.writeQuery<{ classes: classPreview[] | undefined }>({
 								query: GET_CLASSES,
 								data: {
 									classes: classesQuery.classes?.map((Class) =>
-										Class.name === className
+										Class.name === className && Class.schoolName === schoolName
 											? { ...Class, studentsCount: Class.studentsCount - 1 }
 											: Class,
 									),
@@ -79,20 +85,21 @@ const ClassPage: React.FC = () => {
 					try {
 						const studentsQuery = proxy.readQuery<
 							{ students?: studentPreview[] },
-							{ className: string }
+							{ className: string; schoolName: string }
 						>({
 							query: GET_STUDENTS_FOR_CLASS,
 							variables: {
 								className,
+								schoolName,
 							},
 						});
 						if (studentsQuery?.students) {
 							proxy.writeQuery<
 								{ students?: studentPreview[] },
-								{ className: string }
+								{ className: string; schoolName: string }
 							>({
 								query: GET_STUDENTS_FOR_CLASS,
-								variables: { className },
+								variables: { className, schoolName },
 								data: {
 									students: studentsQuery.students.filter(
 										({ _id }) => _id !== response.data?.removed?._id,
@@ -114,9 +121,9 @@ const ClassPage: React.FC = () => {
 
 	const remove = () => {
 		removeClass({
-			variables: { className },
+			variables: { className, schoolName },
 			optimisticResponse: {
-				classRemoveOne: { name: className, __typename: 'Class' },
+				classRemoveOne: { name: className, __typename: 'Class', schoolName: schoolName },
 				__typename: 'Mutation',
 			},
 			update: (proxy, res) => {
@@ -127,12 +134,16 @@ const ClassPage: React.FC = () => {
 						query: GET_CLASSES,
 						data: {
 							classes: data?.classes.filter(
-								(c) => c.name !== res.data?.classRemoveOne.name,
+								(c) =>
+									!(
+										c.name === res.data?.classRemoveOne.name &&
+										c.name === res.data.classRemoveOne.schoolName
+									),
 							),
 						},
 					});
 
-					return <Redirect to="/classes" />;
+					return <Redirect to={`/${schoolName}/classes`} />;
 				}
 			},
 		});
@@ -141,6 +152,8 @@ const ClassPage: React.FC = () => {
 	useEffect(() => {
 		changeTitle(`${className} класс`);
 	}, []);
+
+	const parsedSchoolName = parseSchoolName(schoolName);
 
 	return (
 		<>
@@ -171,15 +184,17 @@ const ClassPage: React.FC = () => {
 									</div>
 								</div>
 								<div className={styles.content}>
-									<StudentsSection className={className} />
-									<ScheduleSection className={className} />
-									<HomeworkSection className={className} />
-									<AnnouncementsSection className={className} />
+									<StudentsSection />
+									<ScheduleSection />
+									<HomeworkSection />
+									<AnnouncementsSection />
 								</div>
 							</div>
 							{waitForConfirm && (
 								<Confirm
-									text={`Вы уверены что хотите удалить ${className} класс? 😕`}
+									text={`Вы уверены что хотите удалить ${className} класс ${
+										parsedSchoolName ? parsedSchoolName[1] + ' школы' : ''
+									}? 😕`}
 									onConfirm={remove}
 									returnRes={() => setWaitForConfirm(false)}
 								/>

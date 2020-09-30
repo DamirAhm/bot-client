@@ -9,15 +9,25 @@ import { BrowserRouter } from 'react-router-dom';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { GET_CLASSES } from './components/Content/Classes/Classes';
 import { Class } from './types';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const resolvers = {
 	Mutation: {
-		deleteClass: (_: any, { name }: { name: string }, { cache }: { cache: InMemoryCache }) => {
+		deleteClass: (
+			_: any,
+			{ className, schoolName }: { className: string; schoolName: string },
+			{ cache }: { cache: InMemoryCache },
+		) => {
 			const classes = cache.readQuery<{ classes: Class[] }>({
 				query: GET_CLASSES,
 			});
 
-			const newClasses = classes?.classes?.filter((c: Class) => c.name !== name) || [];
+			const newClasses =
+				classes?.classes?.filter(
+					(c: Class) => !(c.name === className && c.schoolName === schoolName),
+				) || [];
 
 			cache.writeQuery({
 				query: GET_CLASSES,
@@ -75,8 +85,8 @@ const typeDefs = gql`
 		studentsCount
 	}
 	extend type Mutation {
-		deleteClass(name: String): [Class]!
-		createClass(name: String): Class!
+		deleteClass(className: String!, schoolName: String!): [Class]!
+		createClass(className: String!, schoolName: String!): Class!
 	}
 `;
 

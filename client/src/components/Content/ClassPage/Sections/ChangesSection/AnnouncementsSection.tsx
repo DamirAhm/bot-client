@@ -17,12 +17,10 @@ import {
 } from '../../../../../utils/functions';
 import Options from '../../../../Common/Options/Options';
 import { UserContext } from '../../../../../App';
+import { useParams } from 'react-router-dom';
 
 const announcementContentModalRoot = document.getElementById('changeContentModal');
 
-type Props = {
-	className: string;
-};
 type announcementProps = {
 	announcement: announcement;
 	removeAnnouncement: (announcementId: string | undefined) => void;
@@ -33,8 +31,8 @@ type announcementProps = {
 };
 
 const GET_ANNOUNCEMENTS = gql`
-	query GetAnnouncements($className: String!) {
-		announcements: getAnnouncements(className: $className) {
+	query GetAnnouncements($className: String!, $schoolName: String!) {
+		announcements: getAnnouncements(className: $className, schoolName: $schoolName) {
 			text
 			createdBy
 			to
@@ -50,14 +48,23 @@ const GET_ANNOUNCEMENTS = gql`
 `;
 
 const REMOVE_ANNOUNCEMENT = gql`
-	mutation RemoveAnnouncement($className: String!, $announcementId: String!) {
-		removeAnnouncement(announcementId: $announcementId, className: $className)
+	mutation RemoveAnnouncement(
+		$className: String!
+		$announcementId: String!
+		$schoolName: String!
+	) {
+		removeAnnouncement(
+			announcementId: $announcementId
+			className: $className
+			schoolName: $schoolName
+		)
 	}
 `;
 
 const UPDATE_ANNOUNCEMENT = gql`
 	mutation UpdateAnnouncement(
 		$className: String!
+		$schoolName: String!
 		$announcementId: String!
 		$updates: ClassAnnouncementsInput!
 	) {
@@ -65,6 +72,7 @@ const UPDATE_ANNOUNCEMENT = gql`
 			className: $className
 			announcementId: $announcementId
 			updates: $updates
+			schoolName: $schoolName
 		) {
 			_id
 			text
@@ -81,6 +89,7 @@ const UPDATE_ANNOUNCEMENT = gql`
 const ADD_ANNOUNCEMENT = gql`
 	mutation addAnnouncement(
 		$className: String!
+		$schoolName: String!
 		$text: String!
 		$to: String
 		$attachments: [ClassHomeworkAttachmentsInput]!
@@ -88,12 +97,12 @@ const ADD_ANNOUNCEMENT = gql`
 	) {
 		addAnnouncement(
 			className: $className
+			schoolName: $schoolName
 			text: $text
 			to: $to
 			attachments: $attachments
 			student_id: $student_id
 		) {
-			__typename
 			text
 			_id
 			to
@@ -101,13 +110,14 @@ const ADD_ANNOUNCEMENT = gql`
 				url
 				value
 			}
+			__typename
 		}
 	}
 `;
 
 const REMOVE_OLD_ANNOUNCEMENTS = gql`
-	mutation RemoveOldAnnouncements($className: String!) {
-		removeOldAnnouncements(className: $className) {
+	mutation RemoveOldAnnouncements($className: String!, $schoolName: String!) {
+		removeOldAnnouncements(className: $className, schoolName: $schoolName) {
 			to
 			text
 			attachments {
@@ -121,11 +131,16 @@ const REMOVE_OLD_ANNOUNCEMENTS = gql`
 	}
 `;
 
-const AnnouncementsSection: React.FC<Props> = ({ className }) => {
+const AnnouncementsSection: React.FC<{}> = ({}) => {
+	const { className, schoolName } = useParams<{ className: string; schoolName: string }>();
+
 	const [announcementCreating, setAnnouncementCreating] = useState(false);
 	const [initContent, setInitContent] = useState({});
-	const announcementsQuery = useQuery<{ announcements: announcement[] }>(GET_ANNOUNCEMENTS, {
-		variables: { className },
+	const announcementsQuery = useQuery<
+		{ announcements: announcement[] },
+		{ schoolName: string; className: string }
+	>(GET_ANNOUNCEMENTS, {
+		variables: { className, schoolName },
 	});
 	const { uid } = useContext(UserContext);
 
@@ -135,6 +150,7 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
 		}>,
 		{
 			className: string;
+			schoolName: string;
 			announcementId: string;
 		}
 	>(REMOVE_ANNOUNCEMENT);
@@ -144,6 +160,7 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
 		}>,
 		{
 			className: string;
+			schoolName: string;
 			announcementId: string;
 			updates: Partial<Omit<announcement, 'attachments'> & { attachments: attachment[] }>;
 		}
@@ -154,6 +171,7 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
 		}>,
 		{
 			className: string;
+			schoolName: string;
 			text: string;
 			attachments: attachment[];
 			to: string;
@@ -162,9 +180,9 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
 	>(ADD_ANNOUNCEMENT);
 	const [removeOldAnnouncements] = useMutation<
 		{ removeOldAnnouncements: announcement[] },
-		{ className: string }
+		{ className: string; schoolName: string }
 	>(REMOVE_OLD_ANNOUNCEMENTS, {
-		variables: { className },
+		variables: { className, schoolName },
 		optimisticResponse: {
 			removeOldAnnouncements:
 				announcementsQuery.data?.announcements?.filter(
@@ -175,7 +193,7 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
 			if (mutation && mutation.data?.removeOldAnnouncements) {
 				proxy.writeQuery({
 					query: GET_ANNOUNCEMENTS,
-					variables: { className },
+					variables: { className, schoolName },
 					data: {
 						announcements: mutation.data.removeOldAnnouncements,
 					},
@@ -187,7 +205,7 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
 	const remove = (announcementId: string | undefined) => {
 		if (announcementId) {
 			removeAnnouncement({
-				variables: { className, announcementId },
+				variables: { className, announcementId, schoolName },
 				optimisticResponse: {
 					__typename: 'Mutation',
 					removeAnnouncement: announcementId,
@@ -195,13 +213,13 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
 				update: (proxy, res) => {
 					const data = proxy.readQuery<{ announcements: announcement[] }>({
 						query: GET_ANNOUNCEMENTS,
-						variables: { className },
+						variables: { className, schoolName },
 					});
 
 					if (res?.data) {
 						proxy.writeQuery({
 							query: GET_ANNOUNCEMENTS,
-							variables: { className },
+							variables: { className, schoolName },
 							data: {
 								announcements:
 									data?.announcements.filter(
@@ -224,6 +242,7 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
 			updateAnnouncement({
 				variables: {
 					className,
+					schoolName,
 					announcementId,
 					updates: {
 						...announcementWithoutTypename,
@@ -244,13 +263,13 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
 				update: (proxy, res) => {
 					const data = proxy.readQuery<{ announcements: announcement[] }>({
 						query: GET_ANNOUNCEMENTS,
-						variables: { className },
+						variables: { className, schoolName },
 					});
 
 					if (res?.data) {
 						proxy.writeQuery({
 							query: GET_ANNOUNCEMENTS,
-							variables: { className },
+							variables: { className, schoolName },
 							data: {
 								homework:
 									data?.announcements.map((chng) =>
@@ -270,6 +289,7 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
 			variables: {
 				...announcementData,
 				className,
+				schoolName,
 				attachments: announcementData?.attachments?.map(({ __typename, ...att }) => att),
 				student_id: uid,
 			},
@@ -284,7 +304,7 @@ const AnnouncementsSection: React.FC<Props> = ({ className }) => {
 			refetchQueries: [
 				{
 					query: GET_ANNOUNCEMENTS,
-					variables: { className },
+					variables: { className, schoolName },
 				},
 			],
 		});

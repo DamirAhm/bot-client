@@ -40,7 +40,7 @@ export const parseContentByDate = <T extends c>(
 	content.sort((a, b) => Date.parse(a.to) - Date.parse(b.to));
 
 	for (let cont of content) {
-		const contDate = parseDate(cont.to, 'dd MM');
+		const contDate = parseDate(cont.to, 'd MM');
 
 		if (Date.parse(cont.to) >= Date.now() || isToday(new Date(Date.parse(cont.to)))) {
 			parsedFutureCont[contDate] = [...(parsedFutureCont[contDate] || []), cont];
@@ -87,6 +87,20 @@ type convertSettings = {
 	shortenName?: boolean;
 };
 
+export function parseSchoolName(schoolName: string): [string, number] | null {
+	const match = schoolName.match(/^([a-z]+):(\d+)/);
+	if (match !== null) {
+		const [_, city, number] = match;
+
+		if (!isNaN(+number)) {
+			return [city, +number];
+		} else {
+			return null;
+		}
+	}
+	return null;
+}
+
 export function convertStudentInfoValue(
 	value: string | boolean | object | Date | number | null | undefined,
 	name: keyof StudentInfoType | keyof StudentInfoType['settings'],
@@ -106,6 +120,11 @@ export function convertStudentInfoValue(
 		case 'role': {
 			if (typeof value === 'string') {
 				return RoleNames[value] ?? value;
+			}
+		}
+		case 'schoolName': {
+			if (typeof value === 'string') {
+				return String(parseSchoolName(value)?.[1] ?? 'Нету');
 			}
 		}
 	}
