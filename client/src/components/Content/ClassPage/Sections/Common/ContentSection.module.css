@@ -36,6 +36,11 @@
 	color: var(--main);
 }
 
+.hyperlink {
+	color: #0099ff !important;
+	font-weight: bolder;
+}
+
 .sectionHeader {
 	width: 100%;
 	display: flex;
@@ -161,7 +166,7 @@
 
 .text {
 	font-size: 1.4rem;
-	font-size: bolder;
+	word-break: break-all;
 }
 .attachments + .text,
 .stab + .text {

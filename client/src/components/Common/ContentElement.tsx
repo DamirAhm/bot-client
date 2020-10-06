@@ -10,7 +10,55 @@ type Props = {
 	setChanging: (contentId: string) => void;
 };
 
+const siteRegExp = /(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*/gi;
+
+const replaceHrefsByAnchors = (text: string): JSX.Element => {
+	const match = text.match(siteRegExp);
+
+	if (match) {
+		const slices = text.split(new RegExp(match.join('|')));
+
+		for (let i = 0; i < match.length; i++) {
+			slices.splice(i + 1, 0, match[i]);
+		}
+
+		let res: (string | JSX.Element)[] = [];
+
+		for (const slice of slices) {
+			if (slice.match(siteRegExp)) {
+				const element = (
+					<React.Fragment key={slice}>
+						{typeof res[res.length - 1] === 'string' && <br />}
+						<a href={slice} className={styles.hyperlink} key={slice}>
+							{slice}
+						</a>
+						<br />
+					</React.Fragment>
+				);
+
+				if (res) {
+					res.push(element);
+				} else {
+					res = [element];
+				}
+			} else {
+				if (res) {
+					res.push(slice);
+				} else {
+					res = [slice];
+				}
+			}
+		}
+
+		return <span className={styles.text}>{res}</span>;
+	} else {
+		return <span className={styles.text}>{text}</span>;
+	}
+};
+
 const ContentElement: React.FC<Props> = ({ content, removeContent, setChanging }) => {
+	const textWithReplacedHrefs = replaceHrefsByAnchors(content.text);
+
 	return (
 		<div
 			className={`${styles.container} ${content.attachments.length === 2 ? styles.pair : ''}`}
@@ -41,7 +89,7 @@ const ContentElement: React.FC<Props> = ({ content, removeContent, setChanging }
 						)}
 					</>
 				)}
-				{content.text && <p className={styles.text}> {content.text} </p>}
+				{content.text && textWithReplacedHrefs}
 			</div>
 			<div className={styles.controls}>
 				<Options
