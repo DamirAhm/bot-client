@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import styles from '../Common/ContentSection.module.css';
 import InfoSection from '../../InfoSection/InfoSection';
 import { gql } from 'apollo-boost';
@@ -18,6 +18,7 @@ import {
 import Options from '../../../../Common/Options/Options';
 import { UserContext } from '../../../../../App';
 import { useParams } from 'react-router-dom';
+import ContentElement from '../../../../Common/ContentElement';
 
 const announcementContentModalRoot = document.getElementById('changeContentModal');
 
@@ -435,6 +436,21 @@ const AnnouncementLayout: React.FC<{
 		setInitContent,
 		initiallyOpened = true,
 	}) => {
+		const [changingId, setChangingId] = useState<string | null>(null);
+		const changingAnnouncement = changingId ? findAnnouncementById(changingId) : null;
+
+		useEffect(() => {
+			if (changingAnnouncement === null && changingId !== null) {
+				setChangingId(null);
+			}
+		});
+
+		function findAnnouncementById(id: string) {
+			const announcementsArray = Object.values(announcements).flat();
+
+			return announcementsArray.find(({ _id }) => _id === id) || null;
+		}
+
 		return (
 			<>
 				{Object.keys(announcements).map((announcementDate) => (
@@ -465,95 +481,39 @@ const AnnouncementLayout: React.FC<{
 						<>
 							<div className={`${styles.elements} ${styles.offseted}`}>
 								{announcements[announcementDate].map((announcement, i) => (
-									<Announcement
-										updateAnnouncement={update}
+									<ContentElement
+										setChanging={setChangingId}
 										key={announcement._id}
-										removeAnnouncement={remove}
-										announcement={announcement}
+										removeContent={remove}
+										content={announcement}
 									/>
 								))}
 							</div>
 						</>
 					</Accordion>
 				))}
-			</>
-		);
-	},
-);
 
-const Announcement: React.FC<announcementProps> = ({
-	announcement,
-	removeAnnouncement,
-	updateAnnouncement,
-}) => {
-	const [updating, setUpdating] = useState(false);
-
-	return (
-		<div
-			className={`${styles.container} ${
-				announcement.attachments.length === 2 ? styles.pair : ''
-			}`}
-			onDoubleClick={() => setUpdating(true)}
-		>
-			<div key={announcement._id} className={styles.element}>
-				{announcement.attachments.length > 0 && (
-					<>
-						{' '}
-						{announcement.attachments.length <= 2 ? (
-							<div className={styles.attachments}>
-								<ImgAlbum images={announcement.attachments} />
-							</div>
-						) : (
-							<ImgAlbum
-								images={announcement.attachments}
-								Stab={({ onClick }) => (
-									<div className={styles.stab} onClick={onClick}>
-										<span>{announcement.attachments.length}</span>
-										<span> Photos </span>
-									</div>
-								)}
-							/>
-						)}{' '}
-					</>
-				)}
-				{announcement.text && <p className={styles.text}> {announcement.text} </p>}
-				{updating &&
+				{changingId &&
+					changingId !== null &&
+					changingAnnouncement !== null &&
 					announcementContentModalRoot &&
 					ReactDOM.createPortal(
-						<div className="modal" onMouseDown={() => setUpdating(false)}>
+						<div className="modal" onMouseDown={() => setChangingId(null)}>
 							<ChangeContent
-								initState={announcement}
+								initState={changingAnnouncement}
 								confirm={(newContent) => {
-									updateAnnouncement(announcement._id, newContent);
-									setUpdating(false);
+									update(changingAnnouncement._id, newContent);
+									setChangingId(null);
 								}}
-								reject={() => setUpdating(false)}
+								reject={() => setChangingId(null)}
 							/>
 						</div>,
 						announcementContentModalRoot,
 					)}
-			</div>
-			<div className={styles.controls}>
-				<Options
-					include={[redactorOptions.change, redactorOptions.delete]}
-					props={{
-						[redactorOptions.change]: {
-							onClick: () => setUpdating(true),
-							className: `${styles.pen}`,
-							size: 15,
-						},
-						[redactorOptions.delete]: {
-							onClick: () => removeAnnouncement(announcement._id),
-							className: `${styles.remove}`,
-							size: 20,
-						},
-					}}
-					withRoleControl
-				/>
-			</div>
-		</div>
-	);
-};
+			</>
+		);
+	},
+);
 
 type CreateAnnouncementModalProps = {
 	initContent?: Partial<announcement>;

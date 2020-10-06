@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import styles from '../Common/ContentSection.module.css';
 import InfoSection from '../../InfoSection/InfoSection';
 import { gql } from 'apollo-boost';
@@ -18,6 +18,7 @@ import Options from '../../../../Common/Options/Options';
 import ChangeHomework from '../../../../Common/ChangeContent/ChangeHomework';
 import { UserContext } from '../../../../../App';
 import { useParams } from 'react-router-dom';
+import ContentElement from '../../../../Common/ContentElement';
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -410,6 +411,21 @@ const HomeworkLayout: React.FC<{
 	remove: (homeworkId: string | undefined) => void;
 }> = React.memo(
 	({ homework, remove, update, setHomeworkCreating, setInitContent, initiallyOpened = true }) => {
+		const [changingId, setChangingId] = useState<string | null>(null);
+		const changingHomework = changingId ? findHomeworkById(changingId) : null;
+
+		useEffect(() => {
+			if (changingHomework === null && changingId !== null) {
+				setChangingId(null);
+			}
+		}, [changingHomework]);
+
+		function findHomeworkById(id: string) {
+			const homeworkArray = Object.values(homework).flat();
+
+			return homeworkArray.find((homework) => homework._id === id) || null;
+		}
+
 		const parsedHomework = objectForEach(homework, parseHomeworkByLesson);
 
 		return (
@@ -466,16 +482,34 @@ const HomeworkLayout: React.FC<{
 								>
 									<div className={`${styles.elements} ${styles.offseted}`}>
 										{parsedHomework[hwDate][lesson].map((hw, i) => (
-											<Task
-												updateHomework={update}
+											<ContentElement
+												setChanging={setChangingId}
 												key={hw._id}
-												removeHomework={remove}
-												homework={hw}
+												removeContent={remove}
+												content={hw}
 											/>
 										))}
 									</div>
 								</Accordion>
 							))}
+
+							{changingId &&
+								changingId !== null &&
+								changingHomework !== null &&
+								changeContentModalRoot &&
+								ReactDOM.createPortal(
+									<div className="modal" onMouseDown={() => setChangingId(null)}>
+										<ChangeHomework
+											initState={changingHomework}
+											confirm={(newContent) => {
+												update(changingHomework._id, newContent);
+												setChangingId(null);
+											}}
+											reject={() => setChangingId(null)}
+										/>
+									</div>,
+									changeContentModalRoot,
+								)}
 						</>
 					</Accordion>
 				))}
@@ -483,81 +517,6 @@ const HomeworkLayout: React.FC<{
 		);
 	},
 );
-
-const Task: React.FC<taskProps> = ({ homework, removeHomework, updateHomework }) => {
-	const [changing, setChanging] = useState(false);
-
-	return (
-		<div
-			className={`${styles.container} ${
-				homework.attachments.length === 2 ? styles.pair : ''
-			}`}
-			onDoubleClick={() => setChanging(true)}
-		>
-			<div key={homework._id} className={styles.element}>
-				{homework.attachments.length > 0 && (
-					<>
-						{homework.attachments.length <= 2 ? (
-							<div
-								className={styles.attachments}
-								onDoubleClick={(e) => e.stopPropagation()}
-							>
-								<ImgAlbum images={homework.attachments} />
-							</div>
-						) : (
-							<div onDoubleClick={(e) => e.stopPropagation()}>
-								<ImgAlbum
-									images={homework.attachments}
-									Stab={({ onClick }) => (
-										<div className={styles.stab} onClick={onClick}>
-											<span>{homework.attachments.length}</span>
-											<span> Photos </span>
-										</div>
-									)}
-								/>
-							</div>
-						)}
-					</>
-				)}
-				{homework.text && <p className={styles.text}> {homework.text} </p>}
-			</div>
-			<div className={styles.controls}>
-				<Options
-					include={[redactorOptions.change, redactorOptions.delete]}
-					props={{
-						[redactorOptions.change]: {
-							onClick: () => setChanging(true),
-							className: `${styles.pen}`,
-							size: 20,
-						},
-						[redactorOptions.delete]: {
-							onClick: () => removeHomework(homework._id),
-							className: `${styles.remove}`,
-							size: 25,
-						},
-					}}
-					withRoleControl
-				/>
-			</div>
-
-			{changing &&
-				changeContentModalRoot &&
-				ReactDOM.createPortal(
-					<div className="modal" onMouseDown={() => setChanging(false)}>
-						<ChangeHomework
-							initState={homework}
-							confirm={(newHomework) => {
-								updateHomework(homework._id, newHomework);
-								setChanging(false);
-							}}
-							reject={() => setChanging(false)}
-						/>
-					</div>,
-					changeContentModalRoot,
-				)}
-		</div>
-	);
-};
 
 type CreateHomeworkModalProps = {
 	returnHomework: (hw: Omit<homework, '_id'>) => void;

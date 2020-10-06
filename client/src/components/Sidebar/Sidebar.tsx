@@ -34,7 +34,7 @@ const Sidebar: React.FC<{ logOut: () => void }> = ({ logOut }) => {
 	);
 
 	const userInfo = { first_name, last_name, photo_rec };
-	console.log(`${schoolName}/classes`);
+
 	return (
 		<div onMouseDown={(e) => e.stopPropagation()} className={styles.sidebar}>
 			<input type="checkbox" id={styles.check} />

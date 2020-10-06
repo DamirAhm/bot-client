@@ -51,7 +51,7 @@ function App() {
 											exact
 											path="/:schoolName/pickClass"
 											component={() =>
-												user.className ? (
+												!user.className ? (
 													withRedirect(
 														<PickClass setUser={setUser} />,
 														user.className === null,
