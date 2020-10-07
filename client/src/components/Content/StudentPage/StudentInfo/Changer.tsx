@@ -120,13 +120,13 @@ const Changers: {
 };
 
 const numberSequenceRegExp = /([0-9]*,\s*)*[0-9]+/;
-const Changer: React.FC<Props<string | number | boolean | object | Date | null>> = ({
+const Changer: React.FC<Props<string | number | boolean | Date | null | string[]>> = ({
 	name,
 	value,
 	changeHandler,
 }) => {
 	const { data, error } = useQuery<{ classes: { name: string }[]; roles: string[] }>(GET_INFO);
-
+	console.log(name, value);
 	if (error) return <div>{error}</div>;
 
 	return (
@@ -204,31 +204,9 @@ const Changer: React.FC<Props<string | number | boolean | object | Date | null>>
 					/>
 				</div>
 			)}
-			{typeof value === 'object' && value !== null && !Array.isArray(value) && (
-				<div className={`${styles.changer}`}>
-					{infos[name] || name}:
-					<div className={styles.nested}>
-						{Object.entries(value).map((entrie) => (
-							<StudentInfo
-								isChanging={true}
-								name={
-									entrie[0] as
-										| keyof StudentInfoType
-										| keyof StudentInfoType['settings']
-								}
-								value={entrie[1]}
-								key={name + entrie[0]}
-								changeHandler={(pole, value) =>
-									changeHandler(`${name}.${pole}`, value)
-								}
-							/>
-						))}
-					</div>
-				</div>
-			)}
 			{Array.isArray(value) && (
 				<div className={styles.changer}>
-					{infos[name] || name}:{' '}
+					{infos[name] || name}:
 					<input
 						type="text"
 						className={`${styles.changeString}`}

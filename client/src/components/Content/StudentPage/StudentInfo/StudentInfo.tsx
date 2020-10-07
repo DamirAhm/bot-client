@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import styles from './StudentInfo.module.css';
 import { changeHandler } from './Changer';
 import Changer from './Changer';
 import { roles, StudentInfoType } from '../../../../types';
 import { convertStudentInfoValue } from '../../../../utils/functions';
+import { UserContext } from '../../../../App';
 
 export const RoleNames: { [key: string]: string } = {
 	[roles.admin]: 'Админ',
@@ -16,6 +17,7 @@ type Props = {
 	value: number | string | object | boolean | Date | null;
 	changeHandler: changeHandler;
 	isChanging: boolean;
+	studentCanChange: string[];
 };
 
 export const infos: { [key: string]: string } = {
@@ -30,13 +32,24 @@ export const infos: { [key: string]: string } = {
 	schoolName: 'Школа',
 };
 
-const StudentInfo: React.FC<Props> = ({ name, value, changeHandler, isChanging }) => {
+const StudentInfo: React.FC<Props> = ({
+	name,
+	value,
+	changeHandler,
+	isChanging,
+	studentCanChange = [],
+}) => {
+	const { role } = useContext(UserContext);
+
 	if (!['__typename', null, '_id'].includes(name)) {
 		const text = convertStudentInfoValue(value, name);
 
 		return (
 			<div className={styles.info}>
-				{!isChanging || name === 'vkId' || name === 'schoolName' ? (
+				{!isChanging ||
+				name === 'vkId' ||
+				name === 'schoolName' ||
+				(role !== roles.admin && !studentCanChange.includes(name)) ? (
 					<div className={`${styles.showing}`}>
 						{typeof value == 'object' &&
 						value !== null &&
@@ -58,6 +71,7 @@ const StudentInfo: React.FC<Props> = ({ name, value, changeHandler, isChanging }
 											changeHandler={(pole, value) =>
 												changeHandler(`${name}.${pole}`, value)
 											}
+											studentCanChange={studentCanChange}
 										/>
 									))}
 								</div>
@@ -69,7 +83,40 @@ const StudentInfo: React.FC<Props> = ({ name, value, changeHandler, isChanging }
 						)}
 					</div>
 				) : (
-					<Changer changeHandler={changeHandler} name={name} value={value ?? 'Нету'} />
+					<>
+						{typeof value === 'object' &&
+						value !== null &&
+						!Array.isArray(value) &&
+						!(value instanceof Date) ? (
+							<div className={`${styles.changer}`}>
+								{infos[name] || name}:
+								<div className={styles.nested}>
+									{Object.entries(value).map((entrie) => (
+										<StudentInfo
+											studentCanChange={studentCanChange}
+											isChanging={true}
+											name={
+												entrie[0] as
+													| keyof StudentInfoType
+													| keyof StudentInfoType['settings']
+											}
+											value={entrie[1]}
+											key={name + entrie[0]}
+											changeHandler={(pole, value) =>
+												changeHandler(`${name}.${pole}`, value)
+											}
+										/>
+									))}
+								</div>
+							</div>
+						) : (
+							<Changer
+								changeHandler={changeHandler}
+								name={name}
+								value={value ?? 'Нету'}
+							/>
+						)}
+					</>
 				)}
 			</div>
 		);

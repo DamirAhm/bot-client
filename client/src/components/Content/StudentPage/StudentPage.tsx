@@ -241,6 +241,8 @@ const StudentPage: React.FC = () => {
 					if (studentOne) {
 						const { fullName, __typename, _id, ...info } = studentOne;
 
+						const studentCanChange = ['settings', ...Object.keys(info.settings)];
+
 						return (
 							<div className={styles.student}>
 								<div className={styles.header}>
@@ -251,6 +253,7 @@ const StudentPage: React.FC = () => {
 								<div className={styles.body}>
 									{Object.entries(info).map((entrie) => (
 										<StudentInfo
+											studentCanChange={studentCanChange}
 											name={
 												entrie[0] as
 													| keyof StudentInfoType
@@ -285,19 +288,17 @@ const StudentPage: React.FC = () => {
 													setChanging(false);
 												},
 											},
+											[redactorOptions.change]: {
+												onClick: () => setChanging(true),
+												className: `${styles.icon} ${styles.pen}`,
+												size: iconSize * 0.64,
+											},
 											[redactorOptions.confirm]: {
 												className: styles.icon + ' positive',
 												onClick: () => {
 													updateStudent();
 													setChanging(false);
 												},
-												allowOnlyAdmin: true,
-											},
-											[redactorOptions.change]: {
-												onClick: () => setChanging(true),
-												className: `${styles.icon} ${styles.pen}`,
-												size: iconSize * 0.64,
-												allowOnlyAdmin: true,
 											},
 											[redactorOptions.delete]: {
 												onClick: () => setWaitForConfirm(true),

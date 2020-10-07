@@ -21,8 +21,7 @@ const UserInfo: React.FC<{
 				{first_name} {last_name}
 			</span>
 			<button className={styles.logOut} onClick={logOut}>
-				{' '}
-				Выйти{' '}
+				Выйти
 			</button>
 		</div>
 	);
@@ -67,6 +66,7 @@ const Sidebar: React.FC<{ logOut: () => void }> = ({ logOut }) => {
 						to={`${schoolName}/classes/${className}`}
 						className={styles.link}
 						activeClassName={styles.active}
+						isActive={(_, location) => location.pathname.indexOf('/classes') !== -1}
 					>
 						Класс
 					</NavLink>
