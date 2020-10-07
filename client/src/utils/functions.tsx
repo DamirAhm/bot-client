@@ -40,7 +40,17 @@ export const parseContentByDate = <T extends c>(
 	content.sort((a, b) => Date.parse(a.to) - Date.parse(b.to));
 
 	for (let cont of content) {
-		const contDate = parseDate(cont.to, 'd MM');
+		let contDate;
+
+		if (isToday(new Date(cont.to))) {
+			contDate = 'Сегодня';
+		} else if (isDateWithOffset(new Date(cont.to), 1)) {
+			contDate = 'Завтра';
+		} else if (isDateWithOffset(new Date(cont.to), 2)) {
+			contDate = 'После завтра';
+		} else {
+			contDate = parseDate(cont.to, 'd MM');
+		}
 
 		if (Date.parse(cont.to) >= Date.now() || isToday(new Date(Date.parse(cont.to)))) {
 			parsedFutureCont[contDate] = [...(parsedFutureCont[contDate] || []), cont];
@@ -80,6 +90,13 @@ export function isToday(date: Date) {
 	const deltaIsLessThanDay =
 		Math.abs(date.getTime() - new Date().getTime()) <= 24 * 60 * 60 * 1000;
 	const datesAreSame = date.getDate() === new Date().getDate();
+	return deltaIsLessThanDay && datesAreSame;
+}
+export function isDateWithOffset(date: Date, offset: number = 0) {
+	const deltaIsLessThanDay =
+		Math.abs(date.getTime() - new Date().setDate(new Date().getDate() + offset)) <=
+		24 * 60 * 60 * 1000;
+	const datesAreSame = date.getDate() === new Date().getDate() + offset;
 	return deltaIsLessThanDay && datesAreSame;
 }
 
