@@ -45,7 +45,11 @@ const CHANGE_SCHEDULE = gql`
 	}
 `;
 
-type scheduleData = { schedule: string[][] | null; lessonsList: string[] | null };
+type scheduleData = {
+	schedule: string[][] | null;
+	lessonsList: string[] | null;
+	initialSchedule: string[][] | null;
+};
 
 const ScheduleSection: React.FC<{}> = ({}) => {
 	const { schoolName, className } = useParams<{ schoolName: string; className: string }>();
@@ -117,24 +121,30 @@ const ScheduleSection: React.FC<{}> = ({}) => {
 				//appends lesson after element at source index
 				newSchedule[+destination.droppableId].splice(destination.index, 0, lesson);
 
-				setScheduleData({ lessonsList: scheduleData?.lessonsList, schedule: newSchedule });
+				setScheduleData({
+					lessonsList: scheduleData?.lessonsList,
+					schedule: newSchedule,
+					initialSchedule: scheduleData?.initialSchedule,
+				});
 			}
 		}
 
 		setIsAnyLessonDragging(false);
 	};
-
 	useEffect(() => {
 		const newScheduleData: Partial<scheduleData> = {};
 		if (scheduleQuery.data) {
 			newScheduleData.schedule = scheduleQuery.data.schedule;
+			newScheduleData.initialSchedule = Array.from(scheduleQuery.data.schedule, (el) =>
+				Array.from(el),
+			);
 		}
 		if (lessonsQuery.data) {
 			newScheduleData.lessonsList = lessonsQuery.data.lessons;
 		}
 
 		setScheduleData(newScheduleData);
-	}, [scheduleQuery, lessonsQuery, scheduleQuery.data, lessonsQuery.data]);
+	}, [scheduleQuery, lessonsQuery]);
 
 	return (
 		<DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
@@ -150,6 +160,7 @@ const ScheduleSection: React.FC<{}> = ({}) => {
 									index={i}
 									isAnyLessonDragging={isAnyLessonDragging}
 									lessons={day}
+									initialLessons={scheduleData.initialSchedule[i]}
 								/>
 							))}
 						</div>
@@ -163,13 +174,14 @@ const ScheduleSection: React.FC<{}> = ({}) => {
 type ScheduleDayProps = {
 	index: number;
 	lessons: string[];
+	initialLessons: string[];
 	lessonsList: string[];
 	changeDay: (changes: string[], dayIndex: number) => void;
 	isAnyLessonDragging: boolean;
 };
 
 const ScheduleDay: React.FC<ScheduleDayProps> = memo(
-	({ index, lessons, lessonsList, changeDay, isAnyLessonDragging }) => {
+	({ index, lessons, lessonsList, changeDay, isAnyLessonDragging, initialLessons }) => {
 		const [changing, setChanging] = useState(false);
 		const [changes, setChanges] = useState(lessons);
 
@@ -177,7 +189,7 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(
 
 		const reject = () => {
 			setChanging(false);
-			setChanges(lessons);
+			setChanges(initialLessons);
 		};
 		const confirm = () => {
 			setChanging(false);
@@ -342,12 +354,14 @@ export default ScheduleSection;
 
 function scheduleDataExists(
 	data: Partial<scheduleData> | null,
-): data is { schedule: string[][]; lessonsList: string[] } {
+): data is { schedule: string[][]; lessonsList: string[]; initialSchedule: string[][] } {
 	return (
 		!!data &&
 		data.schedule !== undefined &&
+		data.initialSchedule !== undefined &&
 		data.lessonsList !== undefined &&
 		data.schedule !== null &&
+		data.initialSchedule !== null &&
 		data.lessonsList !== null
 	);
 }
