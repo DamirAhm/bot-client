@@ -1,7 +1,7 @@
 import { useApolloClient, useMutation, useQuery } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
 import React, { useContext } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
+import { Link, useHistory, useParams } from 'react-router-dom';
 import { UserContext } from '../../../App';
 import { Student, User } from '../../../types';
 import Suspender from '../../Common/Suspender/Suspender';
@@ -23,16 +23,17 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 			changeClass: Partial<Student> & { __typename: string };
 			__typename: string;
 		},
-		{ vkId: number; className: string }
+		{ vkId: number; className: string; schoolName: string }
 	>(CHANGE_CLASS);
 	const ApolloClient = useApolloClient();
 
 	const { uid } = useContext(UserContext);
-	const history = useHistory();
+	const AC = useApolloClient();
 
-	const onClick = (className: string) => {
+	const onClick = (className: string, schoolName: string) => {
 		changeClass({
 			variables: {
+				schoolName,
 				className,
 				vkId: uid,
 			},
@@ -44,96 +45,30 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 				},
 				__typename: 'Mutation',
 			},
+			refetchQueries: [
+				{
+					query: GET_STUDENTS_FOR_CLASS,
+					variables: {
+						className,
+						schoolName,
+					},
+				},
+				{
+					query: GET_STUDENT_BY_VK_ID,
+					variables: { vkId: uid },
+				},
+			],
 			update: async (proxy, response) => {
 				if (response.data) {
-					let data;
-					try {
-						data = proxy.readQuery<{ studentOne: Student }, { vkId: number }>({
-							query: GET_STUDENT_BY_VK_ID,
-							variables: {
-								vkId: uid,
-							},
-						});
-					} catch (e) {
-						data = await ApolloClient.query<{ studentOne?: Student }, { vkId: number }>(
-							{
-								query: GET_STUDENT_BY_VK_ID,
-								variables: {
-									vkId: uid,
-								},
-							},
-						).then((res) => res.data);
+					let { changeClass } = response.data;
 
-						if (!data.studentOne) {
-							return;
-						}
-					}
+					if (changeClass) {
+						const { __typename, ...student } = changeClass;
 
-					if (data) {
-						const { studentOne } = data;
-
-						if (studentOne) {
-							proxy.writeQuery<{ studentOne: Student | null }, { vkId: number }>({
-								query: GET_STUDENT_BY_VK_ID,
-								data: {
-									studentOne: { ...studentOne, class: null },
-								},
-							});
-
-							try {
-								const classesQuery = proxy.readQuery<
-									{ classes?: classPreview[] },
-									{ className: string }
-								>({
-									query: GET_CLASSES,
-									variables: {
-										className,
-									},
-								});
-								if (classesQuery?.classes) {
-									proxy.writeQuery<{ classes: classPreview[] | undefined }>({
-										query: GET_CLASSES,
-										data: {
-											classes: classesQuery.classes?.map((Class) =>
-												Class.name === className
-													? {
-															...Class,
-															studentsCount: Class.studentsCount + 1,
-													  }
-													: Class,
-											),
-										},
-									});
-								}
-							} catch (e) {}
-
-							try {
-								const studentsQuery = proxy.readQuery<
-									{ students?: studentPreview[] },
-									{ className: string }
-								>({
-									query: GET_STUDENTS_FOR_CLASS,
-									variables: {
-										className,
-									},
-								});
-								if (studentsQuery?.students) {
-									proxy.writeQuery<
-										{ students?: studentPreview[] },
-										{ className: string }
-									>({
-										query: GET_STUDENTS_FOR_CLASS,
-										variables: { className },
-										data: {
-											students: studentsQuery.students.concat([studentOne]),
-										},
-									});
-								}
-							} catch (e) {}
-
-							setUser((user) => (user ? { ...user, ...studentOne } : null));
-
-							history.push(`/classes/${className}`);
+						if (student) {
+							setUser((user) =>
+								user ? { ...user, ...student, schoolName, className } : null,
+							);
 						}
 					}
 				}
@@ -142,29 +77,34 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 	};
 
 	return (
-		<Suspender query={query}>
-			{(data?: { classes?: classPreview[] }) => {
-				if (data?.classes) {
-					return (
-						<div className={styles.container}>
-							<span className={styles.title}>В каком классе вы учитесь? 📚</span>
-							{data.classes.map((Class) => (
-								<div
-									onClick={() => onClick(Class.name)}
-									className={styles.class}
-									key={Class.name}
-								>
-									{' '}
-									{Class.name}{' '}
-								</div>
-							))}
-						</div>
-					);
-				} else {
-					return <div> Простите похоже у вас не получится выбрать класс 😕 </div>;
-				}
-			}}
-		</Suspender>
+		<>
+			<Suspender query={query}>
+				{(data?: { classes?: classPreview[] }) => {
+					if (data?.classes) {
+						return (
+							<div className={styles.container}>
+								<span className={styles.title}>В каком классе вы учитесь? 📚</span>
+								{data.classes.map((Class) => (
+									<div
+										onClick={() => onClick(Class.name, Class.schoolName)}
+										className={styles.class}
+										key={Class.name}
+									>
+										{Class.name}
+									</div>
+								))}
+							</div>
+						);
+					} else {
+						return <div> Простите похоже у вас не получится выбрать класс 😕 </div>;
+					}
+				}}
+			</Suspender>
+
+			<Link to={`/pickSchool`} className={styles.pickSchool}>
+				Сменить школу
+			</Link>
+		</>
 	);
 };
 

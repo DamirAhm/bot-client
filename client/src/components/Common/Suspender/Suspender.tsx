@@ -28,10 +28,9 @@ const Suspender: React.FC<Props> = ({
 	}
 
 	if (queries && queries.length) {
-		if (queries.some((q) => q.error))
+		if (queries.some((q) => q.error)) {
 			return (
 				<div>
-					{' '}
 					{queries.map((q, i) => {
 						if (q.error) {
 							if (ErrorElement) {
@@ -54,7 +53,7 @@ const Suspender: React.FC<Props> = ({
 					})}{' '}
 				</div>
 			);
-		else if (queries.some((q) => q.loading)) return fallback;
+		} else if (queries.some((q) => q.loading)) return fallback;
 		else if (queries.some((q) => q.data)) {
 			if (typeof children === 'function') return children(...queries.map((q) => q.data));
 			else return children;

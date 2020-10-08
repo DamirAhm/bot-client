@@ -11,7 +11,7 @@ import { gql } from 'apollo-boost';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { WithTypename, Class, redactorOptions, Student } from '../../../types';
 import { classPreview, GET_CLASSES } from '../Classes/Classes';
-import { Redirect, useParams } from 'react-router-dom';
+import { Redirect, useHistory, useParams } from 'react-router-dom';
 import Options from '../../Common/Options/Options';
 import Confirm from '../../Common/Confirm/Confirm';
 import Suspender from '../../Common/Suspender/Suspender';
@@ -38,7 +38,9 @@ const GET_CLASS = gql`
 
 const ClassPage: React.FC = () => {
 	const { className, schoolName } = useParams<{ className: string; schoolName: string }>();
+
 	const { uid, className: userClassName, setUser } = useContext(UserContext);
+	const history = useHistory();
 
 	const query = useQuery<{ classOne: Class | null }, { className: string; schoolName: string }>(
 		GET_CLASS,
@@ -110,8 +112,9 @@ const ClassPage: React.FC = () => {
 					} catch (e) {}
 
 					setUser((user) =>
-						user ? { ...user, className: response.data?.removed?.className } : null,
+						user ? { ...user, className: null, schoolName: null } : null,
 					);
+					history.push(`/pickClass/${schoolName || ''}`);
 				}
 			},
 		},

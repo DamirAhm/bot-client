@@ -12,10 +12,12 @@ import { changeTitle } from '../../../utils/functions';
 import { useParams } from 'react-router-dom';
 
 export const GET_CLASSES = gql`
-	query GetClasses($schoolName: String!) {
+	query GetClasses($schoolName: String) {
 		classes: classesForSchool(schoolName: $schoolName) {
 			studentsCount
 			name
+			schoolName
+			_id
 			__typename
 		}
 	}
@@ -29,6 +31,7 @@ export type classPreview = {
 	studentsCount: number;
 	name: string;
 	schoolName: string;
+	_id: string;
 };
 
 const Classes: React.FC = () => {

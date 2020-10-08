@@ -48,7 +48,9 @@ const Sidebar: React.FC<{ logOut: () => void }> = ({ logOut }) => {
 						to={`/${schoolName}/classes`}
 						className={styles.link}
 						activeClassName={styles.active}
-						isActive={(_, location) => location.pathname.indexOf('/classes') !== -1}
+						isActive={(_, location) =>
+							location.pathname.toLowerCase().indexOf('class') !== -1
+						}
 					>
 						Классы
 					</NavLink>
@@ -63,10 +65,12 @@ const Sidebar: React.FC<{ logOut: () => void }> = ({ logOut }) => {
 			) : (
 				<>
 					<NavLink
-						to={`${schoolName}/classes/${className}`}
+						to={`/${schoolName}/classes/${className}`}
 						className={styles.link}
 						activeClassName={styles.active}
-						isActive={(_, location) => location.pathname.indexOf('/classes') !== -1}
+						isActive={(_, location) =>
+							location.pathname.toLowerCase().indexOf('class') !== -1
+						}
 					>
 						Класс
 					</NavLink>

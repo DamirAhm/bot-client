@@ -182,3 +182,52 @@ export function memoize(fn: (...props: any) => any) {
 export function changeTitle(newTitle: string): void {
 	document.title = newTitle;
 }
+
+export const engToRuTranslits: { [key: string]: string } = {
+	a: 'а',
+	b: 'б',
+	v: 'в',
+	g: 'г',
+	d: 'д',
+	e: 'е',
+	yo: 'ё',
+	zh: 'ж',
+	z: 'з',
+	i: 'и',
+	y: 'й',
+	k: 'к',
+	l: 'л',
+	m: 'м',
+	n: 'н',
+	o: 'о',
+	p: 'п',
+	r: 'р',
+	s: 'с',
+	t: 'т',
+	u: 'у',
+	f: 'ф',
+	h: 'х',
+	c: 'ц',
+	ch: 'ч',
+	sh: 'ш',
+	"sh'": 'щ',
+	oo: 'у',
+	ee: 'и',
+	yu: 'ю',
+	ya: 'я',
+};
+export function retranslit(engWord: string) {
+	if (/(ch|sh|zh|sh\'|yo|yu|ya|oo|ee).test(engWord)/) {
+		for (const i of ['ch', 'sh', 'zh', "sh'", 'yo', 'yu', 'ya', 'oo', 'ee']) {
+			engWord = engWord.replace(new RegExp(i, 'g'), engToRuTranslits[i]);
+		}
+	}
+	for (const i of Object.keys(engToRuTranslits)) {
+		engWord = engWord.replace(new RegExp(i, 'g'), engToRuTranslits[i]);
+	}
+
+	return engWord;
+}
+export function capitalize(word: string) {
+	return word[0].toUpperCase() + word.slice(1);
+}

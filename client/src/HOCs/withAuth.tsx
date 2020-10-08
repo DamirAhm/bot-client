@@ -24,7 +24,7 @@ const withRedirect = (
 									to={
 										className !== null
 											? `/${schoolName}/classes/${className}`
-											: `/${schoolName}/pickClass`
+											: `/pickClass/${schoolName || ''}`
 									}
 								/>
 							)}

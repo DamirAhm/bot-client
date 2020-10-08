@@ -34,6 +34,7 @@ const ClassCreator: React.FC = () => {
 				name,
 				studentsCount: 0,
 				schoolName,
+				_id: new Date().toISOString(),
 				__typename: 'Class',
 			},
 		},

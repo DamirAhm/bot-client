@@ -186,7 +186,13 @@ const SchoolTC = composeWithMongoose(SchoolModel, customizationOptions);
 				type: `[${ClassTC.getType()}]`,
 				args: { schoolName: 'String' },
 				resolve: async ({ args: { schoolName } }) => {
-					const Classes = await DataBase.getClassesForSchool(schoolName);
+					let Classes;
+					if (schoolName) {
+						Classes = await DataBase.getClassesForSchool(schoolName);
+					} else {
+						Classes = await DataBase.getAllClasses();
+					}
+
 					return Classes || [];
 				},
 			});

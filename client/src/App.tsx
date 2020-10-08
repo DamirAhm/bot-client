@@ -4,6 +4,8 @@ import { Redirect, Route, Switch } from 'react-router';
 import { roles, setStateProp, User } from './types';
 import withRedirect from './HOCs/withAuth';
 import useAuth from './hooks/useAuth';
+import PickSchool from './components/Content/PickClass/PickSchool';
+import { useLocation } from 'react-router-dom';
 
 const Classes = lazy(() => import('./components/Content/Classes/Classes'));
 const Students = lazy(() => import('./components/Content/Students/Students'));
@@ -19,12 +21,13 @@ export const UserContext = React.createContext<
 >({
 	isAuth: false,
 	role: roles.student,
-	className: 'Нету',
+	className: null,
 	photo: '',
 	photo_rec: '',
 	last_name: '',
 	first_name: '',
 	uid: NaN,
+	schoolName: null,
 	setUser: () => void 0,
 });
 
@@ -32,7 +35,8 @@ type fn<T> = (value: T) => T;
 
 function App() {
 	const [user, onUser, logOut, setUser] = useAuth();
-
+	const location = useLocation();
+	console.log(location);
 	return (
 		<UserContext.Provider value={{ isAuth: user !== null, ...(user as User), setUser }}>
 			<div className={`wrapper`}>
@@ -49,7 +53,7 @@ function App() {
 									<Switch>
 										<Route
 											exact
-											path="/:schoolName/pickClass"
+											path="/pickClass/:schoolName?"
 											component={() =>
 												!user.className ? (
 													withRedirect(
@@ -58,7 +62,23 @@ function App() {
 													)
 												) : (
 													<Redirect
-														to={`${user.schoolName}/classes/${user.className}`}
+														to={`/${user.schoolName}/classes/${user.className}`}
+													/>
+												)
+											}
+										/>
+										<Route
+											exact
+											path="/pickSchool"
+											component={() =>
+												!user.schoolName ? (
+													withRedirect(
+														<PickSchool />,
+														user.className === null,
+													)
+												) : (
+													<Redirect
+														to={`/pickClass/${user.schoolName}`}
 													/>
 												)
 											}
@@ -96,7 +116,7 @@ function App() {
 										<Route
 											path="*"
 											render={() => (
-												<Redirect to={`${user.schoolName}/classes`} />
+												<Redirect to={`/${user.schoolName}/classes`} />
 											)}
 										/>
 									</Switch>

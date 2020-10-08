@@ -1,34 +1,86 @@
 .container {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-direction: column;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    height: min(100%, 350px);
+	width: max(60%, 200px);
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	height: min(100%, 350px);
 }
 
 .title {
-    font-size: 2rem;
-    margin-bottom: 10px;
-    color: var(--main);
+	font-size: 2rem;
+	margin-bottom: 20px;
+	color: var(--main);
+	text-align: center;
 }
 
 .class {
-    width: max(60%, 100px);
-    padding: 15px;
-    border-radius: 10px;
-    text-align: center;
-    background-color: var(--main);
-    font-size: 1.6rem;
-    border: 2px solid transparent;
-    cursor: pointer;
-    font-weight: bolder;
+	width: max(60%, 100px);
+	padding: 15px;
+	border-radius: 10px;
+	text-align: center;
+	background-color: var(--main);
+	font-size: 1.6rem;
+	border: 2px solid transparent;
+	cursor: pointer;
+	font-weight: bolder;
+	margin-bottom: 20px;
+	box-sizing: border-box;
 }
-.class:hover {
-    color: var(--main);
-    background-color: var(--primary);
-    border: 2px solid var(--main);
+.class:hover,
+.school:hover {
+	color: var(--main);
+	background-color: var(--primary);
+	border: 2px solid var(--main);
+}
+
+.pickSchool {
+	position: absolute;
+	background-color: var(--main);
+	padding: 10px;
+	color: white;
+	font-size: 1.6rem;
+	top: 20px;
+	right: 20px;
+	border-radius: 10px;
+}
+
+.city {
+	font-size: 1.7rem;
+	color: var(--main);
+	margin-bottom: 20px;
+	width: 100%;
+	padding-bottom: 5px;
+	border-bottom: 1px solid var(--main);
+}
+
+.citySchools {
+	display: flex;
+	width: 100%;
+	flex-direction: column;
+	height: auto;
+	margin-bottom: 30px;
+}
+
+.schools {
+	/* display: flex;
+	justify-content: space-around;
+	flex-wrap: wrap; */
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+	gap: 10px;
+}
+
+.school {
+	padding: 15px 10px;
+	border-radius: 10px;
+	text-align: center;
+	background-color: var(--main);
+	font-size: 1.6rem;
+	border: 2px solid transparent;
+	cursor: pointer;
+	font-weight: bolder;
 }

@@ -2,7 +2,7 @@ import { useApolloClient } from "@apollo/react-hooks";
 import md5 from "md5";
 import { useEffect, useState } from "react";
 import { GET_STUDENT_BY_VK_ID } from "../components/Content/StudentPage/StudentPage";
-import { User, Student, setStateProp } from "../types";
+import { User, Student, setStateProp, roles } from "../types";
 
 const useAuth = () => {
     const ApolloClient = useApolloClient();
@@ -21,7 +21,7 @@ const useAuth = () => {
         });
 
         if (studentOne) {
-            const { className, role, schoolName } = studentOne;
+            const { className = null, role, schoolName } = studentOne;
 
             return { ...vkUser, className, role, schoolName };
         } else {

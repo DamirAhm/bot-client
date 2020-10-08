@@ -31,13 +31,7 @@ export const GET_STUDENT_BY_VK_ID = gql`
 		}
 	}
 `;
-export const GET_CLASS_LIST = gql`
-	{
-		classMany {
-			name
-		}
-	}
-`;
+
 export const UPDATE_STUDENT = gql`
 	mutation UpdateStudent($record: UpdateOneStudentInput!, $vkId: Float!) {
 		updatedStudent: studentUpdateOne(filter: { vkId: $vkId }, record: $record) {
@@ -59,8 +53,8 @@ export const UPDATE_STUDENT = gql`
 	}
 `;
 export const CHANGE_CLASS = gql`
-	mutation ChangeClass($vkId: Int!, $className: String!) {
-		changeClass(vkId: $vkId, newClassName: $className) {
+	mutation ChangeClass($vkId: Int!, $className: String!, $schoolName: String!) {
+		changeClass(vkId: $vkId, newClassName: $className, schoolName: $schoolName) {
 			__typename
 			vkId
 			_id
@@ -78,7 +72,9 @@ export const DELETE_STUDENT = gql`
 `;
 
 const StudentPage: React.FC = () => {
+	const { schoolName } = useParams<{ schoolName: string }>();
 	const vkId = Number(useParams<{ vkId: string }>().vkId);
+
 	const [changing, setChanging] = useState(false);
 	const [diff, setDiff] = useState<{ [key: string]: any }>({});
 	const [removed, setRemoved] = useState(false);
@@ -90,7 +86,6 @@ const StudentPage: React.FC = () => {
 		{ studentOne: Student & { __typename: string } },
 		{ vkId: number }
 	>(GET_STUDENT_BY_VK_ID, { variables: { vkId } });
-
 	const [updater] = useMutation<
 		{
 			updatedStudent: {
@@ -101,9 +96,10 @@ const StudentPage: React.FC = () => {
 		},
 		{ record: Partial<Student>; vkId: number }
 	>(UPDATE_STUDENT);
+
 	const [changeClass] = useMutation<
 		{ changeClass: Partial<Student> & { __typename: string }; __typename: string },
-		{ vkId: number; className: string }
+		{ vkId: number; className: string; schoolName: string }
 	>(CHANGE_CLASS);
 	const [deleter] = useMutation<
 		{ removed: { vkId: number; __typename: string }; __typename: string },
@@ -168,9 +164,14 @@ const StudentPage: React.FC = () => {
 			const { className } = diff;
 			if (typeof className === 'string') {
 				changeClass({
-					variables: { className, vkId },
+					variables: { className, vkId, schoolName },
 					optimisticResponse: {
-						changeClass: { vkId, __typename: 'Student', className: className },
+						changeClass: {
+							vkId,
+							__typename: 'Student',
+							className: className,
+							schoolName: schoolName,
+						},
 						__typename: 'Mutation',
 					},
 				});
@@ -241,7 +242,11 @@ const StudentPage: React.FC = () => {
 					if (studentOne) {
 						const { fullName, __typename, _id, ...info } = studentOne;
 
-						const studentCanChange = ['settings', ...Object.keys(info.settings)];
+						const studentCanChange = [
+							'settings',
+							'className',
+							...Object.keys(info.settings),
+						];
 
 						return (
 							<div className={styles.student}>

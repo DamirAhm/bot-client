@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import styles from './StudentInfo.module.css';
 import StudentInfo, { infos } from './StudentInfo';
 import { gql } from 'apollo-boost';
@@ -6,6 +6,8 @@ import { useQuery } from '@apollo/react-hooks';
 import { StudentInfoType } from '../../../../types';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useParams } from 'react-router-dom';
+import { UserContext } from '../../../../App';
 
 export type changeHandler<T = string | number | boolean | string[] | number[]> = (
 	path: string,
@@ -45,8 +47,8 @@ type Props<T> = {
 };
 
 const GET_INFO = gql`
-	{
-		classes: classMany {
+	query GetInfo($schoolName: String!) {
+		classes: classesForSchool(schoolName: $schoolName) {
 			name
 		}
 		roles: getRoles
@@ -125,8 +127,13 @@ const Changer: React.FC<Props<string | number | boolean | Date | null | string[]
 	value,
 	changeHandler,
 }) => {
-	const { data, error } = useQuery<{ classes: { name: string }[]; roles: string[] }>(GET_INFO);
-	console.log(name, value);
+	const { schoolName } = useContext(UserContext);
+
+	const { data, error } = useQuery<
+		{ classes: { name: string }[]; roles: string[] },
+		{ schoolName: string }
+	>(GET_INFO, { variables: { schoolName: schoolName || 'Нету' } });
+
 	if (error) return <div>{error}</div>;
 
 	return (

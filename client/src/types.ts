@@ -107,8 +107,8 @@ export type User = {
     photo: string;
     photo_rec: string;
     role: roles;
-    className?: string;
-    schoolName?: string;
+    className: string | null;
+    schoolName: string | null;
 };
 
 export type setStateProp<T> = T | ((user: T) => T);
