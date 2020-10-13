@@ -314,6 +314,12 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 	return (
 		<>
 			<InfoSection
+				initiallyOpened={
+					!!(
+						announcementsQuery?.data?.announcements &&
+						announcementsQuery?.data?.announcements.length > 0
+					)
+				}
 				name="Обьявления"
 				Header={({ opened, onClick }) => (
 					<div

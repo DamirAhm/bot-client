@@ -305,6 +305,9 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 	return (
 		<>
 			<InfoSection
+				initiallyOpened={
+					!!(homeworkQuery?.data?.homework && homeworkQuery?.data?.homework.length > 0)
+				}
 				name="Домашняя работа"
 				Header={({ opened, onClick }) => (
 					<div
