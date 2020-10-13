@@ -183,15 +183,49 @@ export function changeTitle(newTitle: string): void {
 	document.title = newTitle;
 }
 
-export const engToRuTranslits: { [key: string]: string } = {
+const ruToEngTranslits: { [key: string]: string } = {
+	а: 'a',
+	б: 'b',
+	в: 'v',
+	г: 'g',
+	д: 'd',
+	е: 'e',
+	ё: 'yo',
+	ж: 'zh',
+	з: 'z',
+	и: 'i',
+	й: 'y',
+	к: 'k',
+	л: 'l',
+	м: 'm',
+	н: 'n',
+	о: 'o',
+	п: 'p',
+	р: 'r',
+	с: 's',
+	т: 't',
+	у: 'u',
+	ф: 'f',
+	х: 'h',
+	ц: 'c',
+	ч: 'ch',
+	ш: 'sh',
+	щ: 'shch',
+	ъ: '^',
+	ы: 'i^',
+	ь: '$',
+	э: 'e',
+	ю: 'yu',
+	я: 'ya',
+	дж: 'j',
+};
+const engToRuTranslits: { [key: string]: string } = {
 	a: 'а',
 	b: 'б',
 	v: 'в',
 	g: 'г',
 	d: 'д',
 	e: 'е',
-	yo: 'ё',
-	zh: 'ж',
 	z: 'з',
 	i: 'и',
 	y: 'й',
@@ -208,25 +242,65 @@ export const engToRuTranslits: { [key: string]: string } = {
 	f: 'ф',
 	h: 'х',
 	c: 'ц',
+	j: 'дж',
+	q: 'к',
+	x: 'кс',
+	yo: 'ё',
+	zh: 'ж',
+	'i^': 'ы',
 	ch: 'ч',
 	sh: 'ш',
-	"sh'": 'щ',
+	shch: 'щ',
 	oo: 'у',
 	ee: 'и',
 	yu: 'ю',
 	ya: 'я',
+	$: 'ь',
+	'^': 'ъ',
 };
-export function retranslit(engWord: string) {
-	if (/(ch|sh|zh|sh\'|yo|yu|ya|oo|ee).test(engWord)/) {
-		for (const i of ['ch', 'sh', 'zh', "sh'", 'yo', 'yu', 'ya', 'oo', 'ee']) {
-			engWord = engWord.replace(new RegExp(i, 'g'), engToRuTranslits[i]);
-		}
-	}
-	for (const i of Object.keys(engToRuTranslits)) {
-		engWord = engWord.replace(new RegExp(i, 'g'), engToRuTranslits[i]);
-	}
+export function translit(rusWord: string): string {
+	const specialCharacters = ['дж'];
 
-	return engWord;
+	if (rusWord && typeof rusWord === 'string') {
+		if (new RegExp(specialCharacters.join('|'), 'i').test(rusWord)) {
+			for (const i of specialCharacters) {
+				while (rusWord.indexOf(i) !== -1) {
+					rusWord = rusWord.replace(i, ruToEngTranslits[i]);
+				}
+			}
+		}
+		for (const i of Object.keys(ruToEngTranslits)) {
+			while (rusWord.indexOf(i) !== -1) {
+				rusWord = rusWord.replace(i, ruToEngTranslits[i]);
+			}
+		}
+
+		return rusWord;
+	} else {
+		return '';
+	}
+}
+export function retranslit(engWord: string) {
+	const specialCharacters = ['shch', 'ch', 'sh', 'zh', 'yo', 'yu', 'ya', 'oo', 'ee', 'i^'];
+
+	if (engWord && typeof engWord === 'string') {
+		if (new RegExp(specialCharacters.join('|'), 'i').test(engWord)) {
+			for (const i of specialCharacters) {
+				while (engWord.indexOf(i) !== -1) {
+					engWord = engWord.replace(i, engToRuTranslits[i]);
+				}
+			}
+		}
+		for (const i of Object.keys(engToRuTranslits)) {
+			while (engWord.indexOf(i) !== -1) {
+				engWord = engWord.replace(i, engToRuTranslits[i]);
+			}
+		}
+
+		return engWord;
+	} else {
+		return '';
+	}
 }
 export function capitalize(word: string) {
 	return word[0].toUpperCase() + word.slice(1);

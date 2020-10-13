@@ -1,13 +1,9 @@
 .container {
 	width: max(60%, 200px);
+	height: min(100%, 350px);
 	display: flex;
 	align-items: center;
 	flex-direction: column;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	height: min(100%, 350px);
 }
 
 .title {
@@ -49,12 +45,26 @@
 }
 
 .city {
-	font-size: 1.7rem;
-	color: var(--main);
 	margin-bottom: 20px;
 	width: 100%;
 	padding-bottom: 5px;
-	border-bottom: 1px solid var(--main);
+	border-bottom: 2px solid var(--main);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.city > span {
+	font-size: 1.7rem;
+	color: var(--main);
+}
+.city .add {
+	fill: var(--main);
+	border: 2px solid transparent;
+	border-radius: 5px;
+	cursor: pointer;
+}
+.city .add:hover {
+	border-color: var(--main);
 }
 
 .citySchools {
@@ -66,11 +76,8 @@
 }
 
 .schools {
-	/* display: flex;
-	justify-content: space-around;
-	flex-wrap: wrap; */
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
 	gap: 10px;
 }
 
@@ -83,4 +90,31 @@
 	border: 2px solid transparent;
 	cursor: pointer;
 	font-weight: bolder;
+}
+
+.createCity {
+	padding: 10px;
+	background-color: var(--main);
+	font-size: 1.6rem;
+	border-radius: 10px;
+	margin: 20px 0;
+	border: 2px solid transparent;
+	font-weight: bolder;
+	cursor: pointer;
+}
+.createCity.creatingCity {
+	padding: 6.5px;
+}
+.createCity * {
+	color: var(--main);
+}
+.createCity input {
+	padding: 5px;
+}
+.createCity:not(:hover) > span {
+	color: white;
+}
+.createCity:hover {
+	background-color: var(--primary);
+	border-color: var(--main);
 }

@@ -97,6 +97,14 @@ export type Class = {
     schoolName: string;
 };
 
+export type School = {
+    classes: Class[]
+} & schoolPreview
+export type schoolPreview = {
+    _id: string;
+    name: string;
+}
+
 export type announcement = content;
 export type WithTypename<T> = T & { __typename: string };
 

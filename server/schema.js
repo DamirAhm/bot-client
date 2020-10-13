@@ -587,7 +587,11 @@ const SchoolTC = composeWithMongoose(SchoolModel, customizationOptions);
 			type: ClassTC.getType(),
 			args: { schoolName: 'String!' },
 			resolve: async ({ args: { schoolName } }) => {
-				return await DataBase.createSchool(schoolName);
+				if (/^[a-z]*:\d*$/i.test(schoolName)) {
+					return await DataBase.createSchool(schoolName);
+				} else {
+					return null;
+				}
 			},
 		});
 	}

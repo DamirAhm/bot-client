@@ -79,7 +79,7 @@ const Options: React.FC<Props> = ({
 					);
 				}
 
-				const { allowOnlyAdmin, allowOnlyRedactor, renderIf, ...restProps } =
+				const { allowOnlyAdmin, allowOnlyRedactor, renderIf, onClick, ...restProps } =
 					props?.[e] || {};
 				if (
 					(allowOnlyRedactor && ![roles.admin, roles.contributor].includes(role)) ||
@@ -88,7 +88,7 @@ const Options: React.FC<Props> = ({
 				)
 					return null;
 				return (
-					<button key={i} onClick={(restProps.onClick as any) || (() => {})}>
+					<button key={i} onClick={(onClick as any) || (() => {})}>
 						{React.createElement(OptionsElements[e], {
 							...iconProps,
 							...restProps,

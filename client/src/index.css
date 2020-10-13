@@ -107,6 +107,14 @@ html {
 	justify-content: flex-end !important;
 }
 
+.centerer {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
 @media screen and (max-width: 776px) {
 	.content {
 		padding-top: 15px;

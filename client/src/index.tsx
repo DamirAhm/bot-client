@@ -93,8 +93,9 @@ const typeDefs = gql`
 const client = new ApolloClient({
 	uri: process.env.NODE_ENV === 'development' ? 'http://localhost:8080/graphql' : '/graphql',
 	cache: new InMemoryCache({
-		dataIdFromObject: (obj: any) => {
-			if (obj._id) {
+		dataIdFromObject: (obj: any | undefined) => {
+			console.log(obj);
+			if (obj?._id) {
 				return obj._id;
 			} else {
 				return null;
