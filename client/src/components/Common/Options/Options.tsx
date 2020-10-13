@@ -88,7 +88,7 @@ const Options: React.FC<Props> = ({
 				)
 					return null;
 				return (
-					<button key={i}>
+					<button key={i} onClick={(restProps.onClick as any) || (() => {})}>
 						{React.createElement(OptionsElements[e], {
 							...iconProps,
 							...restProps,

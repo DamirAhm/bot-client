@@ -88,7 +88,7 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 									<div
 										onClick={() => onClick(Class.name, Class.schoolName)}
 										className={styles.class}
-										key={Class.name}
+										key={Class.schoolName + ' ' + Class.name}
 									>
 										{Class.name}
 									</div>

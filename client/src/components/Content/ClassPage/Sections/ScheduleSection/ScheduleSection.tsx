@@ -243,9 +243,9 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(
 						))}
 						{/*//? In different element because confirm and reject should be on the bottom of component */}
 						{changing && !isAnyLessonDragging && (
-							<div className={styles.addLesson} onClick={addLesson}>
+							<button className={styles.addLesson} onClick={addLesson}>
 								Добавить урок
-							</div>
+							</button>
 						)}
 					</div>
 					{!changing ? (
@@ -339,11 +339,9 @@ const Lesson: React.FC<LessonProps> = ({
 								</option>
 							))}
 					</select>
-					<MdClose
-						className={'remove ' + styles.removeLesson}
-						size={20}
-						onClick={() => removeLesson(index)}
-					/>
+					<button className={styles.removeLesson} onClick={() => removeLesson(index)}>
+						<MdClose className={'remove '} size={20} />
+					</button>
 				</div>
 			)}
 		</DraggableEntity>

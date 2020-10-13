@@ -21,8 +21,7 @@ const useAuth = () => {
         });
 
         if (studentOne) {
-            const { className = null, role, schoolName } = studentOne;
-
+            const { className = null, role, schoolName = null } = studentOne;
             return { ...vkUser, className, role, schoolName };
         } else {
             return null;
