@@ -35,8 +35,7 @@ type fn<T> = (value: T) => T;
 
 function App() {
 	const [user, onUser, logOut, setUser] = useAuth();
-	const location = useLocation();
-	console.log(location);
+
 	return (
 		<UserContext.Provider value={{ isAuth: user !== null, ...(user as User), setUser }}>
 			<div className={`wrapper`}>
@@ -115,9 +114,13 @@ function App() {
 										/>
 										<Route
 											path="*"
-											render={() => (
-												<Redirect to={`/${user.schoolName}/classes`} />
-											)}
+											render={() =>
+												user.schoolName ? (
+													<Redirect to={`/${user.schoolName}/classes`} />
+												) : (
+													<Redirect to={`/pickSchool`} />
+												)
+											}
 										/>
 									</Switch>
 								</Suspense>

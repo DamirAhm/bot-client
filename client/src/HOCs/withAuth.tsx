@@ -22,7 +22,7 @@ const withRedirect = (
 							) : (
 								<Redirect
 									to={
-										className !== null
+										className !== null && schoolName !== null
 											? `/${schoolName}/classes/${className}`
 											: `/pickClass/${schoolName || ''}`
 									}

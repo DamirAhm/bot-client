@@ -42,47 +42,72 @@ const Sidebar: React.FC<{ logOut: () => void }> = ({ logOut }) => {
 				<GiHamburgerMenu className={styles.closed} size={20} />
 			</label>
 
-			{role === roles.admin ? (
+			{!schoolName || !className ? (
 				<>
-					<NavLink
-						to={`/${schoolName}/classes`}
-						className={styles.link}
-						activeClassName={styles.active}
-						isActive={(_, location) =>
-							location.pathname.toLowerCase().indexOf('class') !== -1
-						}
-					>
-						Классы
-					</NavLink>
-					<NavLink
-						to={`/students`}
-						className={styles.link}
-						activeClassName={styles.active}
-					>
-						Ученики
-					</NavLink>
+					{!schoolName ? (
+						<NavLink
+							to={`/pickSchool`}
+							className={styles.link}
+							activeClassName={styles.active}
+						>
+							Выбрать школу
+						</NavLink>
+					) : (
+						<NavLink
+							to={`/pickClass/${schoolName}`}
+							className={styles.link}
+							activeClassName={styles.active}
+						>
+							Выбрать класс
+						</NavLink>
+					)}
 				</>
 			) : (
 				<>
-					<NavLink
-						to={`/${schoolName}/classes/${className}`}
-						className={styles.link}
-						activeClassName={styles.active}
-						isActive={(_, location) =>
-							location.pathname.toLowerCase().indexOf('class') !== -1
-						}
-					>
-						Класс
-					</NavLink>
-					<NavLink
-						to={`/students/${uid}`}
-						className={styles.link}
-						activeClassName={styles.active}
-					>
-						Ученик
-					</NavLink>
+					{role === roles.admin ? (
+						<>
+							<NavLink
+								to={`/${schoolName}/classes`}
+								className={styles.link}
+								activeClassName={styles.active}
+								isActive={(_, location) =>
+									location.pathname.toLowerCase().indexOf('class') !== -1
+								}
+							>
+								Классы
+							</NavLink>
+							<NavLink
+								to={`/students`}
+								className={styles.link}
+								activeClassName={styles.active}
+							>
+								Ученики
+							</NavLink>
+						</>
+					) : (
+						<>
+							<NavLink
+								to={`/${schoolName}/classes/${className}`}
+								className={styles.link}
+								activeClassName={styles.active}
+								isActive={(_, location) =>
+									location.pathname.toLowerCase().indexOf('class') !== -1
+								}
+							>
+								Класс
+							</NavLink>
+							<NavLink
+								to={`/students/${uid}`}
+								className={styles.link}
+								activeClassName={styles.active}
+							>
+								Ученик
+							</NavLink>
+						</>
+					)}
 				</>
 			)}
+
 			{first_name && last_name && photo_rec && (
 				<NavLink to={`/students/${uid}`} className={styles.userInfo}>
 					<UserInfo userInfo={userInfo} logOut={logOut} />

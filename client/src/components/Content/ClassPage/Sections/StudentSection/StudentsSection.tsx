@@ -71,22 +71,10 @@ const StudentsSection: React.FC<{}> = ({}) => {
 	>(GET_STUDENTS_FOR_CLASS, { variables: { className, schoolName } });
 
 	const [remove] = useMutation<{ removed: boolean }, { vkId: number }>(REMOVE_STUDENT_FROM_CLASS);
-	const [changeClass] = useMutation<
-		WithTypename<{
-			student: WithTypename<studentPreview>;
-		}>,
-		{
-			vkId: number;
-			className: string;
-			schoolName: string;
-		}
-	>(ADD_STUDENT_TO_CLASS);
 
-	const [modalOpened, setModalOpened] = useState(false);
 	const [searchString, setSearchString] = useState('');
 
 	const { items, setFilter, setItems } = useList<studentPreview>([]);
-	const { role } = useContext(UserContext);
 
 	const removeStudent = (vkId: number) => {
 		remove({
@@ -107,50 +95,6 @@ const StudentsSection: React.FC<{}> = ({}) => {
 							students: data?.students.filter((e) => e.vkId !== vkId),
 						},
 					});
-				}
-			},
-		});
-	};
-	const addToClass = (student: studentPreview) => {
-		changeClass({
-			variables: { vkId: student.vkId, className, schoolName },
-			optimisticResponse: {
-				__typename: 'Mutation',
-				student: {
-					__typename: 'Student',
-					...student,
-				},
-			},
-			update: (proxy, result) => {
-				const data = proxy.readQuery<{ students: studentPreview[] }>({
-					query: GET_STUDENTS_FOR_CLASS,
-					variables: {
-						className,
-						schoolName,
-					},
-				});
-
-				const resData = result.data;
-
-				if (resData !== undefined && resData !== null) {
-					if (data?.students && result.data?.student) {
-						proxy.writeQuery({
-							query: GET_STUDENTS_FOR_CLASS,
-							variables: { className, schoolName },
-							data: {
-								students: data.students.concat([result.data.student]),
-							},
-						});
-						proxy.writeQuery({
-							query: GET_STUDENTS_FOR_CLASS,
-							variables: { className: student.className, schoolName },
-							data: {
-								students: data.students.filter(
-									({ _id }) => _id !== resData.student._id,
-								),
-							},
-						});
-					}
 				}
 			},
 		});
@@ -181,14 +125,6 @@ const StudentsSection: React.FC<{}> = ({}) => {
 				<Suspender query={{ data: items, loading, error }}>
 					{(data: Student[]) => (
 						<div className={`${styles.students}`}>
-							{role === roles.admin && searchString === '' && (
-								<div
-									className={styles.creator}
-									onClick={() => setModalOpened(true)}
-								>
-									Добавить ученика
-								</div>
-							)}
 							{data.map((e) => (
 								<div className={styles.student} key={e.vkId}>
 									<StudentPreview
@@ -210,171 +146,8 @@ const StudentsSection: React.FC<{}> = ({}) => {
 						</div>
 					)}
 				</Suspender>
-				{modalOpened && (
-					<StudentModal
-						className={className}
-						styles={styles}
-						addStudent={addToClass}
-						closeModal={() => setModalOpened(false)}
-					/>
-				)}
 			</>
 		</InfoSection>
 	);
 };
-
-const GET_STUDENTS_FOR_CHOOSING = gql`
-	fragment StudentPreview on Student {
-		vkId
-		className
-		role
-		fullName
-		_id
-	}
-
-	query GetStudentsForChoosing($schoolName: String!) {
-		students: studentsFromSchool(schoolName: $schoolName) {
-			...StudentPreview
-		}
-	}
-`;
-
-type StudentModalProps = {
-	closeModal: () => void;
-	addStudent: (student: studentPreview) => void;
-	styles: { [key: string]: string };
-	className: string;
-};
-
-const StudentModal: React.FC<StudentModalProps> = ({ closeModal, addStudent, styles }) => {
-	const { schoolName, className } = useParams<{ schoolName: string; className: string }>();
-
-	const sorts: sort[] = [
-		{
-			name: 'Имени',
-			sort: (
-				{ fullName: aName = '' }: studentPreview,
-				{ fullName: bName = '' }: studentPreview,
-			) => (aName > bName ? 1 : -1),
-		},
-		{
-			name: 'Vk id',
-			sort: (a: studentPreview, b: studentPreview) => a.vkId - b.vkId,
-		},
-		{
-			name: 'Имени класса',
-			sort: (
-				{ fullName: aName = '' }: studentPreview,
-				{ fullName: bName = '' }: studentPreview,
-			) => {
-				if (aName.toLowerCase() === 'нету') return -1;
-				if (bName.toLowerCase() === 'нету') return 1;
-				return aName > bName ? 1 : -1;
-			},
-		},
-	];
-
-	const onlyFromSchool = useState(true);
-
-	const query = useQuery<{ students: studentPreview[]; schoolName?: string }>(
-		GET_STUDENTS_FOR_CHOOSING,
-		{ variables: { schoolName: onlyFromSchool ? schoolName : undefined } },
-	);
-	const [searchText, setText] = useState('');
-	const { items, setFilter, setSort, setItems } = useList<studentPreview>(
-		[],
-		(student: studentPreview) => student.className !== className,
-		sorts[2].sort,
-	);
-
-	const setSearchText = (str: string) => {
-		str = str.toLowerCase();
-		setText(str);
-		setFilter(
-			({ fullName = '', className = '', vkId }: studentPreview) =>
-				fullName.toLowerCase().search(str) !== -1 ||
-				vkId.toString().search(str) !== -1 ||
-				className.toLowerCase().search(str) !== -1,
-			(student: studentPreview) => student.className !== className,
-		);
-	};
-
-	const setSorting = (name: string) => {
-		const sort = sorts.find((sort) => sort.name === name)?.sort;
-		if (sort) {
-			setSort(sort);
-		} else {
-			setSort(() => 1);
-		}
-	};
-
-	useEffect(() => {
-		if (query.data?.students) setItems(query.data.students);
-	}, [query, setItems]);
-
-	if (modalEl) {
-		return ReactDOM.createPortal(
-			<div className={'modal'} onClick={closeModal}>
-				<div className={styles.chooseStudent} onClick={(e) => e.stopPropagation()}>
-					<span className={styles.title}>
-						Выберите ученика которого необходимо добавить
-					</span>
-					<Suspender query={query}>
-						<div className={styles.studentsChooser}>
-							<Filters
-								className={styles.filters}
-								setSearchText={setSearchText}
-								sortsList={sorts}
-								setSort={setSorting}
-							/>
-							<div className={`${styles.chooser} ${styles.tableHead}`}>
-								<span className={styles.chooser_name}>Имя</span>
-								<span className={styles.chooser_vkId}>vkId</span>
-								<span className={styles.chooser_className}>Класс</span>
-							</div>
-							{items.map((student: studentPreview) => (
-								<StudentPicker
-									onClick={() => {
-										addStudent(student);
-										closeModal();
-									}}
-									key={student.vkId}
-									student={student}
-									searchText={searchText}
-								/>
-							))}
-						</div>
-					</Suspender>
-				</div>
-			</div>,
-			modalEl,
-		);
-	}
-	return null;
-};
-
-const StudentPicker: React.FC<{
-	student: studentPreview;
-	onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-	searchText: string;
-}> = ({ student: { fullName = 'Имя', vkId }, onClick, searchText }) => {
-	const { className = 'Нету', schoolName = 'Нету' } = useParams<{
-		className: string;
-		schoolName: string;
-	}>();
-
-	const highlighter = (str: string | number) => {
-		return highlightSearch(str.toString(), searchText);
-	};
-
-	return (
-		<div key={vkId} className={styles.chooser} onClick={onClick}>
-			<span className={styles.chooser_name}>{highlighter(fullName)}</span>
-			<span className={styles.chooser_vkId}>{highlighter(vkId)}</span>
-			<span className={styles.chooser_className}>{highlighter(className)}</span>
-			<span className={styles.chooser_className}>{highlighter(schoolName)}</span>
-		</div>
-	);
-};
-
 export default React.memo(StudentsSection);

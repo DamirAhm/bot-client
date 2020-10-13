@@ -1,107 +1,110 @@
 .days {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    justify-items: center;
-    margin-bottom: 20px;
-    gap: 20px 20px;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	justify-items: center;
+	margin-bottom: 20px;
+	gap: 20px 20px;
 }
 
 .day {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: center;
+	height: 100%;
 }
 .droppableDay {
-    padding: 10px 0;
-    background-color: var(--main);
-    border-radius: 20px;
-    width: 100%;
-    position: relative;
+	padding: 10px 0;
+	background-color: var(--main);
+	border-radius: 20px;
+	width: 100%;
+	position: relative;
+}
+.droppableDay:focus {
+	outline: 2px solid #2a87d0;
 }
 
 .lessons {
-    display: flex;
-    flex-direction: column;
-    min-width: 100%;
+	display: flex;
+	flex-direction: column;
+	min-width: 100%;
 }
 .lessonDraging {
-    margin-bottom: 1.8rem;
+	margin-bottom: 1.8rem;
 }
 .lesson {
-    padding: 5px 15px 5px;
-    font-size: 1.4rem;
-    align-self: start;
-    width: 100%;
+	padding: 5px 15px 5px;
+	font-size: 1.4rem;
+	align-self: start;
+	width: 100%;
 }
 .lessons .changingLlesson:last-of-type {
-    padding: 0 15px 0;
+	padding: 0 15px 0;
 }
 
 .dayName {
-    font-size: 1.8rem;
-    align-self: center;
-    margin-bottom: 5px;
-    justify-self: center;
-    cursor: pointer;
+	font-size: 1.8rem;
+	align-self: center;
+	margin-bottom: 5px;
+	justify-self: center;
+	cursor: pointer;
 }
 
 .addLesson {
-    align-self: center;
-    cursor: pointer;
-    padding: 0.2rem 1.2rem;
-    border-radius: 10px;
-    margin-bottom: 5px;
-    box-sizing: border-box;
-    border: 2px solid transparent;
-    font-size: 1.4rem;
-    align-self: center;
+	align-self: center;
+	cursor: pointer;
+	padding: 0.2rem 1.2rem;
+	border-radius: 10px;
+	margin-bottom: 5px;
+	box-sizing: border-box;
+	border: 2px solid transparent;
+	font-size: 1.4rem;
+	align-self: center;
 }
 .addLesson:hover {
-    border: 2px solid var(--accent);
+	border: 2px solid var(--accent);
 }
 
 .lessonChange {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 
 .selectLesson {
-    height: 1.6rem;
-    border-radius: 5px;
-    width: max(80%, 50px);
+	height: 1.6rem;
+	border-radius: 5px;
+	width: max(80%, 50px);
 }
 
 .removeLesson {
-    margin-left: 5px;
+	margin-left: 5px;
 }
 
 .pen {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    visibility: hidden;
-    cursor: pointer;
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	visibility: hidden;
+	cursor: pointer;
 }
 
 .day:hover .pen {
-    visibility: visible;
+	visibility: visible;
 }
 
 .changers {
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    justify-self: end;
+	width: 100%;
+	display: flex;
+	justify-content: space-around;
+	justify-self: end;
 }
 
 .changer {
-    cursor: pointer;
+	cursor: pointer;
 }
 
 select,
 option {
-    color: var(--main);
+	color: var(--main);
 }

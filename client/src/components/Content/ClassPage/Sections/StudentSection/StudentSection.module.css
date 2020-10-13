@@ -48,6 +48,8 @@
 	font-size: 1.6rem;
 	cursor: pointer;
 	padding: 17px;
+	max-width: 50%;
+	min-width: 200px;
 }
 
 .tableHead {
