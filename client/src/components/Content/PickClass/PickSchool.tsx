@@ -2,10 +2,20 @@ import { useMutation, useQuery } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import useList from '../../../hooks/useList';
 import { redactorOptions, schoolPreview } from '../../../types';
-import { capitalize, retranslit, translit } from '../../../utils/functions';
+import {
+	capitalize,
+	changeTitle,
+	highlightSearch,
+	retranslit,
+	translit,
+} from '../../../utils/functions';
 import Options from '../../Common/Options/Options';
 import Suspender from '../../Common/Suspender/Suspender';
+import Filters from '../../Filters/Filters';
+import { classPreview } from '../Classes/Classes';
+import { sort } from '../Students/Students';
 import styles from './PickClass.module.css';
 
 export const GET_SCHOOLS_NAMES = gql`
@@ -52,13 +62,47 @@ export const parseSchoolsByCity = (schools: string[]): Map<string, string[]> => 
 	return parsedSchools;
 };
 
+type cityEntrie = [string, string[]];
+
 const PickSchool: React.FC<{}> = ({}) => {
 	const [creatingCity, setCreatingCity] = useState(false);
-	const [parsedSchools, setParsedSchools] = useState<Map<string, string[]>>(new Map());
 	const inputRef = useRef<HTMLInputElement>(null);
+
+	const { items, setFilter, setSort, setItems, setMap } = useList<cityEntrie>([]);
 
 	const query = useQuery<{ schools: { name: string }[] }>(GET_SCHOOLS_NAMES);
 	const [create] = useMutation<{ newSchool: schoolPreview }, { name: string }>(CREATE_SCHOOL);
+
+	const [searchText, setText] = useState('');
+
+	const setSearchText = (str: string) => {
+		str = str.toLowerCase();
+
+		const isMatch = (c: cityEntrie, str: string): boolean =>
+			retranslit(c[0]).search(str) !== -1 ||
+			c[1].some((number) => number.search(str) !== -1) ||
+			(str.split(' ').length > 1 && str.split(' ').some((str) => isMatch(c, str)));
+
+		setText(str);
+		setFilter((c) => isMatch(c, str));
+		setMap(([_, numbers]) => {
+			if (numbers.some((number) => number.search(str) !== -1)) {
+				return [_, numbers.filter((number) => number.search(str) !== -1)];
+			} else if (
+				str
+					.split(' ')
+					.some((substr) => numbers.some((number) => number.search(substr) !== -1))
+			) {
+				return [
+					_,
+					numbers.filter((number) =>
+						str.split(' ').some((substr) => number.search(substr) !== -1),
+					),
+				];
+			}
+			return [_, numbers];
+		});
+	};
 
 	const createSchool = (city: string) => {
 		const number = prompt('Введите номер школы');
@@ -93,19 +137,25 @@ const PickSchool: React.FC<{}> = ({}) => {
 			alert('Номер школы должен быть цифрой');
 		}
 	};
-
 	const createCity = (city: string) => {
-		setParsedSchools(new Map([...parsedSchools.entries(), [translit(city), []]]));
+		setItems([...items, [translit(city), []]]);
 		setCreatingCity(false);
+	};
+
+	const highlighter = (str: string) => {
+		return highlightSearch(str, searchText);
 	};
 
 	useEffect(() => {
 		if (query.data?.schools) {
 			const newParsedSchools = parseSchoolsByCity(query.data.schools.map(({ name }) => name));
 
-			setParsedSchools(newParsedSchools);
+			setItems([...newParsedSchools.entries()]);
 		}
 	}, [query]);
+	useEffect(() => {
+		changeTitle('Выберите школу');
+	});
 
 	return (
 		<div className="centerer">
@@ -114,6 +164,11 @@ const PickSchool: React.FC<{}> = ({}) => {
 					<div>
 						<span className={styles.title}>В какой школе вы учитесь? 🏫</span>
 					</div>
+					<Filters
+						inputProps={{ className: styles.filterInput }}
+						className={styles.filters}
+						setSearchText={setSearchText}
+					/>
 					<div
 						className={`${styles.createCity} ${
 							creatingCity ? styles.creatingCity : ''
@@ -135,22 +190,24 @@ const PickSchool: React.FC<{}> = ({}) => {
 							<span> Добавить город </span>
 						)}
 					</div>
-					{[...parsedSchools.entries()].map(([city, schools]) => (
+					{items.map(([city, schools]) => (
 						<div className={styles.citySchools} key={city}>
 							<div className={styles.city}>
-								<span>{capitalize(retranslit(city))}</span>
+								<span>{highlighter(capitalize(retranslit(city)))}</span>
 								<Add onClick={() => createSchool(city)} />
 							</div>
 							<div className={styles.schools}>
-								{schools.map((number) => (
-									<Link
-										to={`/pickClass/${`${city}:${number}`}`}
-										className={styles.school}
-										key={`${city}:${number}`}
-									>
-										{number}
-									</Link>
-								))}
+								{schools
+									.sort((a, b) => +b - +a)
+									.map((number) => (
+										<Link
+											to={`/pickClass/${`${city}:${number}`}`}
+											className={styles.school}
+											key={`${city}:${number}`}
+										>
+											{highlighter(number)}
+										</Link>
+									))}
 							</div>
 						</div>
 					))}

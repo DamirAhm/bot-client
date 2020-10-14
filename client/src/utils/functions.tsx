@@ -9,7 +9,7 @@ export const highlightSearch = (
 	str: string,
 	searchString: string,
 	highlightClass = 'highlight',
-) => {
+): JSX.Element => {
 	if (searchString.trim() !== '') {
 		const string = str.toLowerCase();
 		searchString = searchString.toLowerCase();
@@ -17,14 +17,21 @@ export const highlightSearch = (
 		if (ind !== -1) {
 			return (
 				<span>
-					{' '}
-					{str.slice(0, ind)}{' '}
+					{str.slice(0, ind)}
 					<span className={highlightClass}>
-						{' '}
-						{str.slice(ind, ind + searchString.length)}{' '}
-					</span>{' '}
-					{str.slice(ind + searchString.length, str.length - ind + searchString.length)}{' '}
+						{str.slice(ind, ind + searchString.length)}
+					</span>
+					{str.slice(ind + searchString.length, str.length - ind + searchString.length)}
 				</span>
+			);
+		} else if (
+			searchString.split(' ').length > 1 &&
+			searchString.split(' ').some((substr) => string.search(substr) !== -1)
+		) {
+			return highlightSearch(
+				string,
+				searchString.split(' ').find((substr) => string.search(substr) !== -1) as string,
+				highlightClass,
 			);
 		}
 	}

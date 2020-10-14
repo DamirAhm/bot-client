@@ -1,9 +1,10 @@
 import { useApolloClient, useMutation, useQuery } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Link, useHistory, useParams } from 'react-router-dom';
 import { UserContext } from '../../../App';
 import { Student, User } from '../../../types';
+import { changeTitle } from '../../../utils/functions';
 import Suspender from '../../Common/Suspender/Suspender';
 import { classPreview, GET_CLASSES } from '../Classes/Classes';
 import { GET_STUDENTS_FOR_CLASS } from '../ClassPage/Sections/StudentSection/StudentsSection';
@@ -75,6 +76,10 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 			},
 		});
 	};
+
+	useEffect(() => {
+		changeTitle('Выберите школу');
+	});
 
 	return (
 		<>

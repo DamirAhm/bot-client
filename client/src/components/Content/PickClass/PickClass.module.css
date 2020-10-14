@@ -13,6 +13,13 @@
 	text-align: center;
 }
 
+.filters {
+	margin: 20px 0;
+}
+.filters .filterInput {
+	width: 100% !important;
+}
+
 .class {
 	width: max(60%, 100px);
 	padding: 15px;
@@ -53,7 +60,7 @@
 	justify-content: space-between;
 	align-items: center;
 }
-.city > span {
+.city span {
 	font-size: 1.7rem;
 	color: var(--main);
 }
