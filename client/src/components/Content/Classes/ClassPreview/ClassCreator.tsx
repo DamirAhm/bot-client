@@ -3,31 +3,35 @@ import styles from './ClassPreview.module.css';
 import { gql } from 'apollo-boost';
 import { useMutation } from '@apollo/react-hooks';
 import { GET_CLASSES, classPreview } from '../Classes';
-import { Class, redactorOptions, WithTypename } from '../../../../types';
+import { redactorOptions, WithTypename } from '../../../../types';
 import Options from '../../../Common/Options/Options';
 import { useParams } from 'react-router-dom';
-const CREATE_CLASS = gql`
+
+export const CREATE_CLASS = gql`
 	mutation CreateClass($className: String!, $schoolName: String!) {
 		#    createClass(name: $name) @client
 		classCreateOne(className: $className, schoolName: $schoolName) {
 			name
-			__typename
+			schoolName
 			studentsCount
+			_id
+			__typename
 		}
 	}
 `;
 
-const ClassCreator: React.FC = () => {
-	const { schoolName } = useParams<{ schoolName: string }>();
+const ClassCreator: React.FC<{ schoolName: string }> = ({ schoolName }) => {
 	const [creating, setCreating] = useState<boolean>(false);
 	const [name, setName] = useState('');
 	const [error, setError] = useState<string | null>(null);
+
 	const [createClass] = useMutation<
 		{ classCreateOne: WithTypename<classPreview> },
-		{ name: string }
+		{ className: string; schoolName: string }
 	>(CREATE_CLASS, {
 		variables: {
-			name: name.toUpperCase().replace(/\s/g, ''),
+			className: name.toUpperCase().replace(/\s/g, ''),
+			schoolName,
 		},
 		optimisticResponse: {
 			classCreateOne: {
@@ -42,10 +46,12 @@ const ClassCreator: React.FC = () => {
 			if (data.data) {
 				proxy.writeQuery({
 					query: GET_CLASSES,
+					variables: { schoolName },
 					data: {
 						classes: proxy
 							.readQuery<{ classes: WithTypename<classPreview>[] }>({
 								query: GET_CLASSES,
+								variables: { schoolName },
 							})
 							?.classes.concat([data.data?.classCreateOne]),
 					},
@@ -106,7 +112,7 @@ const ClassCreator: React.FC = () => {
 						/>
 					</form>
 				) : (
-					'Create class'
+					'Создать класс'
 				)}
 			</div>
 		</div>

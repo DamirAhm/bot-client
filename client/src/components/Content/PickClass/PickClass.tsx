@@ -1,7 +1,6 @@
-import { useApolloClient, useMutation, useQuery } from '@apollo/react-hooks';
-import { gql } from 'apollo-boost';
+import { useMutation, useQuery } from '@apollo/react-hooks';
 import React, { useContext, useEffect, useState } from 'react';
-import { Link, useHistory, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { UserContext } from '../../../App';
 import useList from '../../../hooks/useList';
 import { Student, User } from '../../../types';
@@ -9,9 +8,9 @@ import { changeTitle, highlightSearch } from '../../../utils/functions';
 import Suspender from '../../Common/Suspender/Suspender';
 import Filters from '../../Filters/Filters';
 import { classPreview, GET_CLASSES } from '../Classes/Classes';
+import ClassCreator from '../Classes/ClassPreview/ClassCreator';
 import { GET_STUDENTS_FOR_CLASS } from '../ClassPage/Sections/StudentSection/StudentsSection';
 import { CHANGE_CLASS, GET_STUDENT_BY_VK_ID } from '../StudentPage/StudentPage';
-import { studentPreview } from '../Students/Students';
 import styles from './PickClass.module.css';
 
 type fn<T> = (value: T) => T;
@@ -35,9 +34,12 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 		return highlightSearch(str, searchText);
 	};
 
-	const query = useQuery<{ classes: classPreview[] }, { schoolName: string }>(GET_CLASSES, {
-		variables: { schoolName },
-	});
+	const classesQuery = useQuery<{ classes: classPreview[] }, { schoolName: string }>(
+		GET_CLASSES,
+		{
+			variables: { schoolName },
+		},
+	);
 	const [changeClass] = useMutation<
 		{
 			changeClass: Partial<Student> & { __typename: string };
@@ -93,35 +95,39 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 	};
 
 	useEffect(() => {
-		if (query.data?.classes) {
-			setItems(query.data.classes);
+		if (classesQuery.data?.classes) {
+			setItems(classesQuery.data.classes);
 		}
-	}, [query]);
+	}, [classesQuery]);
 	useEffect(() => {
 		changeTitle('Выберите класс');
 	});
 
 	return (
 		<div className="centerer">
-			<Suspender query={query}>
+			<Suspender query={classesQuery}>
 				<div className={styles.container}>
-					<div>
-						<span className={styles.title}>В каком классе вы учитесь? 📚</span>
+					<div className={styles.title}>
+						<span>В каком классе вы учитесь? 📚</span>
 					</div>
 					<Filters
 						inputProps={{ className: styles.filterInput }}
 						className={styles.filters}
 						setSearchText={setSearchText}
 					/>
-					{items.map((Class) => (
-						<div
-							onClick={() => onClick(Class.name, Class.schoolName)}
-							className={styles.class}
-							key={Class.schoolName + ' ' + Class.name}
-						>
-							{highlighter(Class.name)}
-						</div>
-					))}
+					{schoolName && <ClassCreator schoolName={schoolName} />}
+					{items.map(
+						(Class) =>
+							Class && (
+								<div
+									onClick={() => onClick(Class.name, Class.schoolName)}
+									className={styles.class}
+									key={Class.schoolName + ' ' + Class.name}
+								>
+									{highlighter(Class.name)}
+								</div>
+							),
+					)}
 				</div>
 			</Suspender>
 

@@ -91,7 +91,7 @@ const Classes: React.FC = () => {
 				sortsList={sorts}
 				setSort={setSorting}
 			/>
-			<ClassCreator />
+			<ClassCreator schoolName={schoolName} />
 			<Suspender query={query}>
 				<div className={styles.classes}>
 					{items.map((c) => (

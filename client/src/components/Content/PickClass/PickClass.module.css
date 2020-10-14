@@ -9,15 +9,22 @@
 .title {
 	font-size: 2rem;
 	margin-bottom: 20px;
-	color: var(--main);
 	text-align: center;
+}
+.title span {
+	color: var(--main);
 }
 
 .filters {
-	margin: 20px 0;
+	margin: 20px 0 10px;
+	width: 70%;
+	max-width: 400px;
 }
 .filters .filterInput {
 	width: 100% !important;
+}
+.filters .filterInput input {
+	padding: 7px;
 }
 
 .class {
@@ -35,9 +42,12 @@
 }
 .class:hover,
 .school:hover {
-	color: var(--main);
 	background-color: var(--primary);
 	border: 2px solid var(--main);
+}
+.class:hover *,
+.school:hover * {
+	color: var(--main);
 }
 
 .pickSchool {

@@ -1,93 +1,105 @@
 .preview {
-    justify-self: center;
-    padding: 16px 16px 16px 16px;
-    background-color: var(--main);
-    border-radius: 18px;
-    width: 80%;
-    display: flex;
-    font-size: 1.6rem;
-    font-weight: 500;
-    justify-content: space-between;
+	justify-self: center;
+	padding: 14px 16px 16px 16px;
+	background-color: var(--main);
+	border-radius: 18px;
+	width: 80%;
+	display: flex;
+	font-size: 1.6rem;
+	font-weight: 500;
+	justify-content: space-between;
+	border: 2px solid transparent;
+	min-width: 230px;
+}
+.preview:not(.creator_stab) {
+	padding: 10px 12px 12px 12px;
+}
+.preview:hover.creator_stab {
+	border-color: var(--main);
+	background-color: transparent;
+	color: var(--main);
+	font-weight: bolder;
 }
 
 .link {
-    width: 100%;
-    display: flex;
-    font-size: 1.6rem;
-    font-weight: 500;
-    justify-content: space-between;
-    text-decoration: none;
+	width: 100%;
+	display: flex;
+	font-size: 1.6rem;
+	font-weight: 500;
+	justify-content: space-between;
+	text-decoration: none;
 }
 
 .name {
-    cursor: pointer;
-    overflow: visible;
+	cursor: pointer;
+	overflow: visible;
 }
 
 .remove > * {
-    color: var(--negative);
-    align-self: start;
-    cursor: pointer;
-    letter-spacing: 0;
+	color: var(--negative);
+	align-self: start;
+	cursor: pointer;
+	letter-spacing: 0;
 }
 
 .remove:hover > * {
-    color: var(--accent);
+	color: var(--accent);
 }
 
 .wrapper {
-    display: flex;
-    justify-content: center;
-    width: 100%;
+	display: flex;
+	justify-content: center;
+	width: 100%;
 }
 
 .creator {
-    display: flex;
-    justify-content: center;
-    background-color: var(--main);
-    box-sizing: border-box;
-    height: 50px;
-    align-self: center;
-    width: 35%;
-    margin: 25px 0;
+	display: flex;
+	justify-content: center;
+	background-color: var(--main);
+	box-sizing: border-box;
+	height: 50px;
+	align-self: center;
+	width: 35%;
+	margin: 25px 0;
 }
 .creator_stab {
-    cursor: pointer;
+	cursor: pointer;
 }
 
 .creator form {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
 }
 
 .creator form > button {
-    cursor: pointer;
+	cursor: pointer;
 }
 
 .creator form input {
-    width: 60%;
-    color: var(--main);
-    padding: 5px;
-    border-radius: 8px;
+	width: 60%;
+	color: var(--main);
+	padding: 5px;
+	border-radius: 8px;
+	text-align: center;
 }
 .creator .with_error {
-    outline-color: var(--negative);
+	outline-color: var(--negative);
 }
 .creator .with_error::placeholder,
 .creator .with_error::-webkit-input-placeholder {
-    color: var(--negative);
+	color: var(--negative);
 }
 
 @media screen and (max-width: 776px) {
-    .creator {
-        width: calc(80% - 20px); /* preview size */
-        padding: auto;
-    }
+	.creator {
+		width: calc(80% - 20px); /* preview size */
+		padding: auto;
+	}
 
-    .reject,
-    .confirm {
-        padding: 0px;
-        box-sizing: border-box;
-    }
+	.reject,
+	.confirm {
+		padding: 0px;
+		box-sizing: border-box;
+	}
 }
