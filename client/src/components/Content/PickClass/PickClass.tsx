@@ -1,11 +1,13 @@
 import { useApolloClient, useMutation, useQuery } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link, useHistory, useParams } from 'react-router-dom';
 import { UserContext } from '../../../App';
+import useList from '../../../hooks/useList';
 import { Student, User } from '../../../types';
-import { changeTitle } from '../../../utils/functions';
+import { changeTitle, highlightSearch } from '../../../utils/functions';
 import Suspender from '../../Common/Suspender/Suspender';
+import Filters from '../../Filters/Filters';
 import { classPreview, GET_CLASSES } from '../Classes/Classes';
 import { GET_STUDENTS_FOR_CLASS } from '../ClassPage/Sections/StudentSection/StudentsSection';
 import { CHANGE_CLASS, GET_STUDENT_BY_VK_ID } from '../StudentPage/StudentPage';
@@ -16,6 +18,23 @@ type fn<T> = (value: T) => T;
 
 const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUser }) => {
 	const { schoolName } = useParams<{ schoolName: string }>();
+	const { uid } = useContext(UserContext);
+	const { setFilter, items, setItems } = useList<classPreview>([]);
+
+	const [searchText, setText] = useState('');
+
+	const setSearchText = (str: string) => {
+		str = str.toLowerCase();
+
+		const isMatch = (c: classPreview, str: string): boolean => c.name.search(str) !== -1;
+
+		setText(str);
+		setFilter((c) => isMatch(c, str));
+	};
+	const highlighter = (str: string) => {
+		return highlightSearch(str, searchText);
+	};
+
 	const query = useQuery<{ classes: classPreview[] }, { schoolName: string }>(GET_CLASSES, {
 		variables: { schoolName },
 	});
@@ -26,10 +45,6 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 		},
 		{ vkId: number; className: string; schoolName: string }
 	>(CHANGE_CLASS);
-	const ApolloClient = useApolloClient();
-
-	const { uid } = useContext(UserContext);
-	const AC = useApolloClient();
 
 	const onClick = (className: string, schoolName: string) => {
 		changeClass({
@@ -78,38 +93,42 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 	};
 
 	useEffect(() => {
-		changeTitle('Выберите школу');
+		if (query.data?.classes) {
+			setItems(query.data.classes);
+		}
+	}, [query]);
+	useEffect(() => {
+		changeTitle('Выберите класс');
 	});
 
 	return (
-		<>
+		<div className="centerer">
 			<Suspender query={query}>
-				{(data?: { classes?: classPreview[] }) => {
-					if (data?.classes) {
-						return (
-							<div className={styles.container}>
-								<span className={styles.title}>В каком классе вы учитесь? 📚</span>
-								{data.classes.map((Class) => (
-									<div
-										onClick={() => onClick(Class.name, Class.schoolName)}
-										className={styles.class}
-										key={Class.schoolName + ' ' + Class.name}
-									>
-										{Class.name}
-									</div>
-								))}
-							</div>
-						);
-					} else {
-						return <div> Простите похоже у вас не получится выбрать класс 😕 </div>;
-					}
-				}}
+				<div className={styles.container}>
+					<div>
+						<span className={styles.title}>В каком классе вы учитесь? 📚</span>
+					</div>
+					<Filters
+						inputProps={{ className: styles.filterInput }}
+						className={styles.filters}
+						setSearchText={setSearchText}
+					/>
+					{items.map((Class) => (
+						<div
+							onClick={() => onClick(Class.name, Class.schoolName)}
+							className={styles.class}
+							key={Class.schoolName + ' ' + Class.name}
+						>
+							{highlighter(Class.name)}
+						</div>
+					))}
+				</div>
 			</Suspender>
 
 			<Link to={`/pickSchool`} className={styles.pickSchool}>
 				Сменить школу
 			</Link>
-		</>
+		</div>
 	);
 };
 

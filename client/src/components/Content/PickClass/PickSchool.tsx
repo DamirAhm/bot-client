@@ -68,7 +68,7 @@ const PickSchool: React.FC<{}> = ({}) => {
 	const [creatingCity, setCreatingCity] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	const { items, setFilter, setSort, setItems, setMap } = useList<cityEntrie>([]);
+	const { items, setFilter, setItems, setMap } = useList<cityEntrie>([]);
 
 	const query = useQuery<{ schools: { name: string }[] }>(GET_SCHOOLS_NAMES);
 	const [create] = useMutation<{ newSchool: schoolPreview }, { name: string }>(CREATE_SCHOOL);
@@ -76,15 +76,16 @@ const PickSchool: React.FC<{}> = ({}) => {
 	const [searchText, setText] = useState('');
 
 	const setSearchText = (str: string) => {
-		str = str.toLowerCase();
+		str = str.toLowerCase().trim();
 
-		const isMatch = (c: cityEntrie, str: string): boolean =>
-			retranslit(c[0]).search(str) !== -1 ||
-			c[1].some((number) => number.search(str) !== -1) ||
-			(str.split(' ').length > 1 && str.split(' ').some((str) => isMatch(c, str)));
+		const isMatch = (c: cityEntrie, str: string): boolean => {
+			return (
+				retranslit(c[0]).search(str) !== -1 ||
+				c[1].some((number) => number.search(str) !== -1) ||
+				(str.split(' ').length > 1 && str.split(' ').every((str) => isMatch(c, str)))
+			);
+		};
 
-		setText(str);
-		setFilter((c) => isMatch(c, str));
 		setMap(([_, numbers]) => {
 			if (numbers.some((number) => number.search(str) !== -1)) {
 				return [_, numbers.filter((number) => number.search(str) !== -1)];
@@ -102,6 +103,8 @@ const PickSchool: React.FC<{}> = ({}) => {
 			}
 			return [_, numbers];
 		});
+		setText(str);
+		setFilter((c) => isMatch(c, str));
 	};
 
 	const createSchool = (city: string) => {

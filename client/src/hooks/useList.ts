@@ -19,10 +19,10 @@ export default <T>(
         );
     };
     const setSort = (sort: typeof defaultSort) => {
-        setItems([...initialValues.sort(sort)]);
+        setItems([...items.sort(sort)]);
     };
     const setMap = (map: (value: T) => T) => {
-        setItems([...initialValues.map(map)]);
+        setItems([...items.map(map)]);
     }
     const setValue = useCallback((vals: T[]) => {
         setInitialValues(vals);

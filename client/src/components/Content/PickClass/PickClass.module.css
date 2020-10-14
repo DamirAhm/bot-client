@@ -125,3 +125,9 @@
 	background-color: var(--primary);
 	border-color: var(--main);
 }
+
+@media screen and (max-width: 768px) {
+	.pickSchool {
+		top: calc(95vh - 20px);
+	}
+}
