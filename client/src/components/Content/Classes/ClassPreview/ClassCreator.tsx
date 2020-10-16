@@ -5,7 +5,6 @@ import { useMutation } from '@apollo/react-hooks';
 import { GET_CLASSES, classPreview } from '../Classes';
 import { redactorOptions, WithTypename } from '../../../../types';
 import Options from '../../../Common/Options/Options';
-import { useParams } from 'react-router-dom';
 
 export const CREATE_CLASS = gql`
 	mutation CreateClass($className: String!, $schoolName: String!) {

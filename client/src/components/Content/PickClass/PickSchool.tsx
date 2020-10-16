@@ -164,9 +164,7 @@ const PickSchool: React.FC<{}> = ({}) => {
 		<div className="centerer">
 			<Suspender query={query}>
 				<div className={styles.container}>
-					<div className={styles.title}>
-						<span>В какой школе вы учитесь? 🏫</span>
-					</div>
+					<span className={styles.title}>В какой школе вы учитесь? 🏫</span>
 					<Filters
 						inputProps={{ className: styles.filterInput }}
 						className={styles.filters}

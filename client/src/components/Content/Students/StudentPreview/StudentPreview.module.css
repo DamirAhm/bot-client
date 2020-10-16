@@ -6,6 +6,8 @@
 	border-radius: 18px;
 	justify-content: space-between;
 	color: var(--accent) !important;
+	display: flex;
+	align-items: center;
 }
 
 .link {

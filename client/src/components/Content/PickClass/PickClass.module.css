@@ -10,13 +10,11 @@
 	font-size: 2rem;
 	margin-bottom: 20px;
 	text-align: center;
-}
-.title span {
 	color: var(--main);
 }
 
 .filters {
-	margin: 20px 0 10px;
+	margin: 20px 0 20px;
 	width: 70%;
 	max-width: 400px;
 }
@@ -27,8 +25,15 @@
 	padding: 7px;
 }
 
+.classes {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	column-gap: 20px;
+	width: 100%;
+}
+
 .class {
-	width: max(60%, 100px);
+	/* width: max(60%, 100px); */
 	padding: 15px;
 	border-radius: 10px;
 	text-align: center;
@@ -37,7 +42,7 @@
 	border: 2px solid transparent;
 	cursor: pointer;
 	font-weight: bolder;
-	margin-bottom: 20px;
+	margin-top: 20px;
 	box-sizing: border-box;
 }
 .class:hover,

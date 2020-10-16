@@ -1,10 +1,10 @@
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import React, { useContext, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useHistory, useParams } from 'react-router-dom';
 import { UserContext } from '../../../App';
 import useList from '../../../hooks/useList';
 import { Student, User } from '../../../types';
-import { changeTitle, highlightSearch } from '../../../utils/functions';
+import { capitalize, changeTitle, highlightSearch, retranslit } from '../../../utils/functions';
 import Suspender from '../../Common/Suspender/Suspender';
 import Filters from '../../Filters/Filters';
 import { classPreview, GET_CLASSES } from '../Classes/Classes';
@@ -18,14 +18,21 @@ type fn<T> = (value: T) => T;
 const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUser }) => {
 	const { schoolName } = useParams<{ schoolName: string }>();
 	const { uid } = useContext(UserContext);
-	const { setFilter, items, setItems } = useList<classPreview>([]);
+	const { setFilter, items, setItems } = useList<[string, classPreview[]]>([]);
+	const history = useHistory();
 
 	const [searchText, setText] = useState('');
 
 	const setSearchText = (str: string) => {
-		str = str.toLowerCase();
+		str = str.toLowerCase().trim();
 
-		const isMatch = (c: classPreview, str: string): boolean => c.name.search(str) !== -1;
+		const isMatch = (c: [string, classPreview[]], str: string): boolean => {
+			return (
+				retranslit(c[0]).search(str) !== -1 ||
+				c[1].some((classPreview) => classPreview.name.toLowerCase().search(str) !== -1) ||
+				(str.split(' ').length > 1 && str.split(' ').every((str) => isMatch(c, str)))
+			);
+		};
 
 		setText(str);
 		setFilter((c) => isMatch(c, str));
@@ -87,6 +94,7 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 							setUser((user) =>
 								user ? { ...user, ...student, schoolName, className } : null,
 							);
+							history.push(`/${schoolName}/classes/${className}`);
 						}
 					}
 				}
@@ -96,46 +104,110 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 
 	useEffect(() => {
 		if (classesQuery.data?.classes) {
-			setItems(classesQuery.data.classes);
+			const parsedClassesBySchool = parseClassesBySchool(classesQuery.data.classes);
+
+			setItems([...parsedClassesBySchool]);
 		}
 	}, [classesQuery]);
 	useEffect(() => {
 		changeTitle('Выберите класс');
 	});
 
-	return (
-		<div className="centerer">
-			<Suspender query={classesQuery}>
-				<div className={styles.container}>
-					<div className={styles.title}>
-						<span>В каком классе вы учитесь? 📚</span>
-					</div>
-					<Filters
-						inputProps={{ className: styles.filterInput }}
-						className={styles.filters}
-						setSearchText={setSearchText}
-					/>
-					{schoolName && <ClassCreator schoolName={schoolName} />}
-					{items.map(
-						(Class) =>
-							Class && (
-								<div
-									onClick={() => onClick(Class.name, Class.schoolName)}
-									className={styles.class}
-									key={Class.schoolName + ' ' + Class.name}
-								>
-									{highlighter(Class.name)}
-								</div>
-							),
-					)}
-				</div>
-			</Suspender>
+	if (schoolName) {
+		const [, classes] = items.find(([school]) => schoolName === school) || [];
 
-			<Link to={`/pickSchool`} className={styles.pickSchool}>
-				Сменить школу
-			</Link>
-		</div>
-	);
+		if (classes) {
+			return (
+				<div className="centerer">
+					<Suspender query={classesQuery}>
+						<div className={styles.container}>
+							<span className={styles.title}>В каком классе вы учитесь? 📚</span>
+							<Filters
+								inputProps={{ className: styles.filterInput }}
+								className={styles.filters}
+								setSearchText={setSearchText}
+							/>
+							<ClassCreator schoolName={schoolName} />
+							<div className={styles.classes}>
+								{classes.map(
+									(Class) =>
+										Class && (
+											<div
+												onClick={() =>
+													onClick(Class.name, Class.schoolName)
+												}
+												className={styles.class}
+												key={Class.schoolName + ' ' + Class.name}
+											>
+												{highlighter(Class.name)}
+											</div>
+										),
+								)}
+							</div>
+						</div>
+					</Suspender>
+
+					<Link to={`/pickSchool`} className={styles.pickSchool}>
+						Сменить школу
+					</Link>
+				</div>
+			);
+		} else {
+			return <div>Ошибкa</div>;
+		}
+	} else {
+		return (
+			<div className="centerer">
+				<Suspender query={classesQuery}>
+					<div className={styles.container}>
+						<span className={styles.title}>В каком классе вы учитесь? 📚</span>
+						<Filters
+							inputProps={{ className: styles.filterInput }}
+							className={styles.filters}
+							setSearchText={setSearchText}
+						/>
+						{items.map(([school, classes]) => (
+							<div className={styles.citySchools}>
+								<div className={styles.city}>
+									<span>{capitalize(retranslit(school.replace(':', ' ')))} </span>
+								</div>
+								<ClassCreator schoolName={school} />
+								<div className={styles.classes}>
+									{classes.map((Class) => (
+										<div
+											onClick={() => onClick(Class.name, Class.schoolName)}
+											className={styles.class}
+											key={Class.schoolName + ' ' + Class.name}
+										>
+											{highlighter(Class.name)}
+										</div>
+									))}
+								</div>
+							</div>
+						))}
+					</div>
+				</Suspender>
+
+				<Link to={`/pickSchool`} className={styles.pickSchool}>
+					Сменить школу
+				</Link>
+			</div>
+		);
+	}
+};
+
+const parseClassesBySchool = (classes: classPreview[]) => {
+	const parsedClasses = new Map<string, classPreview[]>();
+
+	for (const Class of classes) {
+		if (parsedClasses.has(Class.schoolName)) {
+			parsedClasses.get(Class.schoolName)?.push(Class);
+		} else {
+			parsedClasses.set(Class.schoolName, [Class]);
+		}
+	}
+
+	return parsedClasses;
 };
 
 export default PickClass;

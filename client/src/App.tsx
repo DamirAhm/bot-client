@@ -54,15 +54,9 @@ function App() {
 											exact
 											path="/pickClass/:schoolName?"
 											component={() =>
-												!user.className ? (
-													withRedirect(
-														<PickClass setUser={setUser} />,
-														user.className === null,
-													)
-												) : (
-													<Redirect
-														to={`/${user.schoolName}/classes/${user.className}`}
-													/>
+												withRedirect(
+													<PickClass setUser={setUser} />,
+													user.className === null,
 												)
 											}
 										/>
@@ -70,15 +64,9 @@ function App() {
 											exact
 											path="/pickSchool"
 											component={() =>
-												!user.schoolName ? (
-													withRedirect(
-														<PickSchool />,
-														user.className === null,
-													)
-												) : (
-													<Redirect
-														to={`/pickClass/${user.schoolName}`}
-													/>
+												withRedirect(
+													<PickSchool />,
+													user.schoolName === null,
 												)
 											}
 										/>

@@ -1,17 +1,18 @@
 .classes {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0;
-    row-gap: 30px;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	padding: 0;
+	row-gap: 30px;
+	margin-top: 20px;
 }
 
 @media screen and (max-width: 776px) {
-    .classes {
-        grid-template-columns: 1fr;
-        padding: 15px;
-    }
+	.classes {
+		grid-template-columns: 1fr;
+		padding: 15px;
+	}
 }
 
 .filters {
-    padding: 0 calc((100% / 2 - 35%) / 3)
+	padding: 0 calc((100% / 2 - 35%) / 3);
 }
