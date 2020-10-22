@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './InfoSection.module.css';
 import Searcher from '../../../Common/Searcher/Searcher';
 import Accordion from '../../../Common/Accordion/Accordion';
@@ -12,10 +12,12 @@ type Props = {
 	Header?: React.FC<{ opened: boolean; onClick: () => void }>;
 	defaultSearchString?: string;
 	initiallyOpened?: boolean;
+	isOpened?: boolean;
 };
 
 const InfoSection: React.FC<Props> = ({
 	initiallyOpened = true,
+	isOpened = true,
 	name,
 	children,
 	className = '',
@@ -27,10 +29,16 @@ const InfoSection: React.FC<Props> = ({
 
 	const onClick = () => setOpened(!opened);
 
+	useEffect(() => {
+		if (isOpened !== undefined) {
+			setOpened(isOpened);
+		}
+	}, [isOpened]);
+
 	return (
 		<div className={styles.section}>
 			<Accordion
-				initiallyOpened={opened}
+				isOpened={opened}
 				Head={
 					<>
 						{Header ? (

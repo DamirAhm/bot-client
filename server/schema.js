@@ -479,7 +479,7 @@ const SchoolTC = composeWithMongoose(SchoolModel, customizationOptions);
 						await DataBase.removeStudentFromClass(vkId);
 					}
 					await Student.deleteOne();
-					return Student;
+					return Student.toJSON({ virtuals: true });
 				},
 			});
 			//? Create
@@ -488,7 +488,17 @@ const SchoolTC = composeWithMongoose(SchoolModel, customizationOptions);
 				type: StudentTC.getType(),
 				args: { vkId: 'Int!' },
 				resolve: async ({ args: { vkId } }) => {
-					return await DataBase.createStudent(vkId);
+					return (await DataBase.createStudent(vkId)).toJSON({ virtuals: true });
+				},
+			});
+			//? Many
+			StudentTC.addResolver({
+				name: 'findMany',
+				type: `[${StudentTC.getType()}]`,
+				resolve: async () => {
+					return (await DataBase.getAllStudents()).map((student) =>
+						student.toJSON({ virtuals: true }),
+					);
 				},
 			});
 		}
@@ -520,19 +530,19 @@ const SchoolTC = composeWithMongoose(SchoolModel, customizationOptions);
 					} else {
 						await DataBase.removeStudentFromClass(vkId);
 					}
-					return await DataBase.getStudentByVkId(vkId);
+					return (await DataBase.getStudentByVkId(vkId)).toJSON({ virtuals: true });
 				},
 			});
 			//? Remove from class
 			StudentTC.addResolver({
 				name: 'removeStudentFromClass',
-				type: 'Student!',
+				type: StudentTC.getType(),
 				args: { vkId: 'Int!' },
 				resolve: async ({ args: { vkId } }) => {
 					const res = await DataBase.removeStudentFromClass(vkId);
 
 					if (res) {
-						return await DataBase.getStudentByVkId(vkId);
+						return (await DataBase.getStudentByVkId(vkId)).toJSON({ virtuals: true });
 					} else {
 						return null;
 					}
@@ -544,7 +554,7 @@ const SchoolTC = composeWithMongoose(SchoolModel, customizationOptions);
 			//? Get for class
 			StudentTC.addResolver({
 				name: 'getForClass',
-				type: '[Student]',
+				type: `[${StudentTC.getType()}]`,
 				args: { className: 'String', schoolName: 'String!' },
 				resolve: async ({ args: { schoolName, className } }) => {
 					const studentIds = await DataBase.getStudentsFromClass(className, schoolName);
@@ -556,7 +566,8 @@ const SchoolTC = composeWithMongoose(SchoolModel, customizationOptions);
 
 						const students = [];
 
-						for await (const i of studentPromises) students.push(i);
+						for await (const student of studentPromises)
+							students.push(student.toJSON({ virtuals: true }));
 						return students;
 					} else {
 						return null;
@@ -569,9 +580,13 @@ const SchoolTC = composeWithMongoose(SchoolModel, customizationOptions);
 				type: `[${StudentTC.getType()}]`,
 				resolve: async ({ args: { schoolName } }) => {
 					if (schoolName) {
-						return await DataBase.getStudentsForSchool(schoolName);
+						return (await DataBase.getStudentsForSchool(schoolName)).map((student) =>
+							student.toJSON({ virtuals: true }),
+						);
 					} else {
-						return await DataBase.getAllStudents();
+						return (await DataBase.getAllStudents()).map((student) =>
+							student.toJSON({ virtuals: true }),
+						);
 					}
 				},
 			});
@@ -588,7 +603,7 @@ const SchoolTC = composeWithMongoose(SchoolModel, customizationOptions);
 			args: { schoolName: 'String!' },
 			resolve: async ({ args: { schoolName } }) => {
 				if (/^[a-z]*:\d*$/i.test(schoolName)) {
-					return await DataBase.createSchool(schoolName);
+					return (await DataBase.createSchool(schoolName)).toJSON({ virtuals: true });
 				} else {
 					return null;
 				}

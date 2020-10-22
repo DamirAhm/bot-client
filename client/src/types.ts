@@ -36,6 +36,8 @@ export type Student = {
     settings: studentSettings;
     lastHomeworkCheck: string;
     fullName?: string;
+    firstName?: string;
+    secondName?: string;
     className?: string;
     schoolName: string;
     _id: string;
@@ -103,6 +105,8 @@ export type School = {
 export type schoolPreview = {
     _id: string;
     name: string;
+    city: string;
+    number: string;
 }
 
 export type announcement = content;

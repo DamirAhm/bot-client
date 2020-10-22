@@ -116,7 +116,9 @@ const PickSchool: React.FC<{}> = ({}) => {
 				optimisticResponse: {
 					newSchool: {
 						_id: Date.now().toString(),
-						name: number,
+						name: `${city}:${number}`,
+						number,
+						city,
 					},
 				},
 				update: (proxy, response) => {

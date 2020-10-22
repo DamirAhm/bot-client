@@ -167,7 +167,7 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 							setSearchText={setSearchText}
 						/>
 						{items.map(([school, classes]) => (
-							<div className={styles.citySchools}>
+							<div className={styles.citySchools} key={school}>
 								<div className={styles.city}>
 									<span>{capitalize(retranslit(school.replace(':', ' ')))} </span>
 								</div>

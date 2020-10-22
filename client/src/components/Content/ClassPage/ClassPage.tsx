@@ -19,6 +19,7 @@ import { RedirectTo404 } from '../404/404';
 import { UserContext } from '../../../App';
 import { studentPreview } from '../Students/Students';
 import { changeTitle, parseSchoolName } from '../../../utils/functions';
+import { getSchoolNumber } from '../PickClass/PickSchool';
 
 const REMOVE_CLASS = gql`
 	mutation RemoveClass($className: String!, $schoolName: String!) {
@@ -156,8 +157,6 @@ const ClassPage: React.FC = () => {
 		changeTitle(`${className} класс`);
 	}, []);
 
-	const parsedSchoolName = parseSchoolName(schoolName);
-
 	return (
 		<>
 			<Suspender query={query} ErrorElement={() => <RedirectTo404 />}>
@@ -196,7 +195,7 @@ const ClassPage: React.FC = () => {
 							{waitForConfirm && (
 								<Confirm
 									text={`Вы уверены что хотите удалить ${className} класс ${
-										parsedSchoolName ? parsedSchoolName[1] + ' школы' : ''
+										getSchoolNumber(schoolName) + ' школы'
 									}? 😕`}
 									onConfirm={remove}
 									returnRes={() => setWaitForConfirm(false)}
