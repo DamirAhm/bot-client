@@ -22,15 +22,6 @@ import ContentElement from '../../../../Common/ContentElement';
 
 const announcementContentModalRoot = document.getElementById('changeContentModal');
 
-type announcementProps = {
-	announcement: announcement;
-	removeAnnouncement: (announcementId: string | undefined) => void;
-	updateAnnouncement: (
-		announcementId: string | undefined,
-		updates: Partial<announcement>,
-	) => void;
-};
-
 const GET_ANNOUNCEMENTS = gql`
 	query GetAnnouncements($className: String!, $schoolName: String!) {
 		announcements: getAnnouncements(className: $className, schoolName: $schoolName) {
@@ -314,7 +305,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 	return (
 		<>
 			<InfoSection
-				initiallyOpened={
+				isOpened={
 					!!(
 						announcementsQuery?.data?.announcements &&
 						announcementsQuery?.data?.announcements.length > 0

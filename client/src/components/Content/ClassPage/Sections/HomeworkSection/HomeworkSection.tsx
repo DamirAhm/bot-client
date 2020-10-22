@@ -301,7 +301,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 		});
 		setInitContent({});
 	};
-	console.log(!!(homeworkQuery?.data?.homework && homeworkQuery?.data?.homework.length > 0));
+
 	return (
 		<>
 			<InfoSection

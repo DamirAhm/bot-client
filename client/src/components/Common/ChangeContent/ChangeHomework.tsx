@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import DatePicker from 'react-datepicker';
-import { homework } from '../../../types';
+import { content, homework } from '../../../types';
 
 import styles from './ChangeContent.module.css';
 import createContentFiller, {
@@ -19,9 +19,12 @@ import { memoize } from '../../../utils/functions';
 
 const DEFAULT_LESSON = 'Выберите предмет';
 
+type persistentState = {
+	placeholdersCount: number;
+};
 type changableHomework = Pick<homework, 'lesson' | 'to' | 'attachments' | 'text'>;
 type ChangeHomeworkProps = {
-	[K in keyof changableHomework]: ContentSectionProps<changableHomework[K]>;
+	[K in keyof changableHomework]: ContentSectionProps<changableHomework[K], persistentState>;
 };
 
 const findWeekDaysWithLesson = memoize((schedule: string[][], lesson: string): number[] => {
@@ -66,7 +69,7 @@ const findNextLessonDate = (schedule: string[][], lesson: string, initDate = new
 	}
 };
 
-const ChangeHomework = createContentFiller<ChangeHomeworkProps>(
+const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>(
 	{
 		lesson: {
 			title: 'Урок',
@@ -124,7 +127,7 @@ const ChangeHomework = createContentFiller<ChangeHomeworkProps>(
 				if (lesson === '' || lesson === DEFAULT_LESSON) return 'Выберите урок';
 			},
 		},
-		...ChangeContentProps,
+		...(ChangeContentProps as any),
 		to: {
 			title: 'Дата',
 			ContentComponent: ({ changeHandler, value, state: { lesson } }) => {
@@ -183,6 +186,9 @@ const ChangeHomework = createContentFiller<ChangeHomeworkProps>(
 					return 'Дата на которую задано задание должно быть в будущем';
 			},
 		},
+	},
+	{
+		placeholdersCount: 0,
 	},
 	(state) => {
 		if (state.text.trim() === '' && state.attachments.length === 0) {

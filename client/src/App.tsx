@@ -5,7 +5,7 @@ import { roles, setStateProp, User } from './types';
 import withRedirect from './HOCs/withAuth';
 import useAuth from './hooks/useAuth';
 import PickSchool from './components/Content/PickClass/PickSchool';
-import { useLocation } from 'react-router-dom';
+import Loader from './components/Common/Loader/Loader';
 
 const Classes = lazy(() => import('./components/Content/Classes/Classes'));
 const Students = lazy(() => import('./components/Content/Students/Students'));
@@ -41,14 +41,14 @@ function App() {
 			<div className={`wrapper`}>
 				<div className={`app`}>
 					{user === null ? (
-						<Suspense fallback={<div>loading...</div>}>
+						<Suspense fallback={<Loader />}>
 							{!localStorage.getItem('user') && <Auth setUser={onUser} />}
 						</Suspense>
 					) : (
 						<>
 							<Sidebar logOut={logOut} />
 							<div className="content">
-								<Suspense fallback={<div> Loading... </div>}>
+								<Suspense fallback={<Loader />}>
 									<Switch>
 										<Route
 											exact

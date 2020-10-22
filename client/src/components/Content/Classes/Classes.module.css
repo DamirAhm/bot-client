@@ -3,7 +3,10 @@
 	grid-template-columns: 1fr 1fr;
 	padding: 0;
 	row-gap: 30px;
-	margin-top: 20px;
+}
+
+.classCreator {
+	margin-bottom: 20px;
 }
 
 @media screen and (max-width: 776px) {

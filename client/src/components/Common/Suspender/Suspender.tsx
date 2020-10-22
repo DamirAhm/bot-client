@@ -1,4 +1,5 @@
 import React from 'react';
+import Loader from '../Loader/Loader';
 
 interface Props {
 	query?: {
@@ -20,7 +21,7 @@ const Suspender: React.FC<Props> = ({
 	query,
 	children,
 	queries,
-	fallback = <div> loading... </div>,
+	fallback = <Loader />,
 	ErrorElement,
 }) => {
 	if (query) {

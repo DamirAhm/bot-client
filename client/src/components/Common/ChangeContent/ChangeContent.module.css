@@ -1,111 +1,120 @@
 .contentChanger {
-    background-color: var(--secondary);
-    padding: 20px;
+	background-color: var(--secondary);
+	padding: 20px;
 }
 
 .header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    width: 100%;
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 10px;
+	width: 100%;
 }
 .header label {
-    width: fit-content;
-    display: flex;
-    align-items: center;
+	width: fit-content;
+	display: flex;
+	align-items: center;
 }
 .header * {
-    cursor: pointer;
+	cursor: pointer;
 }
 
 .text,
 .title,
 .uploaderIcon * {
-    color: var(--main);
+	color: var(--main);
 }
 
 .text {
-    width: 100%;
+	width: 100%;
 }
 
 .title {
-    margin-bottom: 5px;
-    font-size: 1.8rem;
+	margin-bottom: 5px;
+	font-size: 1.8rem;
 }
 
 .toSection {
-    display: flex;
-    flex-wrap: wrap;
+	display: flex;
+	flex-wrap: wrap;
 }
 .toSection > * {
-    margin: 5px 0;
+	margin: 5px 0;
 }
 
 .datePickerInput {
-    padding: 5px;
-    border-radius: 5px;
-    color: var(--main);
-    width: min(60%, 200px);
+	padding: 5px;
+	border-radius: 5px;
+	color: var(--main);
+	width: min(60%, 200px);
 }
 .datePickerCalendar,
 .datePickerCalendar :global(.react-datepicker__current-month) {
-    font-size: 1.1rem;
-    color: var(--main);
+	font-size: 1.1rem;
+	color: var(--main);
 }
 .datePickerCalendar * {
-    color: var(--main);
+	color: var(--main);
 }
 
 .onNextLesson {
-    padding: 5px 10px;
-    border-radius: 5px;
-    border: 1px solid var(--main);
-    box-sizing: border-box;
-    color: var(--main);
-    font-weight: bolder;
+	padding: 5px 10px;
+	border-radius: 5px;
+	border: 1px solid var(--main);
+	box-sizing: border-box;
+	color: var(--main);
+	font-weight: bolder;
 }
 .onNextLesson:hover {
-    background-color: var(--main);
-    color: var(--accent);
+	background-color: var(--main);
+	color: var(--accent);
 }
 
 .outlined {
-    border: 1px solid var(--positive);
-    width: 100%;
-    height: 100%;
-    display: block;
-    border-radius: 5px;
-    text-align: center;
+	border: 1px solid var(--positive);
+	width: 100%;
+	height: 100%;
+	display: block;
+	border-radius: 5px;
+	text-align: center;
 }
 
 .selectLesson {
-    padding: 5px;
-    border-radius: 5px;
+	padding: 5px;
+	border-radius: 5px;
 }
 
 .attachmentsContainer {
-    display: flex;
-    width: 100%;
-    overflow: auto;
+	display: flex;
+	width: 100%;
+	overflow: auto;
 }
 .attachmentsContainer img {
-    max-width: 80vw;
+	max-width: 80vw;
 }
 
 .uploaderIcon {
-    cursor: pointer;
+	cursor: pointer;
 }
 
 .text {
-    resize: none;
-    padding: 5px;
-    box-sizing: border-box;
-    width: 100%;
+	resize: none;
+	padding: 5px;
+	box-sizing: border-box;
+	width: 100%;
+}
+
+.imagePlaceholder {
+	height: 300px;
+	background-color: var(--accent);
+	border: 2px dashed var(--main);
+	display: flex;
+	justify-content: center;
+	text-align: center;
 }
 
 @media screen and (max-width: 675px) {
-    .attachmentsContainer img {
-        object-fit: contain;
-        height: initial;
-    }
+	.attachmentsContainer img {
+		object-fit: contain;
+		height: initial;
+	}
 }

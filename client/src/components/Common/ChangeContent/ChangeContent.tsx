@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { MdFileUpload } from 'react-icons/md';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -10,6 +10,7 @@ import DeletableAttachment from '../OpenableImage/DeletableAttachment';
 import createContentFiller, {
 	ContentSectionProps,
 } from '../../../utils/createContentChanger/createContentChanger';
+import Loader from '../Loader/Loader';
 
 const parseAttachment = (photo: vkPhoto) => {
 	return `photo${photo.owner_id}_${photo.id}`;
@@ -20,9 +21,13 @@ const findMaxPhotoResolution = (photo: vkPhoto) =>
 		{ height: 0, url: '' },
 	).url;
 
+type persistentState = {
+	placeholdersCount: number;
+};
+
 type changableContent = Pick<content, 'to' | 'attachments' | 'text'>;
-type ChangeContentPropsType = {
-	[K in keyof changableContent]: ContentSectionProps<changableContent[K]>;
+export type ChangeContentPropsType = {
+	[K in keyof changableContent]: ContentSectionProps<changableContent[K], persistentState>;
 };
 
 export const ChangeContentProps: ChangeContentPropsType = {
@@ -49,10 +54,16 @@ export const ChangeContentProps: ChangeContentPropsType = {
 		},
 	},
 	attachments: {
-		Header: ({ changeHandler, value }) => {
+		Header: ({ changeHandler, value, setPersistentState, persistentState }) => {
 			const onPhotoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
 				try {
-					const files = e.target.files;
+					const { files } = e.target;
+
+					setPersistentState({
+						...persistentState,
+						placeholdersCount: persistentState.placeholdersCount + 1,
+					});
+
 					if (files) {
 						const fd = new FormData();
 						for (let i = 0; i < files.length; i++) {
@@ -73,6 +84,11 @@ export const ChangeContentProps: ChangeContentPropsType = {
 								},
 							},
 						).then((res) => res.json());
+
+						setPersistentState({
+							...persistentState,
+							placeholdersCount: Math.max(persistentState.placeholdersCount - 1, 0),
+						});
 
 						const newAttachments: WithTypename<attachment>[] = photos.map(
 							(photo, i) => ({
@@ -100,7 +116,19 @@ export const ChangeContentProps: ChangeContentPropsType = {
 				</div>
 			);
 		},
-		ContentComponent: ({ value, changeHandler }) => {
+		ContentComponent: ({ value, changeHandler, persistentState }) => {
+			const placeholders = Array.from(
+				{ length: persistentState.placeholdersCount },
+				function () {
+					return (
+						<Placeholder
+							key={Date.now()}
+							width={Math.floor(Math.random() * 200) + 400}
+						/>
+					);
+				},
+			);
+
 			return (
 				<div className={styles.attachmentsContainer}>
 					{value.map((att: attachment) => (
@@ -112,10 +140,18 @@ export const ChangeContentProps: ChangeContentPropsType = {
 							}}
 						/>
 					))}
+					{placeholders}
 				</div>
 			);
 		},
 		defaultValue: [],
+		validator: (_, persistentState) => {
+			if (persistentState.placeholdersCount >= 0) {
+				return 'Подождите пока загружаются вложения';
+			}
+
+			return;
+		},
 	},
 	text: {
 		title: 'Домашняя работа',
@@ -139,10 +175,24 @@ export const ChangeContentProps: ChangeContentPropsType = {
 	},
 };
 
-const ChangeContent = createContentFiller<ChangeContentPropsType>(ChangeContentProps, (state) => {
-	if (state.text.trim() === '' && state.attachments.length === 0) {
-		return 'Задание должно содержать текст или фотографии';
-	}
-});
+const Placeholder: React.FC<{ width: number }> = ({ width }) => {
+	return (
+		<div className={styles.imagePlaceholder} style={{ width }}>
+			<Loader height={300} />
+		</div>
+	);
+};
+
+const ChangeContent = createContentFiller<persistentState, ChangeContentPropsType>(
+	ChangeContentProps,
+	{
+		placeholdersCount: 0,
+	},
+	(state) => {
+		if (state.text.trim() === '' && state.attachments.length === 0) {
+			return 'Задание должно содержать текст или фотографии';
+		}
+	},
+);
 
 export default ChangeContent;
