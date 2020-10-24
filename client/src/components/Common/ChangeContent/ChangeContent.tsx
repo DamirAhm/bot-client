@@ -146,7 +146,7 @@ export const ChangeContentProps: ChangeContentPropsType = {
 		},
 		defaultValue: [],
 		validator: (_, persistentState) => {
-			if (persistentState.placeholdersCount >= 0) {
+			if (persistentState.placeholdersCount > 0) {
 				return 'Подождите пока загружаются вложения';
 			}
 
