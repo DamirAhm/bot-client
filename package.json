@@ -28,5 +28,9 @@
     "bugs": {
         "url": "https://github.com/Proger3228/bot-client/issues"
     },
-    "dependencies": {}
+    "dependencies": {
+        "@types/react-loader": "^2.4.4",
+        "node-sass": "^4.14.1",
+        "react-loader": "^2.4.7"
+    }
 }

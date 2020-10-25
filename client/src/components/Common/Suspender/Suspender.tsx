@@ -46,16 +46,17 @@ const Suspender: React.FC<Props> = ({
 									style={{ fontSize: '1.8rem', color: 'var(--negative)' }}
 									key={'SuspenderErrorSpan' + i}
 								>
-									{' '}
 									{q.error && q.error.message}
 								</span>
 							);
 						}
-					})}{' '}
+					})}
 				</div>
 			);
-		} else if (queries.some((q) => q.loading)) return fallback;
-		else if (queries.some((q) => q.data)) {
+		} else if (queries.some((q) => q.loading)) {
+			console.log(queries);
+			return fallback;
+		} else if (queries.some((q) => q.data)) {
 			if (typeof children === 'function') return children(...queries.map((q) => q.data));
 			else return children;
 		}

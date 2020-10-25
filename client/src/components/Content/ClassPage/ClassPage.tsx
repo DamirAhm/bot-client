@@ -18,8 +18,9 @@ import Suspender from '../../Common/Suspender/Suspender';
 import { RedirectTo404 } from '../404/404';
 import { UserContext } from '../../../App';
 import { studentPreview } from '../Students/Students';
-import { changeTitle, parseSchoolName } from '../../../utils/functions';
+import { changeTitle } from '../../../utils/functions';
 import { getSchoolNumber } from '../PickClass/PickSchool';
+import Loader from '../../Common/Loader/Loader';
 
 const REMOVE_CLASS = gql`
 	mutation RemoveClass($className: String!, $schoolName: String!) {
