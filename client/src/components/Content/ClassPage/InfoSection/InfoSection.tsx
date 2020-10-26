@@ -38,6 +38,7 @@ const InfoSection: React.FC<Props> = ({
 	return (
 		<div className={styles.section}>
 			<Accordion
+				accordionId={name}
 				isOpened={opened}
 				Head={
 					<>

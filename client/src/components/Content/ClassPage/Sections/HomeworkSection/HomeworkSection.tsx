@@ -337,6 +337,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 							<div className={styles.content}>
 								{Object.keys(oldHw).length > 0 && (
 									<Accordion
+										accordionId="oldHomework"
 										initiallyOpened={false}
 										Head={({ opened }) => (
 											<div className={styles.oldContentHeader}>
@@ -435,6 +436,7 @@ const HomeworkLayout: React.FC<{
 			<>
 				{Object.keys(parsedHomework).map((hwDate) => (
 					<Accordion
+						accordionId={`homework${hwDate}`}
 						key={hwDate}
 						initiallyOpened={initiallyOpened}
 						Head={({ opened }) => (
@@ -459,6 +461,7 @@ const HomeworkLayout: React.FC<{
 						<>
 							{Object.keys(parsedHomework[hwDate]).map((lesson) => (
 								<Accordion
+									accordionId={`homework${hwDate}${lesson}`}
 									className={styles.offseted}
 									key={hwDate + lesson}
 									Head={({ opened }) => (

@@ -345,6 +345,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 								<div className={styles.content}>
 									{Object.keys(oldAnnouncements).length > 0 && (
 										<Accordion
+											accordionId="oldAnnouncements"
 											initiallyOpened={false}
 											Head={({ opened }) => (
 												<div className={styles.oldContentHeader}>
@@ -452,6 +453,7 @@ const AnnouncementLayout: React.FC<{
 			<>
 				{Object.keys(announcements).map((announcementDate) => (
 					<Accordion
+						accordionId={`announcements${announcementDate}`}
 						initiallyOpened={initiallyOpened}
 						key={announcementDate}
 						Head={({ opened }) => (
