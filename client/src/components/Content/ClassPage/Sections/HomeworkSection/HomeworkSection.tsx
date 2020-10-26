@@ -487,7 +487,7 @@ const HomeworkLayout: React.FC<{
 									)}
 								>
 									<div className={`${styles.elements} ${styles.offseted}`}>
-										{parsedHomework[hwDate][lesson].map((hw, i) => (
+										{parsedHomework[hwDate][lesson].map((hw) => (
 											<ContentElement
 												setChanging={setChangingId}
 												key={hw._id}
@@ -498,27 +498,26 @@ const HomeworkLayout: React.FC<{
 									</div>
 								</Accordion>
 							))}
-
-							{changingId &&
-								changingId !== null &&
-								changingHomework !== null &&
-								changeContentModalRoot &&
-								ReactDOM.createPortal(
-									<div className="modal" onMouseDown={() => setChangingId(null)}>
-										<ChangeHomework
-											initState={changingHomework}
-											confirm={(newContent) => {
-												update(changingHomework._id, newContent);
-												setChangingId(null);
-											}}
-											reject={() => setChangingId(null)}
-										/>
-									</div>,
-									changeContentModalRoot,
-								)}
 						</>
 					</Accordion>
 				))}
+				{changingId &&
+					changingId !== null &&
+					changingHomework !== null &&
+					changeContentModalRoot &&
+					ReactDOM.createPortal(
+						<div className="modal" onMouseDown={() => setChangingId(null)}>
+							<ChangeHomework
+								initState={changingHomework}
+								confirm={(newContent) => {
+									update(changingHomework._id, newContent);
+									setChangingId(null);
+								}}
+								reject={() => setChangingId(null)}
+							/>
+						</div>,
+						changeContentModalRoot,
+					)}
 			</>
 		);
 	},
