@@ -116,18 +116,19 @@ const createClient = async () => {
 		},
 	});
 
-	const persistor = new CachePersistor({
-		//@ts-ignore
-		cache,
-		storage: window.localStorage,
-	});
+	// const persistor = new CachePersistor({
+	// 	//@ts-ignore
+	// 	cache,
+	// 	storage: window.localStorage,
+	// 	debounce: 1000,
+	// });
 
-	if (currentVersion === SCHEMA_VERSION) {
-		await persistor.restore();
-	} else {
-		await persistor.purge();
-		window.localStorage.setItem(SCHEMA_VERSION_KEY, SCHEMA_VERSION);
-	}
+	// if (currentVersion === SCHEMA_VERSION) {
+	// 	await persistor.restore();
+	// } else {
+	// 	await persistor.purge();
+	// 	window.localStorage.setItem(SCHEMA_VERSION_KEY, SCHEMA_VERSION);
+	// }
 
 	const client = new ApolloClient({
 		uri: API_HOST,
@@ -146,6 +147,8 @@ const createClient = async () => {
 		</ApolloProvider>,
 		document.getElementById('root'),
 	);
+
+	// await persistor.purge();
 };
 
 createClient();

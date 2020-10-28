@@ -38,7 +38,8 @@ const useAuth = () => {
 
     const logOut = () => {
         setUser(null);
-        cleanStorage()
+        cleanLocalStorage();
+        ApolloClient.clearStore();
     }
 
     useEffect(() => {
@@ -80,11 +81,11 @@ function getUserFromStorage() {
         }
     }
 
-    cleanStorage();
+    cleanLocalStorage();
     return null;
 }
 
-function cleanStorage() {
+function cleanLocalStorage() {
     console.log('CLEAN')
     localStorage.removeItem("user");
     localStorage.removeItem("hash");
