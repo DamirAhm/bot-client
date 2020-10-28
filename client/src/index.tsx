@@ -7,11 +7,16 @@ import ApolloClient, { gql } from 'apollo-boost';
 import { ApolloProvider } from '@apollo/react-hooks';
 import { BrowserRouter } from 'react-router-dom';
 import { InMemoryCache } from 'apollo-cache-inmemory';
+import { CachePersistor } from 'apollo3-cache-persist';
 import { GET_CLASSES } from './components/Content/Classes/Classes';
 import { Class } from './types';
 import dotenv from 'dotenv';
-
 dotenv.config();
+
+const API_HOST =
+	process.env.NODE_ENV === 'development' ? 'http://localhost:8080/graphql' : '/graphql';
+const SCHEMA_VERSION = '1';
+const SCHEMA_VERSION_KEY = 'apollo-schema-version';
 
 const resolvers = {
 	Mutation: {
@@ -71,7 +76,6 @@ const resolvers = {
 		},
 	},
 };
-
 const typeDefs = gql`
 	fragment StudentPreview on Student {
 		vkId
@@ -90,9 +94,10 @@ const typeDefs = gql`
 	}
 `;
 
-const client = new ApolloClient({
-	uri: process.env.NODE_ENV === 'development' ? 'http://localhost:8080/graphql' : '/graphql',
-	cache: new InMemoryCache({
+const createClient = async () => {
+	const currentVersion = window.localStorage.getItem(SCHEMA_VERSION_KEY);
+
+	const cache = new InMemoryCache({
 		dataIdFromObject: (obj: any | undefined) => {
 			if (obj?._id) {
 				return obj._id;
@@ -100,20 +105,40 @@ const client = new ApolloClient({
 				return null;
 			}
 		},
-	}),
-	resolvers,
-	typeDefs,
-});
+	});
 
-ReactDOM.render(
-	<ApolloProvider client={client}>
-		<BrowserRouter>
-			<React.StrictMode>
-				<App />
-			</React.StrictMode>
-		</BrowserRouter>
-	</ApolloProvider>,
-	document.getElementById('root'),
-);
+	const persistor = new CachePersistor({
+		//@ts-ignore
+		cache,
+		storage: window.localStorage,
+	});
+
+	if (currentVersion === SCHEMA_VERSION) {
+		await persistor.restore();
+	} else {
+		await persistor.purge();
+		window.localStorage.setItem(SCHEMA_VERSION_KEY, SCHEMA_VERSION);
+	}
+
+	const client = new ApolloClient({
+		uri: API_HOST,
+		cache,
+		resolvers,
+		typeDefs,
+	});
+
+	ReactDOM.render(
+		<ApolloProvider client={client}>
+			<BrowserRouter>
+				<React.StrictMode>
+					<App />
+				</React.StrictMode>
+			</BrowserRouter>
+		</ApolloProvider>,
+		document.getElementById('root'),
+	);
+};
+
+createClient();
 
 serviceWorker.register();
