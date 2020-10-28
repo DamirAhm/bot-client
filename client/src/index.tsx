@@ -11,6 +11,7 @@ import { CachePersistor } from 'apollo3-cache-persist';
 import { GET_CLASSES } from './components/Content/Classes/Classes';
 import { Class } from './types';
 import dotenv from 'dotenv';
+import Loader from './components/Common/Loader/Loader';
 dotenv.config();
 
 const API_HOST =
@@ -95,7 +96,15 @@ const typeDefs = gql`
 `;
 
 const createClient = async () => {
+	const root = document.getElementById('root');
 	const currentVersion = window.localStorage.getItem(SCHEMA_VERSION_KEY);
+
+	ReactDOM.render(
+		<div className="wrapper app">
+			<Loader />
+		</div>,
+		root,
+	);
 
 	const cache = new InMemoryCache({
 		dataIdFromObject: (obj: any | undefined) => {
