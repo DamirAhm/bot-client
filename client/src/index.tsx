@@ -7,10 +7,10 @@ import ApolloClient, { gql } from 'apollo-boost';
 import { ApolloProvider } from '@apollo/react-hooks';
 import { BrowserRouter } from 'react-router-dom';
 import { InMemoryCache } from 'apollo-cache-inmemory';
+import { persistCache } from 'apollo3-cache-persist';
 import { GET_CLASSES } from './components/Content/Classes/Classes';
 import { Class } from './types';
 import dotenv from 'dotenv';
-
 dotenv.config();
 
 const resolvers = {
@@ -71,7 +71,6 @@ const resolvers = {
 		},
 	},
 };
-
 const typeDefs = gql`
 	fragment StudentPreview on Student {
 		vkId
@@ -90,9 +89,8 @@ const typeDefs = gql`
 	}
 `;
 
-const client = new ApolloClient({
-	uri: process.env.NODE_ENV === 'development' ? 'http://localhost:8080/graphql' : '/graphql',
-	cache: new InMemoryCache({
+const createClient = async () => {
+	const cache = new InMemoryCache({
 		dataIdFromObject: (obj: any | undefined) => {
 			if (obj?._id) {
 				return obj._id;
@@ -100,20 +98,33 @@ const client = new ApolloClient({
 				return null;
 			}
 		},
-	}),
-	resolvers,
-	typeDefs,
-});
+	});
 
-ReactDOM.render(
-	<ApolloProvider client={client}>
-		<BrowserRouter>
-			<React.StrictMode>
-				<App />
-			</React.StrictMode>
-		</BrowserRouter>
-	</ApolloProvider>,
-	document.getElementById('root'),
-);
+	await persistCache({
+		//@ts-ignore
+		cache,
+		storage: window.localStorage,
+	});
+
+	const client = new ApolloClient({
+		uri: process.env.NODE_ENV === 'development' ? 'http://localhost:8080/graphql' : '/graphql',
+		cache,
+		resolvers,
+		typeDefs,
+	});
+
+	ReactDOM.render(
+		<ApolloProvider client={client}>
+			<BrowserRouter>
+				<React.StrictMode>
+					<App />
+				</React.StrictMode>
+			</BrowserRouter>
+		</ApolloProvider>,
+		document.getElementById('root'),
+	);
+};
+
+createClient();
 
 serviceWorker.register();
