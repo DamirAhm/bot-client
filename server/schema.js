@@ -7,8 +7,8 @@ const SchoolModel = require('bot-database/Models/SchoolModel');
 const { DataBase: DB, Roles, Lessons, VK_API } = require('bot-database');
 const config = require('./config.json');
 
-const DataBase = new DB(config['MONGODB_URI']);
-const vk = new VK_API(config['VK_API_KEY']);
+const DataBase = new DB(process.env.MONGODB_URI);
+const vk = new VK_API(process.env.VK_API_KEY);
 
 const customizationOptions = {};
 const StudentTC = composeWithMongoose(StudentModel, customizationOptions);

@@ -10,10 +10,11 @@ const { DataBase: DB } = require('bot-database/DataBase');
 const path = require('path');
 const sirv = require('sirv');
 const compression = require('compression');
-const dotenv = require('dotenv').config();
 
-const DataBase = new DB(config['MONGODB_URI']);
-const vk = new VK_API(config['VK_API_KEY'], config['GROUP_ID'], config['ALBUM_ID']);
+require('dotenv').config();
+
+const DataBase = new DB(process.env.MONGODB_URI);
+const vk = new VK_API(process.env.VK_API_KEY, config['GROUP_ID'], config['ALBUM_ID']);
 
 const getFileExtension = (fileName) => fileName.match(/(.*)\.[^.]+$/)[0];
 
