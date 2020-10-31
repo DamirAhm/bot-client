@@ -65,7 +65,7 @@ const Students: React.FC = () => {
 			sort: ({ fullName: aName = '' }, { fullName: bName = '' }) => (aName > bName ? 1 : -1),
 		},
 	];
-	console.log(data);
+
 	const setSearchText = (str: string): void => {
 		str = str.toLowerCase();
 		setText(str);

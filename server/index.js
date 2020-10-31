@@ -1,3 +1,4 @@
+require('dotenv').config();
 const app = require('express')();
 const { ApolloServer } = require('apollo-server-express');
 const { graphqlSchema } = require('./schema');
@@ -10,8 +11,6 @@ const { DataBase: DB } = require('bot-database/DataBase');
 const path = require('path');
 const sirv = require('sirv');
 const compression = require('compression');
-
-require('dotenv').config();
 
 const DataBase = new DB(process.env.MONGODB_URI);
 const vk = new VK_API(process.env.VK_API_KEY, config['GROUP_ID'], config['ALBUM_ID']);

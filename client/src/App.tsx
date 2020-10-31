@@ -6,6 +6,7 @@ import withRedirect from './HOCs/withAuth';
 import useAuth from './hooks/useAuth';
 import PickSchool from './components/Content/PickClass/PickSchool';
 import Loader from './components/Common/Loader/Loader';
+import { useApolloClient } from '@apollo/client';
 
 const Classes = lazy(() => import('./components/Content/Classes/Classes'));
 const Students = lazy(() => import('./components/Content/Students/Students'));
@@ -31,8 +32,6 @@ export const UserContext = React.createContext<
 	setUser: () => void 0,
 });
 
-type fn<T> = (value: T) => T;
-
 function App() {
 	const [user, onUser, logOut, setUser] = useAuth();
 
@@ -56,7 +55,7 @@ function App() {
 											component={() =>
 												withRedirect(
 													<PickClass setUser={setUser} />,
-													user.className === null,
+													user.className == null,
 												)
 											}
 										/>
@@ -102,13 +101,13 @@ function App() {
 										/>
 										<Route
 											path="*"
-											render={() =>
-												user.schoolName ? (
+											render={() => {
+												return user.schoolName ? (
 													<Redirect to={`/${user.schoolName}/classes`} />
 												) : (
 													<Redirect to={`/pickSchool`} />
-												)
-											}
+												);
+											}}
 										/>
 									</Switch>
 								</Suspense>
