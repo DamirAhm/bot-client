@@ -8,6 +8,7 @@ type Props = {
 	content: content;
 	removeContent: (contentId: string) => void;
 	setChanging: (contentId: string) => void;
+	pin: (contentId: string) => void;
 };
 
 const siteRegExp = /(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*/gi;
@@ -56,7 +57,7 @@ const replaceHrefsByAnchors = (text: string): JSX.Element => {
 	}
 };
 
-const ContentElement: React.FC<Props> = ({ content, removeContent, setChanging }) => {
+const ContentElement: React.FC<Props> = ({ content, removeContent, setChanging, pin }) => {
 	const textWithReplacedHrefs = replaceHrefsByAnchors(content.text);
 
 	return (
@@ -93,8 +94,20 @@ const ContentElement: React.FC<Props> = ({ content, removeContent, setChanging }
 			</div>
 			<div className={styles.controls}>
 				<Options
-					include={[redactorOptions.change, redactorOptions.delete]}
+					include={[
+						content.pinned ? redactorOptions.unpin : redactorOptions.pin,
+						redactorOptions.change,
+						redactorOptions.delete,
+					]}
 					props={{
+						[redactorOptions.pin]: {
+							size: 25,
+							onClick: () => pin(content._id as string),
+						},
+						[redactorOptions.unpin]: {
+							size: 25,
+							onClick: () => pin(content._id as string),
+						},
 						[redactorOptions.change]: {
 							onClick: () => setChanging(content._id as string),
 							className: `${styles.pen}`,

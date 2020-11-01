@@ -3,9 +3,10 @@ import { UserContext } from '../../../App';
 
 import { FaPen } from 'react-icons/fa';
 import { MdClose, MdCheck, MdAdd, MdExitToApp } from 'react-icons/md';
+import { GoPin } from 'react-icons/go';
 import { IoIosTrash } from 'react-icons/io';
 
-import { IconBaseProps } from 'react-icons/lib';
+import { IconBaseProps, IconType } from 'react-icons/lib';
 import { redactorOptions, roles } from '../../../types';
 
 type includeProps =
@@ -24,6 +25,23 @@ export type iconSpecialProps = {
 	renderIf?: () => boolean;
 };
 
+const UnpinIcon: IconType = (props) => {
+	return (
+		<div className="unpinIcon">
+			<GoPin className="icon" {...props} />
+			<div className="line"></div>
+		</div>
+	);
+};
+const PinIcon: IconType = (props) => {
+	return (
+		<div className="pinIcon">
+			<GoPin className="icon" {...props} />
+			<div className="line"></div>
+		</div>
+	);
+};
+
 const OptionsElements = {
 	[redactorOptions.delete]: IoIosTrash,
 	[redactorOptions.change]: FaPen,
@@ -31,6 +49,8 @@ const OptionsElements = {
 	[redactorOptions.reject]: MdClose,
 	[redactorOptions.add]: MdAdd,
 	[redactorOptions.exit]: MdExitToApp,
+	[redactorOptions.pin]: PinIcon,
+	[redactorOptions.unpin]: UnpinIcon,
 };
 
 const isSoloIconProps = (

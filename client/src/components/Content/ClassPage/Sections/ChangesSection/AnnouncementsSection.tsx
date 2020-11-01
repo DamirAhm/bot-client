@@ -14,6 +14,8 @@ import {
 	parseContentByDate,
 	getDateStrFromDayMonthStr,
 	objectForEach,
+	concatObjects,
+	getPinnedContent,
 } from '../../../../../utils/functions';
 import Options from '../../../../Common/Options/Options';
 import { UserContext } from '../../../../../App';
@@ -123,6 +125,28 @@ const REMOVE_OLD_ANNOUNCEMENTS = gql`
 	}
 `;
 
+const TOGGLE_PIN_ANNOUNCEMENT = gql`
+	mutation TogglePinAnnouncements(
+		$className: String!
+		$schoolName: String!
+		$announcementId: String!
+	) {
+		pinAnnouncement(
+			className: $className
+			schoolName: $schoolName
+			announcementId: $announcementId
+		) {
+			_id
+			pinned
+		}
+	}
+`;
+const UNPIN_ALL_ANNOUNCEMENTS = gql`
+	mutation UnpinAllHomework($className: String!, $schoolName: String!) {
+		unpinAllAnnouncements(className: $className, schoolName: $schoolName)
+	}
+`;
+
 const AnnouncementsSection: React.FC<{}> = ({}) => {
 	const { className, schoolName } = useParams<{ className: string; schoolName: string }>();
 
@@ -136,40 +160,6 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 	});
 	const { uid } = useContext(UserContext);
 
-	const [removeAnnouncement] = useMutation<
-		WithTypename<{
-			removeAnnouncement: string;
-		}>,
-		{
-			className: string;
-			schoolName: string;
-			announcementId: string;
-		}
-	>(REMOVE_ANNOUNCEMENT);
-	const [updateAnnouncement] = useMutation<
-		WithTypename<{
-			updateAnnouncement: WithTypename<Partial<announcement>>;
-		}>,
-		{
-			className: string;
-			schoolName: string;
-			announcementId: string;
-			updates: Partial<Omit<announcement, 'attachments'> & { attachments: attachment[] }>;
-		}
-	>(UPDATE_ANNOUNCEMENT);
-	const [addAnnouncement] = useMutation<
-		WithTypename<{
-			addAnnouncement: WithTypename<announcement>;
-		}>,
-		{
-			className: string;
-			schoolName: string;
-			text: string;
-			attachments: attachment[];
-			to: string;
-			student_id: number;
-		}
-	>(ADD_ANNOUNCEMENT);
 	const [removeOldAnnouncements] = useMutation<
 		{ removeOldAnnouncements: announcement[] },
 		{ className: string; schoolName: string }
@@ -194,89 +184,20 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 		},
 	});
 
-	const remove = (announcementId: string | undefined) => {
-		if (announcementId) {
-			removeAnnouncement({
-				variables: { className, announcementId, schoolName },
-				optimisticResponse: {
-					__typename: 'Mutation',
-					removeAnnouncement: announcementId,
-				},
-				update: (proxy, res) => {
-					const data = proxy.readQuery<{ announcements: announcement[] }>({
-						query: GET_ANNOUNCEMENTS,
-						variables: { className, schoolName },
-					});
-
-					if (res?.data) {
-						proxy.writeQuery({
-							query: GET_ANNOUNCEMENTS,
-							variables: { className, schoolName },
-							data: {
-								announcements:
-									data?.announcements.filter(
-										(chng) => chng._id !== announcementId,
-									) || [],
-							},
-						});
-					}
-				},
-			});
+	const [addAnnouncement] = useMutation<
+		WithTypename<{
+			addAnnouncement: WithTypename<announcement>;
+		}>,
+		{
+			className: string;
+			schoolName: string;
+			text: string;
+			attachments: attachment[];
+			to: string;
+			student_id: number;
 		}
-	};
-	const update = (
-		announcementId: string | undefined,
-		updates: Partial<WithTypename<announcement>>,
-	) => {
-		const { __typename, ...announcementWithoutTypename } = updates;
-
-		if (announcementId) {
-			updateAnnouncement({
-				variables: {
-					className,
-					schoolName,
-					announcementId,
-					updates: {
-						...announcementWithoutTypename,
-						attachments: updates.attachments?.map(({ __typename, ...att }) => att),
-					},
-				},
-				optimisticResponse: {
-					__typename: 'Mutation',
-					updateAnnouncement: {
-						__typename: 'ClassAnnouncement',
-						_id: announcementId,
-						...announcementsQuery?.data?.announcements.find(
-							(hw) => hw._id === announcementId,
-						),
-						...updates,
-					},
-				},
-				update: (proxy, res) => {
-					const data = proxy.readQuery<{ announcements: announcement[] }>({
-						query: GET_ANNOUNCEMENTS,
-						variables: { className, schoolName },
-					});
-
-					if (res?.data) {
-						proxy.writeQuery({
-							query: GET_ANNOUNCEMENTS,
-							variables: { className, schoolName },
-							data: {
-								homework:
-									data?.announcements.map((chng) =>
-										chng._id === announcementId
-											? res.data?.updateAnnouncement
-											: chng,
-									) || [],
-							},
-						});
-					}
-				},
-			});
-		}
-	};
-	const add = (announcementData: Omit<announcement, '_id'>) => {
+	>(ADD_ANNOUNCEMENT);
+	const add = (announcementData: Pick<announcement, 'text' | 'attachments' | 'to'>) => {
 		addAnnouncement({
 			variables: {
 				...announcementData,
@@ -289,6 +210,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 				__typename: 'Mutation',
 				addAnnouncement: {
 					...announcementData,
+					pinned: false,
 					_id: Date.now().toString(),
 					__typename: 'ClassAnnouncement',
 				},
@@ -341,8 +263,54 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 								announcements,
 							);
 
+							const pinnedAnnouncements = concatObjects(
+								parseContentByDate(getPinnedContent(announcements)),
+							);
+
 							return (
 								<div className={styles.content}>
+									{Object.keys(pinnedAnnouncements).length > 0 && (
+										<Accordion
+											accordionId="pinnedAnnouncements"
+											initiallyOpened={false}
+											Head={({ opened }) => (
+												<div className={styles.oldContentHeader}>
+													<p
+														className={`${styles.date} ${styles.accordion}`}
+													>
+														Закрепленные обьявления
+														<GoTriangleRight
+															size={15}
+															className={
+																opened ? styles.triangle_opened : ''
+															}
+														/>
+													</p>
+
+													<Options
+														include={redactorOptions.delete}
+														props={{
+															allowOnlyRedactor: true,
+															className: `remove ${styles.removeOldContent}`,
+															size: 20,
+															onClick: () => removeOldAnnouncements(),
+														}}
+													/>
+												</div>
+											)}
+										>
+											<div className={styles.offseted}>
+												<AnnouncementLayout
+													announcements={oldAnnouncements}
+													initiallyOpened={false}
+													setAnnouncementCreating={
+														setAnnouncementCreating
+													}
+													setInitContent={setInitContent}
+												/>
+											</div>
+										</Accordion>
+									)}
 									{Object.keys(oldAnnouncements).length > 0 && (
 										<Accordion
 											accordionId="oldAnnouncements"
@@ -381,8 +349,6 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 														setAnnouncementCreating
 													}
 													setInitContent={setInitContent}
-													update={update}
-													remove={remove}
 												/>
 											</div>
 										</Accordion>
@@ -391,8 +357,6 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 										announcements={actualAnnouncements}
 										setAnnouncementCreating={setAnnouncementCreating}
 										setInitContent={setInitContent}
-										update={update}
-										remove={remove}
 									/>
 								</div>
 							);
@@ -423,19 +387,152 @@ const AnnouncementLayout: React.FC<{
 	initiallyOpened?: boolean;
 	setAnnouncementCreating: (state: boolean) => void;
 	setInitContent: (initContent: Partial<announcement>) => void;
-	update: (homeworkId: string | undefined, updates: Partial<announcement>) => void;
-	remove: (homeworkId: string | undefined) => void;
 }> = React.memo(
-	({
-		announcements,
-		remove,
-		update,
-		setAnnouncementCreating,
-		setInitContent,
-		initiallyOpened = true,
-	}) => {
+	({ announcements, setAnnouncementCreating, setInitContent, initiallyOpened = true }) => {
 		const [changingId, setChangingId] = useState<string | null>(null);
 		const changingAnnouncement = changingId ? findAnnouncementById(changingId) : null;
+		const { schoolName, className } = useParams<{ className: string; schoolName: string }>();
+
+		const [removeAnnouncement] = useMutation<
+			WithTypename<{
+				removeAnnouncement: string;
+			}>,
+			{
+				className: string;
+				schoolName: string;
+				announcementId: string;
+			}
+		>(REMOVE_ANNOUNCEMENT);
+		const remove = (announcementId: string | undefined) => {
+			if (announcementId) {
+				removeAnnouncement({
+					variables: { className, announcementId, schoolName },
+					optimisticResponse: {
+						__typename: 'Mutation',
+						removeAnnouncement: announcementId,
+					},
+					update: (proxy, res) => {
+						const data = proxy.readQuery<{ announcements: announcement[] }>({
+							query: GET_ANNOUNCEMENTS,
+							variables: { className, schoolName },
+						});
+
+						if (res?.data) {
+							proxy.writeQuery({
+								query: GET_ANNOUNCEMENTS,
+								variables: { className, schoolName },
+								data: {
+									announcements:
+										data?.announcements.filter(
+											(chng) => chng._id !== announcementId,
+										) || [],
+								},
+							});
+						}
+					},
+				});
+			}
+		};
+
+		const [updateAnnouncement] = useMutation<
+			WithTypename<{
+				updateAnnouncement: WithTypename<Partial<announcement>>;
+			}>,
+			{
+				className: string;
+				schoolName: string;
+				announcementId: string;
+				updates: Partial<Omit<announcement, 'attachments'> & { attachments: attachment[] }>;
+			}
+		>(UPDATE_ANNOUNCEMENT);
+		const update = (
+			announcementId: string | undefined,
+			updates: Partial<WithTypename<announcement>>,
+		) => {
+			const { __typename, ...announcementWithoutTypename } = updates;
+
+			if (announcementId) {
+				updateAnnouncement({
+					variables: {
+						className,
+						schoolName,
+						announcementId,
+						updates: {
+							...announcementWithoutTypename,
+							attachments: updates.attachments?.map(({ __typename, ...att }) => att),
+						},
+					},
+					optimisticResponse: {
+						__typename: 'Mutation',
+						updateAnnouncement: {
+							__typename: 'ClassAnnouncement',
+							_id: announcementId,
+							...Object.values(announcements)
+								.flat()
+								.find((hw) => hw._id === announcementId),
+							...updates,
+						},
+					},
+					update: (proxy, res) => {
+						const data = proxy.readQuery<{ announcements: announcement[] }>({
+							query: GET_ANNOUNCEMENTS,
+							variables: { className, schoolName },
+						});
+
+						if (res?.data) {
+							proxy.writeQuery({
+								query: GET_ANNOUNCEMENTS,
+								variables: { className, schoolName },
+								data: {
+									homework:
+										data?.announcements.map((chng) =>
+											chng._id === announcementId
+												? res.data?.updateAnnouncement
+												: chng,
+										) || [],
+								},
+							});
+						}
+					},
+				});
+			}
+		};
+
+		const [pinAnnouncement] = useMutation<
+			{ pinAnnouncement: { _id: string; pinned: boolean } },
+			{ schoolName: string; className: string; announcementId: string }
+		>(TOGGLE_PIN_ANNOUNCEMENT);
+		const pin = (announcementId: string) => {
+			const announcement = Object.values(announcements)
+				.flat()
+				.find((annnouncement) => annnouncement._id === announcementId);
+
+			if (announcement) {
+				pinAnnouncement({
+					optimisticResponse: {
+						pinAnnouncement: {
+							_id: announcementId,
+							pinned: !announcement.pinned,
+						},
+					},
+					variables: {
+						className,
+						schoolName,
+						announcementId,
+					},
+				});
+			}
+		};
+
+		const [unpinAll] = useMutation<
+			{ unpinAllHomework: boolean },
+			{ className: string; schoolName: string }
+		>(UNPIN_ALL_ANNOUNCEMENTS, {
+			variables: {
+				className,
+				schoolName,
+			},
+		});
 
 		useEffect(() => {
 			if (changingAnnouncement === null && changingId !== null) {
@@ -481,6 +578,7 @@ const AnnouncementLayout: React.FC<{
 							<div className={`${styles.elements} ${styles.offseted}`}>
 								{announcements[announcementDate].map((announcement, i) => (
 									<ContentElement
+										pin={pin}
 										setChanging={setChangingId}
 										key={announcement._id}
 										removeContent={remove}
@@ -516,7 +614,7 @@ const AnnouncementLayout: React.FC<{
 
 type CreateAnnouncementModalProps = {
 	initContent?: Partial<announcement>;
-	returnAnnouncement: (hw: Omit<announcement, '_id'>) => void;
+	returnAnnouncement: (hw: Pick<announcement, 'text' | 'attachments' | 'to'>) => void;
 	close: () => void;
 };
 const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({

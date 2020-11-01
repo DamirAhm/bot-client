@@ -114,6 +114,35 @@ html {
 	align-items: center;
 }
 
+.pinIcon .icon {
+	fill: var(--main);
+}
+.pinIcon:hover .icon {
+	fill: var(--positive);
+}
+
+.unpinIcon {
+	position: relative;
+	display: inline;
+}
+.unpinIcon .icon {
+	fill: var(--main);
+}
+.unpinIcon:hover .icon {
+	fill: var(--negative);
+	position: relative;
+}
+.unpinIcon:hover .line {
+	content: ' ';
+	background-color: var(--negative);
+	position: absolute;
+	width: 25px;
+	height: 3px;
+	transform: rotate(45deg);
+	top: 36%;
+	left: 2px;
+}
+
 @media screen and (max-width: 776px) {
 	.content {
 		padding-top: 15px;

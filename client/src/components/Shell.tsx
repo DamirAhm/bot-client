@@ -127,17 +127,9 @@ const Shell: React.FC<{ children: JSX.Element }> = ({ children }) => {
 
 		setClient(client);
 
-		async function persist() {
-			try {
-				client.resetStore();
-			} catch (e) {
-				console.log(e);
-			}
-		}
-
-		window.addEventListener('blur', persist);
+		window.addEventListener('blur', client.resetStore);
 		return () => {
-			window.removeEventListener('blur', persist);
+			window.removeEventListener('blur', client.resetStore);
 		};
 	}, []);
 

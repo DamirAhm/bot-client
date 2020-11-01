@@ -350,6 +350,54 @@ const SchoolTC = composeWithMongoose(SchoolModel, customizationOptions);
 					}
 				},
 			});
+			//? pin
+			ClassTC.addResolver({
+				name: 'pinAnnouncement',
+				type: ClassTC.get('announcements').getType(),
+				args: { className: 'String!', schoolName: 'String!', announcementId: 'String!' },
+				resolve: async ({ args: { className, schoolName, announcementId } }) => {
+					try {
+						const res = await DataBase.togglePinAnnouncement(
+							{ className, schoolName },
+							announcementId,
+						);
+
+						if (res) {
+							const Class = await DataBase.getClassByName(className, schoolName);
+
+							if (Class) {
+								const pinnedAnnouncement = Class.announcements.find(
+									({ _id }) => _id.toString() === announcementId,
+								);
+
+								return pinnedAnnouncement;
+							}
+						}
+
+						return null;
+					} catch (e) {
+						console.log(e);
+
+						return null;
+					}
+				},
+			});
+			//? unpinAll
+			ClassTC.addResolver({
+				name: 'unpinAllAnnouncements',
+				type: 'Boolean',
+				args: { className: 'String!', schoolName: 'String!' },
+				resolve: async ({ args }) => {
+					try {
+						const res = await DataBase.unpinAllAnnouncements(args);
+
+						return res;
+					} catch (e) {
+						console.error(e);
+						return false;
+					}
+				},
+			});
 		}
 		//* Homework
 		{
@@ -457,6 +505,54 @@ const SchoolTC = composeWithMongoose(SchoolModel, customizationOptions);
 					} catch (e) {
 						// console.error( e );
 						return null;
+					}
+				},
+			});
+			//? pin
+			ClassTC.addResolver({
+				name: 'pinHomework',
+				type: ClassTC.get('homework').getType(),
+				args: { className: 'String!', schoolName: 'String!', homeworkId: 'String!' },
+				resolve: async ({ args: { className, schoolName, homeworkId } }) => {
+					try {
+						const res = await DataBase.togglePinHomework(
+							{ className, schoolName },
+							homeworkId,
+						);
+
+						if (res) {
+							const Class = await DataBase.getClassByName(className, schoolName);
+
+							if (Class) {
+								const pinnedHomework = Class.homework.find(
+									({ _id }) => _id.toString() === homeworkId,
+								);
+
+								return pinnedHomework;
+							}
+						}
+
+						return null;
+					} catch (e) {
+						console.log(e);
+
+						return null;
+					}
+				},
+			});
+			//? unpinAll
+			ClassTC.addResolver({
+				name: 'unpinAllHomework',
+				type: 'Boolean',
+				args: { className: 'String!', schoolName: 'String!' },
+				resolve: async ({ args }) => {
+					try {
+						const res = await DataBase.unpinAllHomework(args);
+
+						return res;
+					} catch (e) {
+						console.error(e);
+						return false;
 					}
 				},
 			});
@@ -732,11 +828,15 @@ schemaComposer.Mutation.addFields({
 	addHomework: ClassTC.getResolver('addHomework'),
 	removeHomework: ClassTC.getResolver('removeHomework'),
 	updateHomework: ClassTC.getResolver('updateHomework'),
+	pinHomework: ClassTC.getResolver('pinHomework'),
+	unpinAllHomework: ClassTC.getResolver('unpinAllHomework'),
+	removeOldHomework: ClassTC.getResolver('removeOldHomework'),
 	addAnnouncement: ClassTC.getResolver('addAnnouncement'),
 	removeAnnouncement: ClassTC.getResolver('removeAnnouncement'),
 	updateAnnouncement: ClassTC.getResolver('updateAnnouncement'),
 	removeOldAnnouncements: ClassTC.getResolver('removeOldAnnouncements'),
-	removeOldHomework: ClassTC.getResolver('removeOldHomework'),
+	pinAnouncement: ClassTC.getResolver('pinAnnouncement'),
+	unpinAllAnnouncements: ClassTC.getResolver('unpinAllAnnouncements'),
 });
 
 const graphqlSchema = schemaComposer.buildSchema();

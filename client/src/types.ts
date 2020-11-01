@@ -10,6 +10,8 @@ export enum redactorOptions {
     reject = "REJECT",
     add = "ADD",
     exit = "EXIT",
+    pin = "PIN",
+    unpin = "UNPIN"
 }
 
 export const lessons = [
@@ -84,6 +86,7 @@ export type content = {
     _id?: string;
     to: string;
     ceratedBy?: number;
+    pinned: boolean
 };
 
 export type homework = {
