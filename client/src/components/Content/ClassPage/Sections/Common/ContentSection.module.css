@@ -196,7 +196,7 @@
 	visibility: hidden;
 	cursor: pointer;
 	top: -25px;
-	right: -5px;
+	right: 15px;
 	flex-direction: row;
 	position: absolute;
 	padding: 10px;

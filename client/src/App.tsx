@@ -7,6 +7,7 @@ import useAuth from './hooks/useAuth';
 import PickSchool from './components/Content/PickClass/PickSchool';
 import Loader from './components/Common/Loader/Loader';
 import { useApolloClient } from '@apollo/client';
+import { GoPin } from 'react-icons/go';
 
 const Classes = lazy(() => import('./components/Content/Classes/Classes'));
 const Students = lazy(() => import('./components/Content/Students/Students'));

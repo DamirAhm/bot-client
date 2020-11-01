@@ -38,7 +38,7 @@ export const highlightSearch = (
 	return <span> {str} </span>;
 };
 
-export const parseContentByDate = <T extends c>(
+export const parseContentByDate = <T extends content>(
 	content: T[],
 ): [{ [day: string]: T[] }, { [day: string]: T[] }] => {
 	const parsedFutureCont: { [day: string]: T[] } = {};
@@ -68,7 +68,9 @@ export const parseContentByDate = <T extends c>(
 
 	return [parsedPastCont, parsedFutureCont];
 };
-
+export const getPinnedContent = <T extends content>(content: T[]) => {
+	return content.filter(({ pinned }) => pinned);
+};
 export const objectForEach = <T extends { [key: string]: ValueType }, ValueType, Output>(
 	object: T,
 	fn: (value: ValueType) => Output,
@@ -77,6 +79,9 @@ export const objectForEach = <T extends { [key: string]: ValueType }, ValueType,
 	const mappedEntries = entries.map(([key, value]) => [key, fn(value)]);
 
 	return Object.fromEntries(mappedEntries);
+};
+export const concatObjects = <T extends object>(objects: T[]) => {
+	return objects.reduce((acc, c) => Object.assign(acc, c), {});
 };
 
 export const getDateStrFromDayMonthStr = (dayMonthStr: string): string => {
