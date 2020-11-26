@@ -10,6 +10,8 @@ import Options from '../../../../Common/Options/Options';
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import { DraggableEntity, DroppableEntity } from '../../../../Common/DragAndDropEntities';
 import { useParams } from 'react-router-dom';
+import CreatableSelect from 'react-select/creatable';
+import { ActionMeta, ActionTypes, StylesConfig, Theme, ValueType } from 'react-select';
 
 const days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 
@@ -155,7 +157,14 @@ const ScheduleSection: React.FC<{}> = ({}) => {
 							{scheduleData.schedule.map((day, i) => (
 								<ScheduleDay
 									changeDay={changeSchedule}
-									lessonsList={scheduleData.lessonsList as string[]}
+									lessonsList={
+										[
+											...new Set([
+												...scheduleData.lessonsList,
+												...scheduleData.schedule.flat(2),
+											]),
+										] as string[]
+									}
 									key={'day' + i}
 									index={i}
 									isAnyLessonDragging={isAnyLessonDragging}
@@ -197,13 +206,12 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(
 			changeDay(changes, index);
 		};
 
-		const changeHandler = (e: ChangeEvent<{ value: string } & Element>) => {
-			const index = e.target?.getAttribute('data-index');
-			if (index !== undefined && index !== null) {
-				const t = [...changes];
-				t[+index] = e.target.value;
-				setChanges(t);
-			}
+		const changeHandler = (index: number, value: string) => {
+			const newChanges = [...changes];
+
+			newChanges[index] = value;
+
+			setChanges(newChanges);
 		};
 
 		const removeLesson = (index: number) => {
@@ -226,8 +234,7 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(
 						}`}
 					>
 						<div className={styles.dayName} onClick={() => setChanging(true)}>
-							{' '}
-							{days[index]}{' '}
+							{days[index]}
 						</div>
 						{changes.map((lesson, i) => (
 							<Lesson
@@ -238,7 +245,7 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(
 								removeLesson={removeLesson}
 								changeHandler={changeHandler}
 								lesson={lesson}
-								lessonsList={lessonsList}
+								lessonsList={[...new Set([...lessonsList, ...changes])]}
 							/>
 						))}
 						{/*//? In different element because confirm and reject should be on the bottom of component */}
@@ -290,9 +297,52 @@ type LessonProps = {
 	dayIndex: number;
 	lesson: string;
 	index: number;
-	changeHandler: React.SelectHTMLAttributes<HTMLSelectElement>['onChange'];
+	changeHandler: (index: number, value: string) => void;
 	lessonsList: string[];
 	removeLesson: (index: number) => void;
+};
+
+const lessonSelectStyle: StylesConfig = {
+	menu: (provided) => ({
+		...provided,
+		width: '170px',
+		minWidth: '50px',
+		maxWidth: '300px',
+		wordBreak: 'break-all',
+	}),
+	control: (provided) => ({
+		...provided,
+		fontSize: '1.2rem',
+		padding: 0,
+		minHeight: '1rem',
+	}),
+	dropdownIndicator: (provided) => ({
+		...provided,
+		padding: '0 5px',
+	}),
+	valueContainer: (provided) => ({
+		...provided,
+		padding: '0 5px',
+	}),
+	input: (provided) => ({
+		...provided,
+		maxWidth: '100px',
+	}),
+};
+const getNewTheme = (theme: Theme) => ({
+	...theme,
+	colors: {
+		...theme.colors,
+		neutral0: 'var(--accent)',
+		primary: 'var(--main)',
+		primary25: 'var(--main-lighten)',
+		neutral50: 'var(--main)',
+	},
+});
+
+type optionType = {
+	value: string;
+	label: string;
 };
 
 const Lesson: React.FC<LessonProps> = ({
@@ -304,6 +354,17 @@ const Lesson: React.FC<LessonProps> = ({
 	lessonsList,
 	removeLesson,
 }) => {
+	const lessonChangeHandler = (
+		value: ValueType<optionType>,
+		meta: ActionMeta<{ value: string; label: string }>,
+	) => {
+		if (['create-option', 'select-option'].includes(meta.action) && value && 'label' in value) {
+			changeHandler(index, value.label);
+		}
+	};
+
+	const lessonOptions = lessonsList.map((les) => ({ value: les, label: les }));
+
 	return (
 		<DraggableEntity
 			draggableId={String(dayIndex) + String(index)}
@@ -313,32 +374,20 @@ const Lesson: React.FC<LessonProps> = ({
 		>
 			{!changing ? (
 				<span key={dayIndex + lesson + index}>
-					{' '}
-					{index + 1}) {lesson}{' '}
+					{index + 1}) {lesson}
 				</span>
 			) : (
 				<div className={styles.lessonChange} key={`picker${dayIndex + lesson + index}`}>
-					<select
-						data-index={index}
+					<CreatableSelect
+						defaultValue={lessonOptions.find(({ value }) => value === lesson)}
+						onChange={lessonChangeHandler}
+						options={lessonOptions}
 						className={styles.selectLesson}
-						name="lesson"
-						id={styles.pickLesson}
-						onChange={changeHandler}
-					>
-						<option key={'pick-1'} value="lesson">
-							{lesson}
-						</option>
-						{lessonsList
-							.filter((les) => les !== lesson)
-							.map((lesson) => (
-								<option
-									key={`pick${styles.pickLesson + dayIndex + lesson}`}
-									value={lesson}
-								>
-									{lesson}
-								</option>
-							))}
-					</select>
+						theme={getNewTheme}
+						formatCreateLabel={(str: string) => <span>Создать {str}</span>}
+						styles={lessonSelectStyle}
+						data-index={index}
+					/>
 					<button className={styles.removeLesson} onClick={() => removeLesson(index)}>
 						<MdClose className={'remove '} size={20} />
 					</button>

@@ -1,11 +1,12 @@
 * {
 	--main: #2e2f47;
+	--main-lighten: #2e2f479a;
 	--negative: #e34a4a;
 	--positive: #71a842;
 	--accent: #f5f5f5;
 	--secondary: #d1dee4;
 	--secondary-light: #b9d6e4;
-	color: #f5f5f5;
+	/* color: #f5f5f5; */
 	font-family: 'Roboto', sans-serif !important;
 	box-sizing: border-box;
 	border: none;

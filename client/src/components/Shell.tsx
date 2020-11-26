@@ -143,9 +143,7 @@ const Shell: React.FC<{ children: JSX.Element }> = ({ children }) => {
 
 	return (
 		<ApolloProvider client={client}>
-			<BrowserRouter>
-				<React.StrictMode>{children}</React.StrictMode>
-			</BrowserRouter>
+			<BrowserRouter>{children}</BrowserRouter>
 		</ApolloProvider>
 	);
 };

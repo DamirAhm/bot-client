@@ -13,6 +13,9 @@
 	display: flex;
 	align-items: center;
 }
+.preview * {
+	color: var(--accent) !important;
+}
 .preview:not(.creator_stab) {
 	padding: 10px 12px 12px 12px;
 }
@@ -58,6 +61,7 @@
 	display: flex;
 	justify-content: center;
 	background-color: var(--main);
+	color: var(--accent) !important;
 	box-sizing: border-box;
 	height: 50px;
 	align-self: center;

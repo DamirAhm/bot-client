@@ -9,6 +9,9 @@
 	display: flex;
 	align-items: center;
 }
+.preview * {
+	color: var(--accent) !important;
+}
 
 .link {
 	display: flex;

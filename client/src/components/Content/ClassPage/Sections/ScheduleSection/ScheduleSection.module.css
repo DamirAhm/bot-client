@@ -13,6 +13,11 @@
 	align-items: center;
 	height: 100%;
 }
+.day span,
+.day .dayName,
+.day .addLesson {
+	color: var(--accent) !important;
+}
 .droppableDay {
 	padding: 10px 0;
 	background-color: var(--main);
@@ -72,9 +77,10 @@
 }
 
 .selectLesson {
-	height: 1.6rem;
 	border-radius: 5px;
 	width: max(80%, 50px);
+	padding: 0;
+	width: 100%;
 }
 
 .removeLesson {
@@ -87,6 +93,7 @@
 	right: 10px;
 	visibility: hidden;
 	cursor: pointer;
+	color: var(--accent);
 }
 
 .day:hover .pen {
