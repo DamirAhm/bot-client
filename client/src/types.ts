@@ -1,3 +1,5 @@
+import { ValueType } from "react-select";
+
 export enum roles {
     student = "STUDENT",
     admin = "ADMIN",
@@ -101,6 +103,16 @@ export type Class = {
     announcements: announcement[];
     schoolName: string;
 };
+
+
+export type optionType<Value = string> = {
+    value: Value,
+    label: string
+}
+
+export const isOptionType = (option: ValueType<optionType>): option is optionType => {
+    return !!(option && 'value' in option && option.value);
+}
 
 export type School = {
     classes: Class[]

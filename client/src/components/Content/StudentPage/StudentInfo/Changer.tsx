@@ -92,7 +92,7 @@ const Changers: {
 			<div className={styles.changer}>
 				{infos[name] || name}:
 				<input
-					type="text"
+					type="time"
 					className={`${styles.changeString}`}
 					defaultValue={value}
 					onChange={(e) => changeHandler(name, e.target.value)}

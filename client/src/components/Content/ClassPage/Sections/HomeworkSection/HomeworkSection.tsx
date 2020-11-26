@@ -257,6 +257,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 			>
 				<Suspender query={homeworkQuery}>
 					{(data: { homework: homework[] }) => {
+						console.log(data.homework);
 						const [oldHw, newHw] = parseContentByDate(data.homework);
 						const pinnedHw = concatObjects(
 							parseContentByDate(getPinnedContent(data.homework)),

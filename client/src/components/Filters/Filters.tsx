@@ -2,6 +2,8 @@ import React, { HTMLAttributes, useState } from 'react';
 import styles from './Filters.module.css';
 import { sort } from '../Content/Students/Students';
 import Searcher from '../Common/Searcher/Searcher';
+import Select, { StylesConfig, ValueType } from 'react-select';
+import { isOptionType, optionType } from '../../types';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
 	sortsList?: sort[];
@@ -13,6 +15,14 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 	sortProps?: HTMLAttributes<HTMLDivElement>;
 }
 
+const selectStyles: StylesConfig = {
+	container: (provided) => ({
+		...provided,
+		width: '100%',
+		fontSize: '1.6rem',
+	}),
+};
+
 const Filters: React.FC<Props> = ({
 	sortsList,
 	setSearchText,
@@ -23,6 +33,17 @@ const Filters: React.FC<Props> = ({
 	...props
 }) => {
 	const [text, setText] = useState('');
+
+	const sortOptions: optionType[] | undefined = sortsList?.map(({ name }) => ({
+		label: name,
+		value: name,
+	}));
+
+	const onChangeSort = (value: ValueType<optionType>) => {
+		if (isOptionType(value) && setSort) {
+			setSort(value.label);
+		}
+	};
 
 	return (
 		<div {...props} className={props.className || styles.filterContainer}>
@@ -39,26 +60,15 @@ const Filters: React.FC<Props> = ({
 						/>
 					</div>
 				)}
-				{sortsList?.length && setSort && (
+				{sortsList?.length && sortOptions && setSort && (
 					<div className={styles.sorts} {...sortProps}>
-						<select
-							onChange={(e) => setSort(e.target.value)}
-							name="sorts"
-							id="sorts"
-							defaultValue={defaultSort}
-						>
-							{!defaultSort && (
-								<option key="none" value="none">
-									{' '}
-									Сортировать по{' '}
-								</option>
-							)}
-							{sortsList.map(({ name }) => (
-								<option key={name} value={name}>
-									{name}
-								</option>
-							))}
-						</select>
+						<Select
+							options={sortOptions}
+							defaultValue={sortOptions.find(({ value }) => value === defaultSort)}
+							onChange={onChangeSort}
+							styles={selectStyles}
+							placeholder={'Выбрать'}
+						/>
 					</div>
 				)}
 			</div>

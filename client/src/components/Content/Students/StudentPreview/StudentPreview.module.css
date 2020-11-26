@@ -5,9 +5,12 @@
 	width: 80%;
 	border-radius: 18px;
 	justify-content: space-between;
-	color: var(--accent) !important;
+	color: var(--accent);
 	display: flex;
 	align-items: center;
+}
+.preview * {
+	color: var(--accent);
 }
 
 .link {

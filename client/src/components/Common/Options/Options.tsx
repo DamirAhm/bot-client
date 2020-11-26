@@ -108,7 +108,11 @@ const Options: React.FC<Props> = ({
 				)
 					return null;
 				return (
-					<button key={i} onClick={(onClick as any) || (() => {})}>
+					<button
+						style={{ cursor: 'pointer' }}
+						key={i}
+						onClick={(onClick as any) || (() => {})}
+					>
 						{React.createElement(OptionsElements[e], {
 							...iconProps,
 							...restProps,

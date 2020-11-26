@@ -1,55 +1,55 @@
 .filterContainer {
-    width: 100%;
-    display: flex;
-    justify-content: center;
+	width: 100%;
+	display: flex;
+	justify-content: center;
 }
 
 .filters {
-    display: flex;
-    justify-content: space-between;
-    box-sizing: border-box;
-    width: 100%;
+	display: flex;
+	justify-content: space-between;
+	box-sizing: border-box;
+	width: 100%;
 }
 
 .filters input,
 .filters select {
-    border-radius: 10px;
-    padding: 5px 10px;
-    height: 100%;
-    width: 100%;
+	border-radius: 10px;
+	padding: 5px 10px;
+	height: 100%;
+	width: 100%;
 }
 
 .filters .select {
-    flex-direction: row-reverse;
+	flex-direction: row-reverse;
 }
 
 .filters .sorts,
 .filters .search {
-    color: var(--main);
-    width: 40%;
-    display: flex;
-    max-width: 250px;
-    min-width: 100px;
+	color: var(--main);
+	width: 40%;
+	display: flex;
+	max-width: 250px;
+	min-width: 100px;
 }
 
 .sorts * {
-    color: var(--main) !important;
-    font-size: 1.2rem;
+	color: var(--main);
+	font-size: 1.2rem;
 }
 
 @media screen and (max-width: 776px) {
-    .filters input,
-    .filters select {
-        width: 100%;
-        color: var(--main) !important;
-        font-size: 1.4rem;
-    }
+	.filters input,
+	.filters select {
+		width: 100%;
+		color: var(--main);
+		font-size: 1.4rem;
+	}
 
-    .filters > * {
-        width: 40%;
-    }
+	.filters > * {
+		width: 40%;
+	}
 
-    .filters {
-        padding: 0;
-    }
+	.filters {
+		padding: 0;
+	}
 }

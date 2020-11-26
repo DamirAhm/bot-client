@@ -1,20 +1,23 @@
+import { homework, isOptionType, optionType } from '../../../types';
+
 import React, { useEffect, useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import DatePicker from 'react-datepicker';
-import { content, homework } from '../../../types';
+import { useQuery } from '@apollo/react-hooks';
+import { useParams } from 'react-router-dom';
+import Select, { ActionMeta, OptionsType, StylesConfig, ValueType } from 'react-select';
 
 import styles from './ChangeContent.module.css';
 import createContentFiller, {
 	ContentSectionProps,
 } from '../../../utils/createContentChanger/createContentChanger';
 import Suspender from '../Suspender/Suspender';
-import { useQuery } from '@apollo/react-hooks';
 import {
 	GET_SCHEDULE,
 	GET_LESSONS,
+	getSelectTheme,
 } from '../../Content/ClassPage/Sections/ScheduleSection/ScheduleSection';
 import { ChangeContentProps } from './ChangeContent';
-import { useParams } from 'react-router-dom';
 import { memoize } from '../../../utils/functions';
 
 const DEFAULT_LESSON = 'Выберите предмет';
@@ -69,6 +72,13 @@ const findNextLessonDate = (schedule: string[][], lesson: string, initDate = new
 	}
 };
 
+const selectStyles: StylesConfig = {
+	container: (provided) => ({
+		...provided,
+		fontSize: '1.6rem',
+	}),
+};
+
 const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>(
 	{
 		lesson: {
@@ -83,6 +93,12 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 				});
 				const lessonsQuery = useQuery<{ lessons: string[] }>(GET_LESSONS);
 
+				const onChange = (value: ValueType<optionType>) => {
+					if (isOptionType(value)) {
+						changeHandler(value.value);
+					}
+				};
+
 				return (
 					<Suspender queries={[scheduleQuery, lessonsQuery]}>
 						{(
@@ -93,30 +109,20 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 								schedule.some((day) => day.includes(lesson)),
 							);
 
+							const lessonOptions = possibleLessons.map((les) => ({
+								value: les,
+								label: les,
+							}));
+
 							return (
-								<select
-									className={styles.selectLesson}
-									onChange={(e) => changeHandler(e.target.value)}
-									value={value}
-								>
-									{(!value || value === DEFAULT_LESSON) && (
-										<option
-											key={`possibleLessonNothing`}
-											disabled
-											value={DEFAULT_LESSON}
-										>
-											{DEFAULT_LESSON}
-										</option>
-									)}
-									<option value={value}>{value}</option>
-									{possibleLessons
-										.filter((lesson) => lesson !== value)
-										.map((lesson) => (
-											<option key={`${lesson}`} value={lesson}>
-												{lesson}
-											</option>
-										))}
-								</select>
+								<Select
+									placeholder={'Выбрать'}
+									defaultInputValue={value}
+									options={lessonOptions}
+									styles={selectStyles}
+									onChange={onChange}
+									theme={getSelectTheme}
+								/>
 							);
 						}}
 					</Suspender>

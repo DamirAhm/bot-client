@@ -1,6 +1,9 @@
 .content {
 	width: 100%;
 }
+.element * {
+	color: var(--accent) !important;
+}
 
 .contentCreator {
 	background-color: var(--secondary);

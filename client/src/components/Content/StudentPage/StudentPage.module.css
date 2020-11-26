@@ -36,6 +36,9 @@
 	align-self: center;
 	cursor: pointer;
 }
+.icon * {
+	color: var(--accent);
+}
 .icon:not(:last-child) {
 	margin-right: 25px;
 }

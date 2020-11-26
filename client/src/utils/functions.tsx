@@ -108,13 +108,10 @@ export function isDateWithOffset(date: Date, offset: number = 0) {
 	const deltaIsLessThanDay =
 		Math.abs(date.getTime() - new Date().setDate(new Date().getDate() + offset)) <=
 		24 * 60 * 60 * 1000;
-	const datesAreSame = date.getDate() === new Date().getDate() + offset;
+	const datesAreSame =
+		date.getDate() === new Date(new Date().setDate(new Date().getDate() + offset)).getDate();
 	return deltaIsLessThanDay && datesAreSame;
 }
-
-type convertSettings = {
-	shortenName?: boolean;
-};
 
 export function parseSchoolName(schoolName: string): [string, number] | null {
 	const match = schoolName.match(/^([a-z]+):(\d+)/);
