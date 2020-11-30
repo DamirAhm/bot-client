@@ -371,6 +371,7 @@ const Lesson: React.FC<LessonProps> = ({
 			) : (
 				<div className={styles.lessonChange} key={`picker${dayIndex + lesson + index}`}>
 					<CreatableSelect
+<<<<<<< HEAD
 						options={lessonOptions}
 						defaultValue={lessonOptions.find(({ value }) => value === lesson)}
 						onChange={lessonChangeHandler}
@@ -378,6 +379,16 @@ const Lesson: React.FC<LessonProps> = ({
 						theme={getSelectTheme}
 						formatCreateLabel={(str: string) => <span>Создать {str}</span>}
 						styles={lessonSelectStyle}
+=======
+						defaultValue={lessonOptions.find(({ value }) => value === lesson)}
+						onChange={lessonChangeHandler}
+						options={lessonOptions}
+						className={styles.selectLesson}
+						theme={getNewTheme}
+						formatCreateLabel={(str: string) => <span>Создать {str}</span>}
+						styles={lessonSelectStyle}
+						data-index={index}
+>>>>>>> cf7753bc42b9872425f4546d69579f377df71c49
 					/>
 					<button className={styles.removeLesson} onClick={() => removeLesson(index)}>
 						<MdClose className={'remove '} size={20} />

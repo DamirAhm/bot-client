@@ -14,7 +14,11 @@
 	align-items: center;
 }
 .preview * {
+<<<<<<< HEAD
 	color: var(--accent);
+=======
+	color: var(--accent) !important;
+>>>>>>> cf7753bc42b9872425f4546d69579f377df71c49
 }
 .preview:not(.creator_stab) {
 	padding: 10px 12px 12px 12px;
