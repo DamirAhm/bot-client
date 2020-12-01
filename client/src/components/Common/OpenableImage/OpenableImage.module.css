@@ -1,5 +1,6 @@
 .modalImage {
-	width: min(100%, 80vw);
+	width: 100%;
+	max-width: min(80vw, 700px);
 	margin: auto 0;
 }
 
