@@ -34,7 +34,9 @@ const OpenableImg: React.FC<OpenableImgProps> = ({ prevImg, nextImg, ...props })
 				ReactDOM.createPortal(
 					<ModalImg
 						close={() => setModalOpened(false)}
-						{...{ ...props, prevImg, nextImg }}
+						prevImg={prevImg}
+						nextImg={nextImg}
+						{...props}
 					/>,
 					photoModal,
 				)}
@@ -90,13 +92,13 @@ export const ModalImg: React.FC<ModalImgProps> = ({
 				/>
 			)}
 			<img
-				style={{ width: '100%', maxWidth: '80vh' }}
 				data-testid="modalImg"
 				alt={props.alt || 'Открытое изображение'}
 				src={src}
-				className={styles.modalImage}
 				onMouseDown={(e) => e.stopPropagation()}
+				onScroll={(e) => e.stopPropagation()}
 				{...props}
+				className={styles.modalImage}
 			/>
 			{next && (
 				<MdNavigateNext

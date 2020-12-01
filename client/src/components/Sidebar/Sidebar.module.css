@@ -14,6 +14,7 @@
 .opened,
 .closed {
 	display: none;
+	fill: var(--accent);
 }
 #check {
 	display: none;

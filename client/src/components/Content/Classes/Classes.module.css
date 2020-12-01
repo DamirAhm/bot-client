@@ -17,5 +17,5 @@
 }
 
 .filters {
-	padding: 0 calc((100% / 2 - 35%) / 3);
+	padding: 0 calc((100% / 2 - 35%) / 3) 15px;
 }

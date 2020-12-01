@@ -108,12 +108,12 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 							const possibleLessons = lessons.filter((lesson) =>
 								schedule.some((day) => day.includes(lesson)),
 							);
-
 							const lessonOptions = possibleLessons.map((les) => ({
 								value: les,
 								label: les,
 							}));
 
+							console.log(lessonOptions);
 							return (
 								<Select
 									placeholder={'Выбрать'}
