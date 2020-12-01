@@ -79,9 +79,9 @@ html {
 	background-color: rgba(0, 0, 0, 0.7);
 	display: flex;
 	justify-content: center;
-	align-items: center;
 	top: 0;
 	left: 0;
+	overflow: auto;
 	z-index: 10000;
 }
 

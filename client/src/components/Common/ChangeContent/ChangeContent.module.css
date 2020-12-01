@@ -1,6 +1,8 @@
 .contentChanger {
 	background-color: var(--secondary);
 	padding: 20px;
+	height: fit-content;
+	min-height: 100%;
 }
 
 .header {

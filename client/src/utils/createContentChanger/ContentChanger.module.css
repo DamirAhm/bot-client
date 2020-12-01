@@ -1,38 +1,40 @@
 .contentChanger {
-    background-color: var(--secondary);
-    padding: 15px 20px;
-    width: 1000px;
-    max-width: 90vw;
+	background-color: var(--secondary);
+	padding: 15px 20px;
+	width: 1000px;
+	max-width: 90vw;
+	height: fit-content;
+	min-height: 100%;
 }
 .contentChanger section:not(:last-of-type) {
-    margin-bottom: 10px;
-    width: 100%;
-    min-width: 100px;
-    max-width: 90vw;
+	margin-bottom: 10px;
+	width: 100%;
+	min-width: 100px;
+	max-width: 90vw;
 }
 
 .header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    width: 100%;
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 10px;
+	width: 100%;
 }
 .header label {
-    width: fit-content;
-    display: flex;
-    align-items: center;
+	width: fit-content;
+	display: flex;
+	align-items: center;
 }
 .header * {
-    cursor: pointer;
+	cursor: pointer;
 }
 
 .title {
-    color: var(--main);
-    margin-bottom: 5px;
-    font-size: 1.8rem;
+	color: var(--main);
+	margin-bottom: 5px;
+	font-size: 1.8rem;
 }
 
 .error {
-    color: var(--negative);
-    font-size: 1.8rem;
+	color: var(--negative);
+	font-size: 1.8rem;
 }
