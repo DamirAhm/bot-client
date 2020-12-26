@@ -1,13 +1,10 @@
 import React, { lazy, Suspense } from 'react';
-import Sidebar from './components/Sidebar/Sidebar';
 import { Redirect, Route, Switch } from 'react-router';
 import { roles, setStateProp, User } from './types';
 import withRedirect from './HOCs/withAuth';
 import useAuth from './hooks/useAuth';
-import PickSchool from './components/Content/PickClass/PickSchool';
+
 import Loader from './components/Common/Loader/Loader';
-import { useApolloClient } from '@apollo/client';
-import { GoPin } from 'react-icons/go';
 
 const Classes = lazy(() => import('./components/Content/Classes/Classes'));
 const Students = lazy(() => import('./components/Content/Students/Students'));
@@ -15,8 +12,9 @@ const StudentPage = lazy(() => import('./components/Content/StudentPage/StudentP
 const ClassPage = lazy(() => import('./components/Content/ClassPage/ClassPage'));
 const PickClass = lazy(() => import('./components/Content/PickClass/PickClass'));
 const Page404 = lazy(() => import('./components/Content/404/404'));
-
+const Sidebar = lazy(() => import('./components/Sidebar/Sidebar'));
 const Auth = lazy(() => import('./components/Content/Auth/Auth'));
+const PickSchool = lazy(() => import('./components/Content/PickClass/PickSchool'));
 
 export const UserContext = React.createContext<
 	{ isAuth: boolean; setUser: (user: setStateProp<User | null>) => void } & User
@@ -45,7 +43,7 @@ function App() {
 							{!localStorage.getItem('user') && <Auth setUser={onUser} />}
 						</Suspense>
 					) : (
-						<>
+						<Suspense fallback={<Loader />}>
 							<Sidebar logOut={logOut} />
 							<div className="content">
 								<Suspense fallback={<Loader />}>
@@ -113,7 +111,7 @@ function App() {
 									</Switch>
 								</Suspense>
 							</div>
-						</>
+						</Suspense>
 					)}
 				</div>
 			</div>
