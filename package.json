@@ -17,7 +17,8 @@
         "start:client": "npm start --prefix ./client",
         "start:dev": "npm run start:server & npm run start:client",
         "test": "npm run test --prefix ./client && npm run test --prefix ./server",
-        "deploy": "rsync -e ssh -i /home/damirahm/.ssh/id_rsa -o StrictHostKeyChecking=no --archive --compress --progress --delete ./server root@damirahm.ru:/root/bot-client-server"
+        "deploy": "rsync -e ssh -i /home/damirahm/.ssh/id_rsa -o StrictHostKeyChecking=no --archive --compress --progress --delete ./server root@damirahm.ru:/root/bot-client-server",
+        "gzip": "gzip ./build/static/js/* && gzip ./build/static/css/*"
     },
     "repository": {
         "type": "git",
