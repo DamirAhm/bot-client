@@ -127,7 +127,9 @@ const Shell: React.FC<{ children: JSX.Element }> = ({ children }) => {
 
 		setClient(client);
 
-		window.addEventListener('blur', client.resetStore);
+		//@ts-ignore
+		window.a = client;
+		// window.addEventListener('blur', client.resetStore);
 		return () => {
 			window.removeEventListener('blur', client.resetStore);
 		};
