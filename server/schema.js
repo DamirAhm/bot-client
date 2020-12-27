@@ -1,9 +1,9 @@
 // @ts-check
 const { composeWithMongoose } = require('graphql-compose-mongoose');
 const { schemaComposer } = require('graphql-compose');
-const StudentModel = require('bot-database/lib/Models/StudentModel').default;
-const ClassModel = require('bot-database/lib/Models/ClassModel').default;
-const SchoolModel = require('bot-database/lib/Models/SchoolModel').default;
+const StudentModel = require('bot-database/build/Models/StudentModel').default;
+const ClassModel = require('bot-database/build/Models/ClassModel').default;
+const SchoolModel = require('bot-database/build/Models/SchoolModel').default;
 const { DataBase: DB, Roles, Lessons, VK_API } = require('bot-database');
 
 const config = require('./config.json');
