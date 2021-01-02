@@ -5,7 +5,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import DatePicker from 'react-datepicker';
 import { useQuery } from '@apollo/react-hooks';
 import { useParams } from 'react-router-dom';
-import Select, { ActionMeta, OptionsType, StylesConfig, ValueType } from 'react-select';
+import Select, { StylesConfig, ValueType } from 'react-select';
 
 import styles from './ChangeContent.module.css';
 import createContentFiller, {
@@ -19,7 +19,7 @@ import {
 } from '../../Content/ClassPage/Sections/ScheduleSection/ScheduleSection';
 import { ChangeContentProps } from './ChangeContent';
 import { memoize } from '../../../utils/functions';
-import usePolling from "../../../hooks/usePolling";
+import usePolling from '../../../hooks/usePolling';
 
 const DEFAULT_LESSON = 'Выберите предмет';
 
@@ -116,10 +116,11 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 								label: les,
 							}));
 
-							console.log(lessonOptions);
+							console.log(possibleLessons);
+
 							return (
 								<Select
-									placeholder={'Выбрать'}
+									placeholder={'Выберите предмет'}
 									defaultInputValue={value}
 									options={lessonOptions}
 									styles={selectStyles}
@@ -131,7 +132,6 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 					</Suspender>
 				);
 			},
-			defaultValue: 'Выберите предмет',
 			validator: (lesson) => {
 				if (lesson === '' || lesson === DEFAULT_LESSON) return 'Выберите урок';
 			},
