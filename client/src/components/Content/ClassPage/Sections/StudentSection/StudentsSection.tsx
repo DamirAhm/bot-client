@@ -15,6 +15,7 @@ import { useContext } from 'react';
 import Filters from '../../../../Filters/Filters';
 import { highlightSearch } from '../../../../../utils/functions';
 import { useParams } from 'react-router-dom';
+import usePolling from '../../../../../hooks/usePolling';
 
 const modalEl = document.getElementById('chooseStudentModal');
 
@@ -65,10 +66,11 @@ export const ADD_STUDENT_TO_CLASS = gql`
 const StudentsSection: React.FC<{}> = ({}) => {
 	const { className, schoolName } = useParams<{ className: string; schoolName: string }>();
 
-	const { data, loading, error } = useQuery<
+	const studentsQuery = useQuery<
 		{ students?: studentPreview[] },
 		{ schoolName: string; className: string }
 	>(GET_STUDENTS_FOR_CLASS, { variables: { className, schoolName } });
+	const { data, loading, error } = studentsQuery;
 
 	const [remove] = useMutation<{ removed: boolean }, { vkId: number }>(REMOVE_STUDENT_FROM_CLASS);
 
@@ -113,6 +115,8 @@ const StudentsSection: React.FC<{}> = ({}) => {
 				st.role.toLocaleLowerCase().search(str) !== -1,
 		);
 	};
+
+	usePolling(studentsQuery);
 
 	return (
 		<InfoSection

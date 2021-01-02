@@ -8,7 +8,6 @@ import Suspender from '../../../../Common/Suspender/Suspender';
 import Accordion from '../../../../Common/Accordion/Accordion';
 import { GoTriangleRight } from 'react-icons/go';
 import ReactDOM from 'react-dom';
-import ImgAlbum from '../../../../Common/OpenableImage/ImgAlbum';
 import {
 	parseContentByDate,
 	objectForEach,
@@ -21,6 +20,7 @@ import ChangeHomework from '../../../../Common/ChangeContent/ChangeHomework';
 import { UserContext } from '../../../../../App';
 import { useParams } from 'react-router-dom';
 import ContentElement from '../../../../Common/ContentElement';
+import usePolling from '../../../../../hooks/usePolling';
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -226,6 +226,8 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 		});
 		setInitContent({});
 	};
+
+	usePolling(homeworkQuery);
 
 	return (
 		<>

@@ -3,6 +3,7 @@ import { gql } from 'apollo-boost';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useList from '../../../hooks/useList';
+import usePolling from '../../../hooks/usePolling';
 import { redactorOptions, schoolPreview } from '../../../types';
 import {
 	capitalize,
@@ -161,6 +162,8 @@ const PickSchool: React.FC<{}> = ({}) => {
 	useEffect(() => {
 		changeTitle('Выберите школу');
 	});
+
+	usePolling(query);
 
 	return (
 		<div className="centerer">

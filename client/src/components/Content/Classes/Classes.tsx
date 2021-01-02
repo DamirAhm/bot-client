@@ -10,6 +10,7 @@ import useList from '../../../hooks/useList';
 import Suspender from '../../Common/Suspender/Suspender';
 import { changeTitle } from '../../../utils/functions';
 import { useParams } from 'react-router-dom';
+import usePolling from '../../../hooks/usePolling';
 
 export const GET_CLASSES = gql`
 	query GetClasses($schoolName: String) {
@@ -82,6 +83,8 @@ const Classes: React.FC = () => {
 	useEffect(() => {
 		changeTitle('Классы');
 	}, []);
+
+	usePolling(query);
 
 	return (
 		<>

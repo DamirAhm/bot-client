@@ -12,6 +12,7 @@ import Options from '../../Common/Options/Options';
 import Confirm from '../../Common/Confirm/Confirm';
 import { RedirectTo404 } from '../404/404';
 import { changeTitle } from '../../../utils/functions';
+import usePolling from '../../../hooks/usePolling';
 
 export const GET_STUDENT_BY_VK_ID = gql`
 	query StudentByVkId($vkId: Float!) {
@@ -82,10 +83,11 @@ const StudentPage: React.FC = () => {
 
 	const iconSize = 30;
 
-	const { data, loading, error } = useQuery<
+	const studentQuery = useQuery<
 		{ studentOne: Student & { __typename: string } },
 		{ vkId: number }
 	>(GET_STUDENT_BY_VK_ID, { variables: { vkId } });
+	const { data, loading, error } = studentQuery;
 	const [updater] = useMutation<
 		{
 			updatedStudent: {
@@ -231,6 +233,8 @@ const StudentPage: React.FC = () => {
 			changeTitle('Ученик');
 		}
 	}, [data]);
+	usePolling(studentQuery);
+
 	if (removed) {
 		return <Redirect to={`/students/`} />;
 	}

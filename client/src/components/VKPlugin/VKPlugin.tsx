@@ -24,7 +24,11 @@ const VKPlugin: React.FC<Props> = ({ setUser }) => {
 
 		setState(states.completed);
 	};
-	const onError = () => setState(states.error);
+	const onError = (e: ErrorEvent) => {
+		console.error(e);
+
+		setState(states.error);
+	};
 
 	useEffect(() => {
 		const script = document.createElement('script');

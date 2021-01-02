@@ -109,7 +109,7 @@ export type optionType<Value = string> = {
 	label: string;
 };
 
-export const isOptionType = (option: ValueType<optionType>): option is optionType => {
+export const isOptionType = (option: ValueType<optionType, false>): option is optionType => {
 	return !!(option && 'value' in option && option.value);
 };
 

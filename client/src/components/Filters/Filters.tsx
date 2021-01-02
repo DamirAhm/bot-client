@@ -15,7 +15,7 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 	sortProps?: HTMLAttributes<HTMLDivElement>;
 }
 
-const selectStyles: StylesConfig = {
+const selectStyles: StylesConfig<optionType, false> = {
 	container: (provided) => ({
 		...provided,
 		width: '100%',
@@ -39,7 +39,7 @@ const Filters: React.FC<Props> = ({
 		value: name,
 	}));
 
-	const onChangeSort = (value: ValueType<optionType>) => {
+	const onChangeSort = (value: ValueType<optionType, false>) => {
 		if (isOptionType(value) && setSort) {
 			setSort(value.label);
 		}

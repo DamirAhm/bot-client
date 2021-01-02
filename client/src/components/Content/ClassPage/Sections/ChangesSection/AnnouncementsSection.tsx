@@ -21,6 +21,7 @@ import Options from '../../../../Common/Options/Options';
 import { UserContext } from '../../../../../App';
 import { useParams } from 'react-router-dom';
 import ContentElement from '../../../../Common/ContentElement';
+import usePolling from '../../../../../hooks/usePolling';
 
 const announcementContentModalRoot = document.getElementById('changeContentModal');
 
@@ -223,6 +224,8 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 			],
 		});
 	};
+
+	usePolling(announcementsQuery);
 
 	return (
 		<>

@@ -127,9 +127,16 @@ const Shell: React.FC<{ children: JSX.Element }> = ({ children }) => {
 
 		setClient(client);
 
-		//@ts-ignore
-		window.a = client;
-		// window.addEventListener('blur', client.resetStore);
+		// @ts-ignore
+		if (client.queryManager.inFlightLinkObservables.size !== 0)
+			window.addEventListener('blur', client.resetStore);
+		else
+			setTimeout(() => {
+				// @ts-ignore
+				if (client.queryManager.inFlightLinkObservables.size !== 0)
+					window.addEventListener('blur', client.resetStore);
+			}, 500);
+
 		return () => {
 			window.removeEventListener('blur', client.resetStore);
 		};

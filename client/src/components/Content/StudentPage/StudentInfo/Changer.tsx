@@ -8,6 +8,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useParams } from 'react-router-dom';
 import { UserContext } from '../../../../App';
+import usePolling from '../../../../hooks/usePolling';
 
 export type changeHandler<T = string | number | boolean | string[] | number[]> = (
 	path: string,
@@ -129,10 +130,13 @@ const Changer: React.FC<Props<string | number | boolean | Date | null | string[]
 }) => {
 	const { schoolName } = useContext(UserContext);
 
-	const { data, error } = useQuery<
+	const infoQuery = useQuery<
 		{ classes: { name: string }[]; roles: string[] },
 		{ schoolName: string }
 	>(GET_INFO, { variables: { schoolName: schoolName || 'Нету' } });
+	const { data, error } = infoQuery;
+
+	usePolling(infoQuery);
 
 	if (error) return <div>{error}</div>;
 

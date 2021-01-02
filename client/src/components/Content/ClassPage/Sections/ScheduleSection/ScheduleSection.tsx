@@ -12,6 +12,7 @@ import { DraggableEntity, DroppableEntity } from '../../../../Common/DragAndDrop
 import { useParams } from 'react-router-dom';
 import CreatableSelect from 'react-select/creatable';
 import { ActionMeta, ActionTypes, StylesConfig, Theme, ValueType } from 'react-select';
+import usePolling from '../../../../../hooks/usePolling';
 
 const days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 
@@ -135,7 +136,7 @@ const ScheduleSection: React.FC<{}> = ({}) => {
 	};
 	useEffect(() => {
 		const newScheduleData: Partial<scheduleData> = {};
-		if (scheduleQuery.data) {
+		if (scheduleQuery.data?.schedule) {
 			newScheduleData.schedule = scheduleQuery.data.schedule;
 			newScheduleData.initialSchedule = Array.from(scheduleQuery.data.schedule, (el) =>
 				Array.from(el),
@@ -147,6 +148,8 @@ const ScheduleSection: React.FC<{}> = ({}) => {
 
 		setScheduleData(newScheduleData);
 	}, [scheduleQuery, lessonsQuery]);
+
+	usePolling([scheduleQuery, lessonsQuery]);
 
 	return (
 		<DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
@@ -302,7 +305,7 @@ type LessonProps = {
 	removeLesson: (index: number) => void;
 };
 
-const lessonSelectStyle: StylesConfig = {
+const lessonSelectStyle: StylesConfig<optionType, false> = {
 	menu: (provided) => ({
 		...provided,
 		width: '170px',
@@ -349,7 +352,10 @@ const Lesson: React.FC<LessonProps> = ({
 	lessonsList,
 	removeLesson,
 }) => {
-	const lessonChangeHandler = (value: ValueType<optionType>, meta: ActionMeta<optionType>) => {
+	const lessonChangeHandler = (
+		value: ValueType<optionType, false>,
+		meta: ActionMeta<optionType>,
+	) => {
 		if (['create-option', 'select-option'].includes(meta.action) && isOptionType(value)) {
 			changeHandler(index, value.value);
 		}

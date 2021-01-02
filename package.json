@@ -11,6 +11,7 @@
     "scripts": {
         "start": "npm run start --prefix ./server",
         "build": "npm run build --prefix ./client",
+        "postbuild": "npm run gzip",
         "install": "npm install --prefix ./server",
         "postinstall": "npm install --prefix ./client",
         "start:server": "PORT=8080 npm run start:dev --prefix ./server",
@@ -18,7 +19,7 @@
         "start:dev": "npm run start:server & npm run start:client",
         "test": "npm run test --prefix ./client && npm run test --prefix ./server",
         "deploy": "cd server && rsync -e \"sshpass -p $(cat ~/.ssh/damirahm.ru_password) ssh -i $HOME/.ssh/key -o StrictHostKeyChecking=no\" --archive --compress --progress --delete . root@damirahm.ru:/root/bot-client-server",
-        "gzip": "gzip ./build/static/js/* && gzip ./build/static/css/*"
+        "gzip": "gzip -9 -f server/build/static/js/* && gzip -9 -f server/build/static/css/*"
     },
     "repository": {
         "type": "git",

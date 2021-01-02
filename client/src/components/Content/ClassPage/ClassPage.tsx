@@ -21,6 +21,7 @@ import { studentPreview } from '../Students/Students';
 import { changeTitle } from '../../../utils/functions';
 import { getSchoolNumber } from '../PickClass/PickSchool';
 import Loader from '../../Common/Loader/Loader';
+import usePolling from '../../../hooks/usePolling';
 
 const REMOVE_CLASS = gql`
 	mutation RemoveClass($className: String!, $schoolName: String!) {
@@ -157,6 +158,8 @@ const ClassPage: React.FC = () => {
 	useEffect(() => {
 		changeTitle(`${className} класс`);
 	}, []);
+
+	usePolling(query);
 
 	return (
 		<>

@@ -9,6 +9,7 @@ import Filters from '../../Filters/Filters';
 import Suspender from '../../Common/Suspender/Suspender';
 import { changeTitle } from '../../../utils/functions';
 import { RoleNames } from '../StudentPage/StudentInfo/StudentInfo';
+import usePolling from '../../../hooks/usePolling';
 
 export const GET_STUDENTS = gql`
 	query GetStudents {
@@ -38,7 +39,8 @@ export type sort<T = any> = {
 };
 
 const Students: React.FC = () => {
-	const { data, loading, error } = useQuery<{ students: studentPreview[] }>(GET_STUDENTS);
+	const studentsQuery = useQuery<{ students: studentPreview[] }>(GET_STUDENTS);
+	const { data, loading, error } = studentsQuery;
 	const { items, setSort, setFilter, setItems } = useList<studentPreview>([]);
 	const [text, setText] = useState('');
 	const sorts: sort<studentPreview>[] = [
@@ -95,6 +97,8 @@ const Students: React.FC = () => {
 	useEffect(() => {
 		changeTitle('Ученики');
 	}, []);
+
+	usePolling(studentsQuery);
 
 	return (
 		<div>

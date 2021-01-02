@@ -19,6 +19,7 @@ import {
 } from '../../Content/ClassPage/Sections/ScheduleSection/ScheduleSection';
 import { ChangeContentProps } from './ChangeContent';
 import { memoize } from '../../../utils/functions';
+import usePolling from "../../../hooks/usePolling";
 
 const DEFAULT_LESSON = 'Выберите предмет';
 
@@ -72,7 +73,7 @@ const findNextLessonDate = (schedule: string[][], lesson: string, initDate = new
 	}
 };
 
-const selectStyles: StylesConfig = {
+const selectStyles: StylesConfig<optionType, false> = {
 	container: (provided) => ({
 		...provided,
 		fontSize: '1.6rem',
@@ -93,11 +94,13 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 				});
 				const lessonsQuery = useQuery<{ lessons: string[] }>(GET_LESSONS);
 
-				const onChange = (value: ValueType<optionType>) => {
+				const onChange = (value: ValueType<optionType, false>) => {
 					if (isOptionType(value)) {
 						changeHandler(value.value);
 					}
 				};
+
+				usePolling([scheduleQuery, lessonsQuery]);
 
 				return (
 					<Suspender queries={[scheduleQuery, lessonsQuery]}>

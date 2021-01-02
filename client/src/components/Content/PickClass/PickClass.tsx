@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Link, useHistory, useParams } from 'react-router-dom';
 import { UserContext } from '../../../App';
 import useList from '../../../hooks/useList';
+import usePolling from '../../../hooks/usePolling';
 import { Student, User } from '../../../types';
 import { capitalize, changeTitle, highlightSearch, retranslit } from '../../../utils/functions';
 import Suspender from '../../Common/Suspender/Suspender';
@@ -112,6 +113,8 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 	useEffect(() => {
 		changeTitle('Выберите класс');
 	});
+
+	usePolling(classesQuery);
 
 	if (schoolName) {
 		const [, classes] = items.find(([school]) => schoolName === school) || [];
