@@ -103,20 +103,13 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 				usePolling([scheduleQuery, lessonsQuery]);
 
 				return (
-					<Suspender queries={[scheduleQuery, lessonsQuery]}>
-						{(
-							{ schedule }: { schedule: string[][] },
-							{ lessons }: { lessons: string[] },
-						) => {
-							const possibleLessons = lessons.filter((lesson) =>
-								schedule.some((day) => day.includes(lesson)),
-							);
+					<Suspender queries={[scheduleQuery]}>
+						{({ schedule }: { schedule: string[][] }) => {
+							const possibleLessons = [...new Set(schedule.flat(2))].sort();
 							const lessonOptions = possibleLessons.map((les) => ({
 								value: les,
 								label: les,
 							}));
-
-							console.log(possibleLessons);
 
 							return (
 								<Select

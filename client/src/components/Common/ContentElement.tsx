@@ -12,41 +12,74 @@ type Props = {
 };
 
 const siteRegExp = /(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*/gi;
+const fullSiteRegExp = /^(https?:\/\/)?([\w-]{1,32}\.[\w-]{1,32})[^\s@]*$/gi;
+const emailRegExp = /(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/gi;
+const fullEmailRegExp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/gi;
 
 const replaceHrefsByAnchors = (text: string): JSX.Element => {
-	const match = text.match(siteRegExp);
+	const siteMatch = text.match(siteRegExp);
 
-	if (match) {
-		const slices = text.split(new RegExp(match.join('|')));
+	if (siteMatch) {
+		const slices = text.split(new RegExp(siteMatch.join('|'))).filter(Boolean);
 
-		for (let i = 0; i < match.length; i++) {
-			slices.splice(i + 1, 0, match[i]);
+		for (let i = 0; i < siteMatch.length; i++) {
+			slices.splice(i * 2 + 1, 0, siteMatch[i]);
+		}
+
+		for (let i = 0; i < slices.length - 1; i++) {
+			if (slices[i].charAt(slices[i].length - 1) === '@') {
+				slices[i] += slices[i + 1];
+				slices.splice(i + 1, 1);
+			}
 		}
 
 		let res: (string | JSX.Element)[] = [];
 
 		for (const slice of slices) {
-			if (slice.match(siteRegExp)) {
+			if (slice.match(fullSiteRegExp)) {
 				const element = (
 					<React.Fragment key={slice}>
 						{typeof res[res.length - 1] === 'string' && <br />}
-						<a href={slice} className={styles.hyperlink} key={slice}>
+						<a href={slice} className={styles.hyperlink}>
 							{slice}
 						</a>
 						<br />
 					</React.Fragment>
 				);
 
-				if (res) {
-					res.push(element);
-				} else {
-					res = [element];
-				}
+				res.push(element);
 			} else {
-				if (res) {
-					res.push(slice);
+				const emailMatch = slice.match(emailRegExp);
+
+				if (emailMatch) {
+					let emailSlices = slice
+						.split(new RegExp(emailMatch.join('|')))
+						.filter((str) => Boolean(str.trim()));
+
+					for (let i = 0; i < emailMatch.length; i++) {
+						emailSlices.splice(i * 2 + 1, 0, emailMatch[i]);
+					}
+					if (emailSlices.length === 0) emailSlices = [emailMatch[0]];
+
+					for (const emailSlice of emailSlices) {
+						if (emailSlice.match(fullEmailRegExp)) {
+							const element = (
+								<React.Fragment key={emailSlice}>
+									{typeof res[res.length - 1] === 'string' && <br />}
+									<a href={`mailto:${emailSlice}`} className={styles.hyperlink}>
+										{emailSlice}
+									</a>
+									<br />
+								</React.Fragment>
+							);
+
+							res.push(element);
+						} else {
+							res.push(emailSlice);
+						}
+					}
 				} else {
-					res = [slice];
+					res.push(slice);
 				}
 			}
 		}
