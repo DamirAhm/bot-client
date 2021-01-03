@@ -91,6 +91,6 @@ app.get('/*', (_, res) => {
 
 app.listen({ port: process.env.PORT || 8080 }, () =>
 	console.log(
-		`🚀 Server ready at http://localhost:${process.env.PORT || 8080}${server.graphqlPath}`,
+		`🚀 Server ready at http://localhost:${process.env.PORT || 8080} ${server.graphqlPath}`,
 	),
 );

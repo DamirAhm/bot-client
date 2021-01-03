@@ -854,6 +854,9 @@ schemaComposer.Mutation.addFields({
 	pinAnouncement: ClassTC.getResolver('pinAnnouncement'),
 	unpinAllAnnouncements: ClassTC.getResolver('unpinAllAnnouncements'),
 });
+// schemaComposer.Subscription.addFields( {
+
+// })
 
 const graphqlSchema = schemaComposer.buildSchema();
 
