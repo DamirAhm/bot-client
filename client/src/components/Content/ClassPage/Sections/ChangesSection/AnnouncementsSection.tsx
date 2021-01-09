@@ -1,170 +1,297 @@
-import React, { useContext, useEffect, useState } from 'react';
 import styles from '../Common/ContentSection.module.css';
-import InfoSection from '../../InfoSection/InfoSection';
-import { gql } from 'apollo-boost';
-import { useQuery, useMutation } from '@apollo/react-hooks';
+
 import { attachment, WithTypename, announcement, redactorOptions } from '../../../../../types';
-import Suspender from '../../../../Common/Suspender/Suspender';
-import Accordion from '../../../../Common/Accordion/Accordion';
-import { GoTriangleRight } from 'react-icons/go';
+
+import React, { useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import ChangeContent from '../../../../Common/ChangeContent/ChangeContent';
-import ImgAlbum from '../../../../Common/OpenableImage/ImgAlbum';
+import { gql, useSubscription } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
+import { GoTriangleRight } from 'react-icons/go';
+import { useParams } from 'react-router-dom';
+
 import {
 	parseContentByDate,
 	getDateStrFromDayMonthStr,
-	objectForEach,
 	concatObjects,
 	getPinnedContent,
 } from '../../../../../utils/functions';
+
+import Accordion from '../../../../Common/Accordion/Accordion';
+import Suspender from '../../../../Common/Suspender/Suspender';
+import ChangeContent from '../../../../Common/ChangeContent/ChangeContent';
 import Options from '../../../../Common/Options/Options';
-import { UserContext } from '../../../../../App';
-import { useParams } from 'react-router-dom';
+import InfoSection from '../../InfoSection/InfoSection';
 import ContentElement from '../../../../Common/ContentElement';
+
+import { UserContext } from '../../../../../App';
 import usePolling from '../../../../../hooks/usePolling';
+import useUnmount from '../../../../../hooks/useUnmount';
 
 const announcementContentModalRoot = document.getElementById('changeContentModal');
 
-const GET_ANNOUNCEMENTS = gql`
-	query GetAnnouncements($className: String!, $schoolName: String!) {
-		announcements: getAnnouncements(className: $className, schoolName: $schoolName) {
-			text
-			createdBy
-			to
-			attachments {
-				url
-				value
+const Queries = {
+	GET_ANNOUNCEMENTS: gql`
+		query GetAnnouncements($className: String!, $schoolName: String!) {
+			announcements: getAnnouncements(className: $className, schoolName: $schoolName) {
+				text
+				createdBy
+				to
+				attachments {
+					url
+					value
+					_id
+				}
+				_id
+				__typename
+			}
+		}
+	`,
+};
+const Mutations = {
+	ADD_ANNOUNCEMENT: gql`
+		mutation addAnnouncement(
+			$className: String!
+			$schoolName: String!
+			$text: String!
+			$to: String
+			$attachments: [ClassHomeworkAttachmentsInput]!
+			$student_id: Int!
+		) {
+			addAnnouncement(
+				className: $className
+				schoolName: $schoolName
+				text: $text
+				to: $to
+				attachments: $attachments
+				student_id: $student_id
+			) {
+				text
+				_id
+				to
+				attachments {
+					url
+					value
+				}
+				__typename
+			}
+		}
+	`,
+	REMOVE_ANNOUNCEMENT: gql`
+		mutation RemoveAnnouncement(
+			$className: String!
+			$announcementId: String!
+			$schoolName: String!
+		) {
+			removeAnnouncement(
+				announcementId: $announcementId
+				className: $className
+				schoolName: $schoolName
+			)
+		}
+	`,
+	UPDATE_ANNOUNCEMENT: gql`
+		mutation UpdateAnnouncement(
+			$className: String!
+			$schoolName: String!
+			$announcementId: String!
+			$updates: ClassAnnouncementsInput!
+		) {
+			updateAnnouncement(
+				className: $className
+				announcementId: $announcementId
+				updates: $updates
+				schoolName: $schoolName
+			) {
+				_id
+				text
+				attachments {
+					url
+					value
+					_id
+				}
+				to
+			}
+		}
+	`,
+	REMOVE_OLD_ANNOUNCEMENTS: gql`
+		mutation RemoveOldAnnouncements($className: String!, $schoolName: String!) {
+			removeOldAnnouncements(className: $className, schoolName: $schoolName) {
+				to
+				text
+				attachments {
+					url
+					value
+					_id
+				}
+				createdBy
 				_id
 			}
-			_id
-			__typename
 		}
-	}
-`;
-
-const REMOVE_ANNOUNCEMENT = gql`
-	mutation RemoveAnnouncement(
-		$className: String!
-		$announcementId: String!
-		$schoolName: String!
-	) {
-		removeAnnouncement(
-			announcementId: $announcementId
-			className: $className
-			schoolName: $schoolName
-		)
-	}
-`;
-
-const UPDATE_ANNOUNCEMENT = gql`
-	mutation UpdateAnnouncement(
-		$className: String!
-		$schoolName: String!
-		$announcementId: String!
-		$updates: ClassAnnouncementsInput!
-	) {
-		updateAnnouncement(
-			className: $className
-			announcementId: $announcementId
-			updates: $updates
-			schoolName: $schoolName
+	`,
+	TOGGLE_PIN_ANNOUNCEMENT: gql`
+		mutation TogglePinAnnouncements(
+			$className: String!
+			$schoolName: String!
+			$announcementId: String!
 		) {
-			_id
-			text
-			attachments {
-				url
-				value
+			pinAnnouncement(
+				className: $className
+				schoolName: $schoolName
+				announcementId: $announcementId
+			) {
 				_id
+				pinned
 			}
-			to
 		}
-	}
-`;
-
-const ADD_ANNOUNCEMENT = gql`
-	mutation addAnnouncement(
-		$className: String!
-		$schoolName: String!
-		$text: String!
-		$to: String
-		$attachments: [ClassHomeworkAttachmentsInput]!
-		$student_id: Int!
-	) {
-		addAnnouncement(
-			className: $className
-			schoolName: $schoolName
-			text: $text
-			to: $to
-			attachments: $attachments
-			student_id: $student_id
-		) {
-			text
-			_id
-			to
-			attachments {
-				url
-				value
-			}
-			__typename
+	`,
+	UNPIN_ALL_ANNOUNCEMENTS: gql`
+		mutation UnpinAllHomework($className: String!, $schoolName: String!) {
+			unpinAllAnnouncements(className: $className, schoolName: $schoolName)
 		}
-	}
-`;
-
-const REMOVE_OLD_ANNOUNCEMENTS = gql`
-	mutation RemoveOldAnnouncements($className: String!, $schoolName: String!) {
-		removeOldAnnouncements(className: $className, schoolName: $schoolName) {
-			to
-			text
-			attachments {
-				url
-				value
+	`,
+};
+const Subscriptions = {
+	ON_ANNOUNCEMENT_ADDED: gql`
+		subscription OnAnnouncementAdded($className: String!, $schoolName: String!) {
+			onAnnouncementAdded(className: $className, schoolName: $schoolName) {
 				_id
+				text
+				attachments {
+					url
+					value
+					_id
+				}
+				to
+				pinned
+				__typename
 			}
-			createdBy
-			_id
 		}
-	}
-`;
-
-const TOGGLE_PIN_ANNOUNCEMENT = gql`
-	mutation TogglePinAnnouncements(
-		$className: String!
-		$schoolName: String!
-		$announcementId: String!
-	) {
-		pinAnnouncement(
-			className: $className
-			schoolName: $schoolName
-			announcementId: $announcementId
-		) {
-			_id
-			pinned
+	`,
+	ON_ANNOUNCEMENT_CONFIRMED: gql`
+		subscription OnAnnouncementConfirmed($className: String!, $schoolName: String!) {
+			onAnnouncementConfirmed(className: $className, schoolName: $schoolName) {
+				stabId
+				actualId
+			}
 		}
-	}
-`;
-const UNPIN_ALL_ANNOUNCEMENTS = gql`
-	mutation UnpinAllHomework($className: String!, $schoolName: String!) {
-		unpinAllAnnouncements(className: $className, schoolName: $schoolName)
-	}
-`;
+	`,
+	ON_ANNOUNCEMENTS_REMOVED: gql`
+		subscription OnAnnouncementsRemoved($className: String!, $schoolName: String!) {
+			onAnnouncementsRemoved(className: $className, schoolName: $schoolName)
+		}
+	`,
+	ON_ANNOUNCEMENT_CHANGED: gql`
+		subscription OnAnnouncementChanged($className: String!, $schoolName: String!) {
+			onAnnouncementChanged(className: $className, schoolName: $schoolName) {
+				_id
+				text
+				attachments {
+					url
+					value
+					_id
+				}
+				to
+				pinned
+				__typename
+			}
+		}
+	`,
+};
 
 const AnnouncementsSection: React.FC<{}> = ({}) => {
 	const { className, schoolName } = useParams<{ className: string; schoolName: string }>();
-
+	const { uid } = useContext(UserContext);
 	const [announcementCreating, setAnnouncementCreating] = useState(false);
 	const [initContent, setInitContent] = useState({});
+
 	const announcementsQuery = useQuery<
 		{ announcements: announcement[] },
 		{ schoolName: string; className: string }
-	>(GET_ANNOUNCEMENTS, {
+	>(Queries.GET_ANNOUNCEMENTS, {
 		variables: { className, schoolName },
 	});
-	const { uid } = useContext(UserContext);
+	useSubscription<{ onAnnouncementAdded: announcement | null }>(
+		Subscriptions.ON_ANNOUNCEMENT_ADDED,
+		{
+			variables: { className, schoolName },
+			onSubscriptionData: ({ subscriptionData }) => {
+				const newAnnouncement = subscriptionData.data?.onAnnouncementAdded;
+				if (newAnnouncement) {
+					announcementsQuery.updateQuery((prev) => {
+						return {
+							announcements: prev.announcements.concat([newAnnouncement]),
+						};
+					});
+				}
+			},
+		},
+	);
+	useSubscription<{ onAnnouncementConfirmed: { stabId: string; actualId: string } | null }>(
+		Subscriptions.ON_ANNOUNCEMENT_CONFIRMED,
+		{
+			variables: { className, schoolName },
+			onSubscriptionData: ({ subscriptionData }) => {
+				const confirmation = subscriptionData.data?.onAnnouncementConfirmed;
+
+				if (confirmation) {
+					announcementsQuery.updateQuery((prev) => {
+						return {
+							announcements: prev.announcements.map(({ _id, ...announcement }) =>
+								_id === confirmation.stabId
+									? { _id: confirmation.actualId, ...announcement }
+									: { _id, ...announcement },
+							),
+						};
+					});
+				}
+			},
+		},
+	);
+	useSubscription<{ onAnnouncementsRemoved: string[] | null }>(
+		Subscriptions.ON_ANNOUNCEMENTS_REMOVED,
+		{
+			variables: { className, schoolName },
+			onSubscriptionData: ({ subscriptionData }) => {
+				const removedAnnouncementsIds = subscriptionData.data?.onAnnouncementsRemoved;
+
+				if (removedAnnouncementsIds) {
+					announcementsQuery.updateQuery((prev) => {
+						return {
+							announcements: prev.announcements.filter(
+								({ _id }) => !removedAnnouncementsIds.includes(_id as string),
+							),
+						};
+					});
+				}
+			},
+		},
+	);
+	useSubscription<{ onAnnouncementChanged: Partial<announcement> | null }>(
+		Subscriptions.ON_ANNOUNCEMENT_CHANGED,
+		{
+			variables: { className, schoolName },
+			onSubscriptionData: ({ subscriptionData }) => {
+				const updates = subscriptionData.data?.onAnnouncementChanged;
+
+				if (updates) {
+					announcementsQuery.updateQuery((prev) => {
+						return {
+							announcements: prev.announcements.map(({ _id, ...announcement }) =>
+								_id === updates._id
+									? { ...announcement, ...updates }
+									: { ...announcement, _id },
+							),
+						};
+					});
+				}
+			},
+		},
+	);
 
 	const [removeOldAnnouncements] = useMutation<
 		{ removeOldAnnouncements: announcement[] },
 		{ className: string; schoolName: string }
-	>(REMOVE_OLD_ANNOUNCEMENTS, {
+	>(Mutations.REMOVE_OLD_ANNOUNCEMENTS, {
 		variables: { className, schoolName },
 		optimisticResponse: {
 			removeOldAnnouncements:
@@ -175,7 +302,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 		update: (proxy, mutation) => {
 			if (mutation && mutation.data?.removeOldAnnouncements) {
 				proxy.writeQuery({
-					query: GET_ANNOUNCEMENTS,
+					query: Queries.GET_ANNOUNCEMENTS,
 					variables: { className, schoolName },
 					data: {
 						announcements: mutation.data.removeOldAnnouncements,
@@ -197,7 +324,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 			to: string;
 			student_id: number;
 		}
-	>(ADD_ANNOUNCEMENT);
+	>(Mutations.ADD_ANNOUNCEMENT);
 	const add = (announcementData: Pick<announcement, 'text' | 'attachments' | 'to'>) => {
 		addAnnouncement({
 			variables: {
@@ -218,14 +345,12 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 			},
 			refetchQueries: [
 				{
-					query: GET_ANNOUNCEMENTS,
+					query: Queries.GET_ANNOUNCEMENTS,
 					variables: { className, schoolName },
 				},
 			],
 		});
 	};
-
-	usePolling(announcementsQuery);
 
 	return (
 		<>
@@ -405,7 +530,7 @@ const AnnouncementLayout: React.FC<{
 				schoolName: string;
 				announcementId: string;
 			}
-		>(REMOVE_ANNOUNCEMENT);
+		>(Mutations.REMOVE_ANNOUNCEMENT);
 		const remove = (announcementId: string | undefined) => {
 			if (announcementId) {
 				removeAnnouncement({
@@ -416,13 +541,13 @@ const AnnouncementLayout: React.FC<{
 					},
 					update: (proxy, res) => {
 						const data = proxy.readQuery<{ announcements: announcement[] }>({
-							query: GET_ANNOUNCEMENTS,
+							query: Queries.GET_ANNOUNCEMENTS,
 							variables: { className, schoolName },
 						});
 
 						if (res?.data) {
 							proxy.writeQuery({
-								query: GET_ANNOUNCEMENTS,
+								query: Queries.GET_ANNOUNCEMENTS,
 								variables: { className, schoolName },
 								data: {
 									announcements:
@@ -447,7 +572,7 @@ const AnnouncementLayout: React.FC<{
 				announcementId: string;
 				updates: Partial<Omit<announcement, 'attachments'> & { attachments: attachment[] }>;
 			}
-		>(UPDATE_ANNOUNCEMENT);
+		>(Mutations.UPDATE_ANNOUNCEMENT);
 		const update = (
 			announcementId: string | undefined,
 			updates: Partial<WithTypename<announcement>>,
@@ -478,13 +603,13 @@ const AnnouncementLayout: React.FC<{
 					},
 					update: (proxy, res) => {
 						const data = proxy.readQuery<{ announcements: announcement[] }>({
-							query: GET_ANNOUNCEMENTS,
+							query: Queries.GET_ANNOUNCEMENTS,
 							variables: { className, schoolName },
 						});
 
 						if (res?.data) {
 							proxy.writeQuery({
-								query: GET_ANNOUNCEMENTS,
+								query: Queries.GET_ANNOUNCEMENTS,
 								variables: { className, schoolName },
 								data: {
 									homework:
@@ -504,7 +629,7 @@ const AnnouncementLayout: React.FC<{
 		const [pinAnnouncement] = useMutation<
 			{ pinAnnouncement: { _id: string; pinned: boolean } },
 			{ schoolName: string; className: string; announcementId: string }
-		>(TOGGLE_PIN_ANNOUNCEMENT);
+		>(Mutations.TOGGLE_PIN_ANNOUNCEMENT);
 		const pin = (announcementId: string) => {
 			const announcement = Object.values(announcements)
 				.flat()
@@ -530,7 +655,7 @@ const AnnouncementLayout: React.FC<{
 		const [unpinAll] = useMutation<
 			{ unpinAllHomework: boolean },
 			{ className: string; schoolName: string }
-		>(UNPIN_ALL_ANNOUNCEMENTS, {
+		>(Mutations.UNPIN_ALL_ANNOUNCEMENTS, {
 			variables: {
 				className,
 				schoolName,

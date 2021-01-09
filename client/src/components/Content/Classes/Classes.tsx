@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { gql } from 'apollo-boost';
-import { useQuery } from '@apollo/react-hooks';
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import ClassPreview from './ClassPreview/ClassPreview';
 import styles from './Classes.module.css';
 import ClassCreator from './ClassPreview/ClassCreator';

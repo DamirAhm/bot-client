@@ -1,17 +1,20 @@
-import React, { useState, memo, ChangeEvent, useEffect, useCallback } from 'react';
-import { gql } from 'apollo-boost';
-import InfoSection from '../../InfoSection/InfoSection';
-import { useQuery, useMutation } from '@apollo/react-hooks';
-import Suspender from '../../../../Common/Suspender/Suspender';
 import styles from './ScheduleSection.module.css';
-import { MdClose } from 'react-icons/md';
 import { isOptionType, optionType, redactorOptions, WithTypename } from '../../../../../types';
-import Options from '../../../../Common/Options/Options';
+
+import React, { useState, memo, useEffect, useCallback } from 'react';
+import { gql } from '@apollo/client';
+import { useQuery, useMutation, useSubscription } from '@apollo/client';
+import { MdClose } from 'react-icons/md';
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import { DraggableEntity, DroppableEntity } from '../../../../Common/DragAndDropEntities';
 import { useParams } from 'react-router-dom';
 import CreatableSelect from 'react-select/creatable';
-import { ActionMeta, ActionTypes, StylesConfig, Theme, ValueType } from 'react-select';
+import { ActionMeta, StylesConfig, Theme, ValueType } from 'react-select';
+
+import Options from '../../../../Common/Options/Options';
+import InfoSection from '../../InfoSection/InfoSection';
+import Suspender from '../../../../Common/Suspender/Suspender';
+
 import usePolling from '../../../../../hooks/usePolling';
 
 const days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
@@ -27,26 +30,37 @@ export const GET_LESSONS = gql`
 	}
 `;
 
-const CHANGE_SCHEDULE = gql`
-	mutation ChangeDay(
-		$className: String!
-		$dayIndex: Int!
-		$newDay: [String]!
-		$schoolName: String!
-	) {
-		changed: changeDay(
-			className: $className
-			dayIndex: $dayIndex
-			newSchedule: $newDay
-			schoolName: $schoolName
+const Queries = {
+	GET_SCHEDULE,
+	GET_LESSONS,
+};
+const Mutations = {
+	CHANGE_SCHEDULE: gql`
+		mutation ChangeDay(
+			$className: String!
+			$dayIndex: Int!
+			$newDay: [String]!
+			$schoolName: String!
 		) {
-			name
-			schedule
-			_id
-			__typename
+			changed: changeDay(
+				className: $className
+				dayIndex: $dayIndex
+				newSchedule: $newDay
+				schoolName: $schoolName
+			)
 		}
-	}
-`;
+	`,
+};
+const Subscriptions = {
+	ON_SCHEDULE_CHANGED: gql`
+		subscription OnScheduleChanged($className: String!, $schoolName: String!) {
+			onScheduleChanged(className: $className, schoolName: $schoolName) {
+				newSchedule
+				dayIndex
+			}
+		}
+	`,
+};
 
 type scheduleData = {
 	schedule: string[][] | null;
@@ -56,49 +70,63 @@ type scheduleData = {
 
 const ScheduleSection: React.FC<{}> = ({}) => {
 	const { schoolName, className } = useParams<{ schoolName: string; className: string }>();
-
 	const [isAnyLessonDragging, setIsAnyLessonDragging] = useState(false);
 	const [scheduleData, setScheduleData] = useState<Partial<scheduleData> | null>(null);
 
 	const scheduleQuery = useQuery<
 		{ schedule: string[][] },
 		{ schoolName: string; className: string }
-	>(GET_SCHEDULE, {
+	>(Queries.GET_SCHEDULE, {
 		variables: { className, schoolName },
 	});
-	const lessonsQuery = useQuery<{ lessons: string[] }>(GET_LESSONS);
+	useSubscription<{ onScheduleChanged: { dayIndex: number; newSchedule: string[] } }>(
+		Subscriptions.ON_SCHEDULE_CHANGED,
+		{
+			variables: { className, schoolName },
+			onSubscriptionData: ({ subscriptionData }) => {
+				const scheduleChange = subscriptionData.data?.onScheduleChanged;
+
+				if (scheduleChange) {
+					scheduleQuery.updateQuery((prev) => {
+						return {
+							schedule: prev.schedule.map((day, i) =>
+								i === scheduleChange.dayIndex ? scheduleChange.newSchedule : day,
+							),
+						};
+					});
+				}
+			},
+		},
+	);
+
+	const lessonsQuery = useQuery<{ lessons: string[] }>(Queries.GET_LESSONS);
 
 	const [changeDay] = useMutation<
-		WithTypename<{ changed: WithTypename<{ name: string; schedule: string[][] }> }>,
+		WithTypename<{ changed: string[] }>,
 		{ className: string; dayIndex: number; newDay: string[]; schoolName: string }
-	>(CHANGE_SCHEDULE);
-
+	>(Mutations.CHANGE_SCHEDULE);
 	const changeSchedule = useCallback(
 		(changes: string[], dayIndex: number) => {
 			changeDay({
 				variables: { className, dayIndex, newDay: changes, schoolName },
 				optimisticResponse: {
 					__typename: 'Mutation',
-					changed: {
-						__typename: 'Class',
-						name: className,
-						schedule: scheduleQuery.data?.schedule.map((day, i) =>
-							i === dayIndex ? changes : day,
-						) || [[], [], [], [], [], []],
-					},
+					changed: changes,
 				},
 				update: (proxy, { data }) => {
 					const query = proxy.readQuery<{ schedule: string[][] }>({
-						query: GET_SCHEDULE,
+						query: Queries.GET_SCHEDULE,
 						variables: { className, schoolName },
 					});
 
-					if (query?.schedule) {
-						proxy.writeQuery({
-							query: GET_SCHEDULE,
+					if (query?.schedule && data?.changed) {
+						proxy.writeQuery<{ schedule: string[][] }>({
+							query: Queries.GET_SCHEDULE,
 							variables: { className, schoolName },
 							data: {
-								schedule: data?.changed.schedule,
+								schedule: query.schedule.map((day, index) =>
+									index === dayIndex ? data?.changed : day,
+								),
 							},
 						});
 					}
@@ -134,6 +162,7 @@ const ScheduleSection: React.FC<{}> = ({}) => {
 
 		setIsAnyLessonDragging(false);
 	};
+
 	useEffect(() => {
 		const newScheduleData: Partial<scheduleData> = {};
 		if (scheduleQuery.data?.schedule) {
@@ -149,7 +178,12 @@ const ScheduleSection: React.FC<{}> = ({}) => {
 		setScheduleData(newScheduleData);
 	}, [scheduleQuery, lessonsQuery]);
 
-	usePolling([scheduleQuery, lessonsQuery]);
+	const lessonsList = [
+		...new Set([
+			...(scheduleData?.lessonsList || []),
+			...(scheduleData?.schedule || []).flat(2),
+		]),
+	];
 
 	return (
 		<DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
@@ -160,14 +194,7 @@ const ScheduleSection: React.FC<{}> = ({}) => {
 							{scheduleData.schedule.map((day, i) => (
 								<ScheduleDay
 									changeDay={changeSchedule}
-									lessonsList={
-										[
-											...new Set([
-												...scheduleData.lessonsList,
-												...scheduleData.schedule.flat(2),
-											]),
-										] as string[]
-									}
+									lessonsList={lessonsList}
 									key={'day' + i}
 									index={i}
 									isAnyLessonDragging={isAnyLessonDragging}
@@ -197,6 +224,12 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(
 		const [changing, setChanging] = useState(false);
 		const [changes, setChanges] = useState(lessons);
 
+		useEffect(() => {
+			if (!changing) {
+				setChanges(lessons);
+			}
+		}, [lessons]);
+
 		const iconSize = 15;
 
 		const reject = () => {
@@ -205,7 +238,6 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(
 		};
 		const confirm = () => {
 			setChanging(false);
-			//TODO add error handling
 			changeDay(changes, index);
 		};
 

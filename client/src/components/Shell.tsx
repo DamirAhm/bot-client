@@ -1,18 +1,44 @@
-import { ApolloProvider } from '@apollo/react-hooks';
-import { InMemoryCache } from 'apollo-cache-inmemory';
-import ApolloClient, { gql } from 'apollo-boost';
+import { WebSocketLink } from '@apollo/client/link/ws';
 import { CachePersistor } from 'apollo3-cache-persist';
+import { HttpLink, split, InMemoryCache, ApolloClient, ApolloProvider, gql } from '@apollo/client';
+
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter } from 'react-router-dom';
+
 import { Class } from '../types';
 import Loader from './Common/Loader/Loader';
 import { GET_CLASSES } from './Content/Classes/Classes';
+import { getMainDefinition } from '@apollo/client/utilities';
 
-const API_HOST: string =
+const API_HOST =
 	process.env.NODE_ENV === 'development' ? 'http://localhost:8080/graphql' : '/graphql';
+const WEB_SOCKET_HOST =
+	process.env.NODE_ENV === 'development'
+		? 'ws://localhost:8080/graphql'
+		: `ws://${document.location.origin}/graphql`;
 const SCHEMA_VERSION = '1';
 const SCHEMA_VERSION_KEY = 'apollo-schema-version';
 const currentVersion = window.localStorage.getItem(SCHEMA_VERSION_KEY);
+
+const httpLink = new HttpLink({
+	uri: API_HOST,
+});
+const websocketLink = new WebSocketLink({
+	uri: WEB_SOCKET_HOST,
+	options: {
+		reconnect: true,
+	},
+});
+
+const splitLink = split(
+	({ query }) => {
+		const def = getMainDefinition(query);
+
+		return def.kind === 'OperationDefinition' && def.operation === 'subscription';
+	},
+	websocketLink,
+	httpLink,
+);
 
 const resolvers = {
 	Mutation: {
@@ -104,18 +130,20 @@ const Shell: React.FC<{ children: JSX.Element }> = ({ children }) => {
 			},
 		});
 
-		const persistor = new CachePersistor({
-			//@ts-ignore
-			cache,
-			storage: window.localStorage,
-			debounce: 1000,
-		});
+		if (process.env.NODE_ENV === 'production') {
+			const persistor = new CachePersistor({
+				//@ts-ignore
+				cache,
+				storage: window.localStorage,
+				debounce: 1000,
+			});
 
-		if (currentVersion === SCHEMA_VERSION) {
-			persistor.restore();
-		} else {
-			persistor.purge();
-			window.localStorage.setItem(SCHEMA_VERSION_KEY, SCHEMA_VERSION);
+			if (currentVersion === SCHEMA_VERSION) {
+				persistor.restore();
+			} else {
+				persistor.purge();
+				window.localStorage.setItem(SCHEMA_VERSION_KEY, SCHEMA_VERSION);
+			}
 		}
 
 		const client = new ApolloClient({
@@ -123,23 +151,26 @@ const Shell: React.FC<{ children: JSX.Element }> = ({ children }) => {
 			cache,
 			resolvers,
 			typeDefs,
+			link: splitLink,
 		});
 
 		setClient(client);
 
-		// @ts-ignore
-		if (client.queryManager.inFlightLinkObservables.size !== 0)
-			window.addEventListener('blur', client.resetStore);
-		else
-			setTimeout(() => {
-				// @ts-ignore
-				if (client.queryManager.inFlightLinkObservables.size !== 0)
-					window.addEventListener('blur', client.resetStore);
-			}, 500);
+		if (process.env.NODE_ENV === 'production') {
+			// @ts-ignore
+			if (client.queryManager.inFlightLinkObservables.size !== 0)
+				window.addEventListener('blur', client.resetStore);
+			else
+				setTimeout(() => {
+					// @ts-ignore
+					if (client.queryManager.inFlightLinkObservables.size !== 0)
+						window.addEventListener('blur', client.resetStore);
+				}, 500);
 
-		return () => {
-			window.removeEventListener('blur', client.resetStore);
-		};
+			return () => {
+				window.removeEventListener('blur', client.resetStore);
+			};
+		}
 	}, []);
 
 	if (client === null) {

@@ -1,7 +1,7 @@
 import React, { MouseEvent, useState } from 'react';
 import styles from './ClassPreview.module.css';
-import { gql } from 'apollo-boost';
-import { useMutation } from '@apollo/react-hooks';
+import { gql } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { GET_CLASSES, classPreview } from '../Classes';
 import { redactorOptions, WithTypename } from '../../../../types';
 import Options from '../../../Common/Options/Options';

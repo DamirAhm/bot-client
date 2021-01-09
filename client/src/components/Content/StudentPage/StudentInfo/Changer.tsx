@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
 import styles from './StudentInfo.module.css';
 import StudentInfo, { infos } from './StudentInfo';
-import { gql } from 'apollo-boost';
-import { useQuery } from '@apollo/react-hooks';
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import { StudentInfoType } from '../../../../types';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';

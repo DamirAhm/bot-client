@@ -44,7 +44,7 @@ export const parseContentByDate = <T extends content>(
 	const parsedFutureCont: { [day: string]: T[] } = {};
 	const parsedPastCont: { [day: string]: T[] } = {};
 
-	content.sort((a, b) => Date.parse(a.to) - Date.parse(b.to));
+	content = content.slice(0).sort((a, b) => Date.parse(a.to) - Date.parse(b.to));
 
 	for (let cont of content) {
 		let contDate;

@@ -1,4 +1,4 @@
-import { QueryResult } from '@apollo/react-common';
+import { QueryResult } from '@apollo/client';
 import { useEffect } from 'react';
 
 const usePolling = (
@@ -8,8 +8,10 @@ const usePolling = (
 	const queries = Array.isArray(query) ? query : [query];
 
 	useEffect(() => {
-		for (let i = 0; i < queries.length; i++) {
-			queries[i].startPolling(Array.isArray(interval) ? interval[i] : interval);
+		if (process.env.NODE_ENV === 'production') {
+			for (let i = 0; i < queries.length; i++) {
+				queries[i].startPolling(Array.isArray(interval) ? interval[i] : interval);
+			}
 		}
 	}, []);
 };

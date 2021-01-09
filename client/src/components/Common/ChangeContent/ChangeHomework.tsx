@@ -3,7 +3,7 @@ import { homework, isOptionType, optionType } from '../../../types';
 import React, { useEffect, useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import DatePicker from 'react-datepicker';
-import { useQuery } from '@apollo/react-hooks';
+import { useQuery } from '@apollo/client';
 import { useParams } from 'react-router-dom';
 import Select, { StylesConfig, ValueType } from 'react-select';
 
@@ -92,15 +92,12 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 				const scheduleQuery = useQuery<{ schedule: string[][] }>(GET_SCHEDULE, {
 					variables: { className, schoolName },
 				});
-				const lessonsQuery = useQuery<{ lessons: string[] }>(GET_LESSONS);
 
 				const onChange = (value: ValueType<optionType, false>) => {
 					if (isOptionType(value)) {
 						changeHandler(value.value);
 					}
 				};
-
-				usePolling([scheduleQuery, lessonsQuery]);
 
 				return (
 					<Suspender queries={[scheduleQuery]}>

@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import styles from './ClassPreview.module.css';
-import { gql } from 'apollo-boost';
-import { useMutation } from '@apollo/react-hooks';
+import { gql } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { highlightSearch } from '../../../../utils/functions';
 import { Link, useParams } from 'react-router-dom';
 import { redactorOptions } from '../../../../types';

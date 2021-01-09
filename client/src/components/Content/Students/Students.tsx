@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Students.module.css';
-import { gql } from 'apollo-boost';
-import { useQuery } from '@apollo/react-hooks';
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import { roles } from '../../../types';
 import StudentPreview from './StudentPreview/StudentPreview';
 import useList from '../../../hooks/useList';

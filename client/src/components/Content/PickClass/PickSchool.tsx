@@ -1,5 +1,5 @@
-import { useMutation, useQuery } from '@apollo/react-hooks';
-import { gql } from 'apollo-boost';
+import { useMutation, useQuery } from '@apollo/client';
+import { gql } from '@apollo/client';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useList from '../../../hooks/useList';

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './StudentPage.module.css';
-import { gql } from 'apollo-boost';
-import { useQuery, useMutation } from '@apollo/react-hooks';
+import { gql } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import { redactorOptions, roles, Student, StudentInfoType } from '../../../types';
 import StudentInfo from './StudentInfo/StudentInfo';
 import { Redirect } from 'react-router';

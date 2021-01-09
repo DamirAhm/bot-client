@@ -1,44 +1,28 @@
+import styles from './StudentSection.module.css';
+import { redactorOptions, Student } from '../../../../../types';
+
 import React, { useState, useEffect } from 'react';
-import InfoSection from '../../InfoSection/InfoSection';
+import { gql, useQuery, useMutation, useSubscription } from '@apollo/client';
+import { useParams } from 'react-router-dom';
+
 import Suspender from '../../../../Common/Suspender/Suspender';
 import StudentPreview from '../../../Students/StudentPreview/StudentPreview';
-import { useQuery, useMutation } from '@apollo/react-hooks';
-import { gql } from 'apollo-boost';
-import { sort, studentPreview } from '../../../Students/Students';
-import { redactorOptions, roles, Student, WithTypename } from '../../../../../types';
-import ReactDOM from 'react-dom';
-import useList from '../../../../../hooks/useList';
-import styles from './StudentSection.module.css';
+import { studentPreview } from '../../../Students/Students';
 import Options from '../../../../Common/Options/Options';
-import { UserContext } from '../../../../../App';
-import { useContext } from 'react';
-import Filters from '../../../../Filters/Filters';
-import { highlightSearch } from '../../../../../utils/functions';
-import { useParams } from 'react-router-dom';
-import usePolling from '../../../../../hooks/usePolling';
+import InfoSection from '../../InfoSection/InfoSection';
 
-const modalEl = document.getElementById('chooseStudentModal');
+import useList from '../../../../../hooks/useList';
 
 export const REMOVE_STUDENT_FROM_CLASS = gql`
 	mutation RemoveStudentFromClass($vkId: Int!) {
-		removed: removeStudentFromClass(vkId: $vkId) {
-			vkId
-			className
-			role
-			settings {
-				notificationsEnabled
-				notificationTime
-			}
-			lastHomeworkCheck
-			fullName
-			_id
-		}
+		removed: removeStudentFromClass(vkId: $vkId)
 	}
 `;
 export const GET_STUDENTS_FOR_CLASS = gql`
 	fragment StudentPreview on Student {
 		vkId
 		role
+		className
 		fullName
 		_id
 	}
@@ -63,16 +47,94 @@ export const ADD_STUDENT_TO_CLASS = gql`
 	}
 `;
 
+const Queries = {
+	GET_STUDENTS_FOR_CLASS,
+};
+const Mutations = {
+	REMOVE_STUDENT_FROM_CLASS,
+	ADD_STUDENT_TO_CLASS,
+};
+const Subscriptions = {
+	ON_STUDENT_ADDED_TO_CLASS: gql`
+		subscription OnStudentAddedToClass($className: String!, $schoolName: String!) {
+			onStudentAddedToClass(className: $className, schoolName: $schoolName) {
+				student {
+					_id
+					fullName
+					className
+					vkId
+					role
+				}
+				className
+				schoolName
+			}
+		}
+	`,
+	ON_STUDENT_REMOVED_FROM_CLASS: gql`
+		subscription OnStudentRemovedFromClass($className: String!, $schoolName: String) {
+			onStudentRemovedFromClass(className: $className, schoolName: $schoolName)
+		}
+	`,
+};
+
 const StudentsSection: React.FC<{}> = ({}) => {
 	const { className, schoolName } = useParams<{ className: string; schoolName: string }>();
 
 	const studentsQuery = useQuery<
 		{ students?: studentPreview[] },
 		{ schoolName: string; className: string }
-	>(GET_STUDENTS_FOR_CLASS, { variables: { className, schoolName } });
+	>(Queries.GET_STUDENTS_FOR_CLASS, { variables: { className, schoolName } });
 	const { data, loading, error } = studentsQuery;
+	useSubscription<{
+		onStudentAddedToClass: { student: Student; className: string; schoolName: string };
+	}>(Subscriptions.ON_STUDENT_ADDED_TO_CLASS, {
+		variables: { className, schoolName },
+		onSubscriptionData: ({ subscriptionData }) => {
+			const data = subscriptionData.data?.onStudentAddedToClass;
 
-	const [remove] = useMutation<{ removed: boolean }, { vkId: number }>(REMOVE_STUDENT_FROM_CLASS);
+			if (data?.student !== undefined) {
+				studentsQuery.updateQuery((prev) => {
+					const students = prev.students?.concat([data.student]) || [];
+
+					const usedVkIds: number[] = [];
+
+					const onlyUniqueStudents = students.filter(({ vkId }) => {
+						if (!usedVkIds.includes(vkId)) {
+							usedVkIds.push(vkId);
+							return true;
+						}
+
+						return false;
+					});
+
+					return {
+						students: onlyUniqueStudents,
+					};
+				});
+			}
+		},
+	});
+	useSubscription<{ onStudentRemovedFromClass: number }>(
+		Subscriptions.ON_STUDENT_REMOVED_FROM_CLASS,
+		{
+			variables: { className, schoolName },
+			onSubscriptionData: ({ subscriptionData }) => {
+				const removedVkId = subscriptionData.data?.onStudentRemovedFromClass;
+
+				if (removedVkId !== undefined) {
+					studentsQuery.updateQuery((prev) => {
+						return {
+							students: prev.students?.filter(({ vkId }) => vkId !== removedVkId),
+						};
+					});
+				}
+			},
+		},
+	);
+
+	const [remove] = useMutation<{ removed: number }, { vkId: number }>(
+		Mutations.REMOVE_STUDENT_FROM_CLASS,
+	);
 
 	const [searchString, setSearchString] = useState('');
 
@@ -80,21 +142,21 @@ const StudentsSection: React.FC<{}> = ({}) => {
 
 	const removeStudent = (vkId: number) => {
 		remove({
-			variables: { vkId: vkId },
+			variables: { vkId },
 			optimisticResponse: {
-				removed: true,
+				removed: vkId,
 			},
 			update: (proxy, result) => {
 				const data = proxy.readQuery<{ students: studentPreview[] }>({
-					query: GET_STUDENTS_FOR_CLASS,
+					query: Queries.GET_STUDENTS_FOR_CLASS,
 					variables: { className, schoolName },
 				});
-				if (data?.students && result.data?.removed) {
+				if (data?.students && result.data?.removed != undefined) {
 					proxy.writeQuery({
-						query: GET_STUDENTS_FOR_CLASS,
+						query: Queries.GET_STUDENTS_FOR_CLASS,
 						variables: { className, schoolName },
 						data: {
-							students: data?.students.filter((e) => e.vkId !== vkId),
+							students: data?.students.filter((e) => e.vkId !== result.data?.removed),
 						},
 					});
 				}
@@ -103,6 +165,7 @@ const StudentsSection: React.FC<{}> = ({}) => {
 	};
 
 	useEffect(() => {
+		console.log(data?.students);
 		if (data?.students) setItems(data?.students);
 	}, [data, setItems]);
 
@@ -115,8 +178,6 @@ const StudentsSection: React.FC<{}> = ({}) => {
 				st.role.toLocaleLowerCase().search(str) !== -1,
 		);
 	};
-
-	usePolling(studentsQuery);
 
 	return (
 		<InfoSection

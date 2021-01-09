@@ -1,15 +1,20 @@
-require('dotenv').config();
-const app = require('express')();
-const { ApolloServer } = require('apollo-server-express');
-const { graphqlSchema } = require('./schema');
-const { VK_API, DataBase: DB } = require('bot-database');
-const config = require('./config.json');
-const cors = require('cors');
-const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+
+require('dotenv').config();
+const app = require('express')();
+const http = require('http');
 const sirv = require('sirv');
+const cors = require('cors');
+const multer = require('multer');
 const compression = require('compression');
+
+const { ApolloServer } = require('apollo-server-express');
+
+const { graphqlSchema } = require('./schema');
+const { VK_API, DataBase: DB } = require('bot-database');
+
+const config = require('./config.json');
 
 const DataBase = new DB(process.env.MONGODB_URI);
 const vk = new VK_API(process.env.VK_API_KEY, config['GROUP_ID'], config['ALBUM_ID']);
@@ -39,20 +44,22 @@ DataBase.connect(
 
 const server = new ApolloServer({
 	typeDefs: `
-        attachment {
-            value: String
-            url: String
-            album_id: Int
-        }
-        homeworkWithAttachments {
-            ...ClassHomework
-            attachments [attachment]
-        }
-    `,
+	    type attachment {
+	        value: String
+	        url: String
+	        album_id: Int
+	    }
+	    type homeworkWithAttachments {
+	        ...ClassHomework
+	        attachments [attachment]
+	    }
+	`,
 	schema: graphqlSchema,
 });
+const httpServer = http.createServer(app);
 
 server.applyMiddleware({ app });
+server.installSubscriptionHandlers(httpServer);
 
 app.use(cors());
 app.use(
@@ -89,8 +96,15 @@ app.get('/*', (_, res) => {
 	res.sendFile(path.join(__dirname, 'build/index.html'));
 });
 
-app.listen({ port: process.env.PORT || 8080 }, () =>
-	console.log(
-		`🚀 Server ready at http://localhost:${process.env.PORT || 8080} ${server.graphqlPath}`,
-	),
-);
+const port = process.env.PORT || 8080;
+httpServer.listen(port, () => {
+	console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`);
+	console.log(`🚀 Subscriptions ready at ws://localhost:${port}${server.subscriptionsPath}`);
+});
+// app.listen({ port: process.env.PORT || 8080 }, () =>
+// 	console.log(
+// 		`🚀 Server ready at http://localhost:${process.env.PORT || 8080} ${server.graphqlPath} ${
+// 			server.subscriptionsPath
+// 		}`,
+// 	),
+// );

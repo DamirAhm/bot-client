@@ -1,4 +1,4 @@
-import { useApolloClient } from '@apollo/react-hooks';
+import { useApolloClient } from '@apollo/client';
 import md5 from 'md5';
 import { useEffect, useState } from 'react';
 import { GET_STUDENT_BY_VK_ID } from '../components/Content/StudentPage/StudentPage';

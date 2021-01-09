@@ -1,13 +1,13 @@
-import React, { useContext, useEffect, useState } from 'react';
 import styles from '../Common/ContentSection.module.css';
-import InfoSection from '../../InfoSection/InfoSection';
-import { gql } from 'apollo-boost';
-import { useQuery, useMutation } from '@apollo/react-hooks';
 import { attachment, WithTypename, homework, redactorOptions } from '../../../../../types';
-import Suspender from '../../../../Common/Suspender/Suspender';
-import Accordion from '../../../../Common/Accordion/Accordion';
-import { GoTriangleRight } from 'react-icons/go';
+
+import React, { useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
+import { gql, useSubscription } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
+import { GoTriangleRight } from 'react-icons/go';
+import { useParams } from 'react-router-dom';
+
 import {
 	parseContentByDate,
 	objectForEach,
@@ -15,151 +15,273 @@ import {
 	getPinnedContent,
 	concatObjects,
 } from '../../../../../utils/functions';
+
 import Options from '../../../../Common/Options/Options';
 import ChangeHomework from '../../../../Common/ChangeContent/ChangeHomework';
-import { UserContext } from '../../../../../App';
-import { useParams } from 'react-router-dom';
 import ContentElement from '../../../../Common/ContentElement';
+import Accordion from '../../../../Common/Accordion/Accordion';
+import Suspender from '../../../../Common/Suspender/Suspender';
+import InfoSection from '../../InfoSection/InfoSection';
+
 import usePolling from '../../../../../hooks/usePolling';
+import { UserContext } from '../../../../../App';
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
-type taskProps = {
-	homework: homework;
-	removeHomework: (homeworkId: string | undefined) => void;
-	updateHomework: (homeworkId: string | undefined, updates: Partial<homework>) => void;
+const Queries = {
+	GET_HOMEWORK: gql`
+		query GetHomework($className: String!, $schoolName: String!) {
+			homework: getHomework(className: $className, schoolName: $schoolName) {
+				text
+				createdBy
+				to
+				attachments {
+					url
+					value
+					_id
+				}
+				lesson
+				pinned
+				_id
+				__typename
+			}
+		}
+	`,
 };
-
-const GET_HOMEWORK = gql`
-	query GetHomework($className: String!, $schoolName: String!) {
-		homework: getHomework(className: $className, schoolName: $schoolName) {
-			text
-			createdBy
-			to
-			attachments {
-				url
-				value
-				_id
-			}
-			lesson
-			pinned
-			_id
-			__typename
+const Mutations = {
+	REMOVE_TASK: gql`
+		mutation RemoveTask($className: String!, $homeworkId: String!, $schoolName: String!) {
+			removeHomework(homeworkId: $homeworkId, className: $className, schoolName: $schoolName)
 		}
-	}
-`;
-
-const REMOVE_TASK = gql`
-	mutation RemoveTask($className: String!, $homeworkId: String!, $schoolName: String!) {
-		removeHomework(homeworkId: $homeworkId, className: $className, schoolName: $schoolName)
-	}
-`;
-
-const CHANGE_HOMEWORK = gql`
-	mutation ChangeHomework(
-		$className: String!
-		$homeworkId: String!
-		$updates: ClassHomeworkInput!
-		$schoolName: String!
-	) {
-		updateHomework(
-			className: $className
-			homeworkId: $homeworkId
-			updates: $updates
-			schoolName: $schoolName
+	`,
+	CHANGE_HOMEWORK: gql`
+		mutation ChangeHomework(
+			$className: String!
+			$homeworkId: String!
+			$updates: ClassHomeworkInput!
+			$schoolName: String!
 		) {
-			_id
-			text
-			attachments {
-				url
-				value
+			updateHomework(
+				className: $className
+				homeworkId: $homeworkId
+				updates: $updates
+				schoolName: $schoolName
+			) {
 				_id
+				text
+				attachments {
+					url
+					value
+					_id
+				}
+				to
+				lesson
+				pinned
+				__typename
 			}
-			to
-			lesson
-			pinned
-			__typename
 		}
-	}
-`;
-
-const ADD_HOMEWORK = gql`
-	mutation addHomework(
-		$schoolName: String!
-		$className: String!
-		$text: String!
-		$to: String
-		$lesson: String!
-		$attachments: [ClassHomeworkAttachmentsInput]!
-		$student_id: Int!
-	) {
-		addHomework(
-			className: $className
-			text: $text
-			to: $to
-			lesson: $lesson
-			attachments: $attachments
-			student_id: $student_id
-			schoolName: $schoolName
+	`,
+	ADD_HOMEWORK: gql`
+		mutation addHomework(
+			$schoolName: String!
+			$className: String!
+			$text: String!
+			$to: String
+			$lesson: String!
+			$attachments: [ClassHomeworkAttachmentsInput]!
+			$student_id: Int!
 		) {
-			_id
-			text
-			lesson
-			to
-			pinned
-			attachments {
-				url
-				value
-			}
-			__typename
-		}
-	}
-`;
-
-const REMOVE_OLD_HOMEWORK = gql`
-	mutation RemoveOldHomework($className: String!, $schoolName: String!) {
-		removeOldHomework(className: $className, schoolName: $schoolName) {
-			_id
-			to
-			text
-			attachments {
-				url
-				value
+			addHomework(
+				className: $className
+				text: $text
+				to: $to
+				lesson: $lesson
+				attachments: $attachments
+				student_id: $student_id
+				schoolName: $schoolName
+			) {
 				_id
+				text
+				lesson
+				to
+				pinned
+				attachments {
+					url
+					value
+				}
+				__typename
 			}
-			lesson
-			createdBy
-			__typename
 		}
-	}
-`;
-
-const TOGGLE_PIN_HOMEWORK = gql`
-	mutation TogglePinHomework($className: String!, $schoolName: String!, $homeworkId: String!) {
-		pinHomework(className: $className, schoolName: $schoolName, homeworkId: $homeworkId) {
-			_id
-			pinned
+	`,
+	REMOVE_OLD_HOMEWORK: gql`
+		mutation RemoveOldHomework($className: String!, $schoolName: String!) {
+			removeOldHomework(className: $className, schoolName: $schoolName) {
+				_id
+				to
+				text
+				attachments {
+					url
+					value
+					_id
+				}
+				lesson
+				createdBy
+				__typename
+			}
 		}
-	}
-`;
-const UNPIN_ALL_HOMEWORK = gql`
-	mutation UnpinAllHomework($className: String!, $schoolName: String!) {
-		unpinAllHomework(className: $className, schoolName: $schoolName)
-	}
-`;
+	`,
+	TOGGLE_PIN_HOMEWORK: gql`
+		mutation TogglePinHomework(
+			$className: String!
+			$schoolName: String!
+			$homeworkId: String!
+		) {
+			pinHomework(className: $className, schoolName: $schoolName, homeworkId: $homeworkId) {
+				_id
+				pinned
+			}
+		}
+	`,
+	UNPIN_ALL_HOMEWORK: gql`
+		mutation UnpinAllHomework($className: String!, $schoolName: String!) {
+			unpinAllHomework(className: $className, schoolName: $schoolName)
+		}
+	`,
+};
+const Subscriptions = {
+	ON_HOMEWORK_ADDED: gql`
+		subscription OnHomeworkAdded($className: String!, $schoolName: String!) {
+			onHomeworkAdded(className: $className, schoolName: $schoolName) {
+				_id
+				text
+				lesson
+				attachments {
+					url
+					value
+					_id
+				}
+				to
+				pinned
+				__typename
+			}
+		}
+	`,
+	ON_HOMEWORK_CONFIRMED: gql`
+		subscription OnHomeworkConfirmed($className: String!, $schoolName: String!) {
+			onHomeworkConfirmed(className: $className, schoolName: $schoolName) {
+				stabId
+				actualId
+			}
+		}
+	`,
+	ON_HOMEWORKS_REMOVED: gql`
+		subscription OnHomeworksRemoved($className: String!, $schoolName: String!) {
+			onHomeworksRemoved(className: $className, schoolName: $schoolName)
+		}
+	`,
+	ON_HOMEWORK_CHANGED: gql`
+		subscription OnHomeworkChanged($className: String!, $schoolName: String!) {
+			onHomeworkChanged(className: $className, schoolName: $schoolName) {
+				_id
+				text
+				lesson
+				attachments {
+					url
+					value
+					_id
+				}
+				to
+				pinned
+				__typename
+			}
+		}
+	`,
+};
 
 const HomeworkSection: React.FC<{}> = ({}) => {
 	const { schoolName, className } = useParams<{ schoolName: string; className: string }>();
-
+	const { uid } = useContext(UserContext);
 	const [homeworkCreating, setHomeworkCreating] = useState(false);
 	const [initContent, setInitContent] = useState({});
+
 	const homeworkQuery = useQuery<
 		{ homework: homework[] },
 		{ className: string; schoolName: string }
-	>(GET_HOMEWORK, {
+	>(Queries.GET_HOMEWORK, {
 		variables: { className, schoolName },
 	});
-	const { uid } = useContext(UserContext);
+	useSubscription<{ onHomeworkAdded: homework | null }>(Subscriptions.ON_HOMEWORK_ADDED, {
+		variables: { className, schoolName },
+		onSubscriptionData: ({ subscriptionData }) => {
+			console.log(subscriptionData);
+			const newHomework = subscriptionData.data?.onHomeworkAdded;
+			if (newHomework) {
+				homeworkQuery.updateQuery((prev) => {
+					return {
+						homework: prev.homework.concat([newHomework]),
+					};
+				});
+			}
+		},
+	});
+	useSubscription<{ onHomeworkConfirmed: { stabId: string; actualId: string } | null }>(
+		Subscriptions.ON_HOMEWORK_CONFIRMED,
+		{
+			variables: { className, schoolName },
+			onSubscriptionData: ({ subscriptionData }) => {
+				const confirmation = subscriptionData.data?.onHomeworkConfirmed;
+
+				if (confirmation) {
+					homeworkQuery.updateQuery((prev) => {
+						return {
+							homework: prev.homework.map(({ _id, ...homework }) =>
+								_id === confirmation.stabId
+									? { _id: confirmation.actualId, ...homework }
+									: { _id, ...homework },
+							),
+						};
+					});
+				}
+			},
+		},
+	);
+	useSubscription<{ onHomeworksRemoved: string[] | null }>(Subscriptions.ON_HOMEWORKS_REMOVED, {
+		variables: { className, schoolName },
+		onSubscriptionData: ({ subscriptionData }) => {
+			const removedHomeworksIds = subscriptionData.data?.onHomeworksRemoved;
+
+			if (removedHomeworksIds) {
+				homeworkQuery.updateQuery((prev) => {
+					return {
+						homework: prev.homework.filter(
+							({ _id }) => !removedHomeworksIds.includes(_id as string),
+						),
+					};
+				});
+			}
+		},
+	});
+	useSubscription<{ onHomeworkChanged: Partial<homework> | null }>(
+		Subscriptions.ON_HOMEWORK_CHANGED,
+		{
+			variables: { className, schoolName },
+			onSubscriptionData: ({ subscriptionData }) => {
+				const updates = subscriptionData.data?.onHomeworkChanged;
+
+				if (updates) {
+					homeworkQuery.updateQuery((prev) => {
+						return {
+							homework: prev.homework.map(({ _id, ...homework }) =>
+								_id === updates._id
+									? { ...homework, ...updates }
+									: { ...homework, _id },
+							),
+						};
+					});
+				}
+			},
+		},
+	);
 
 	const [addHomework] = useMutation<
 		WithTypename<{
@@ -174,11 +296,11 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 			to: string;
 			student_id: number;
 		}
-	>(ADD_HOMEWORK);
+	>(Mutations.ADD_HOMEWORK);
 	const [removeOldHomework] = useMutation<
 		{ removeOldHomework: homework[] },
 		{ className: string; schoolName: string }
-	>(REMOVE_OLD_HOMEWORK, {
+	>(Mutations.REMOVE_OLD_HOMEWORK, {
 		variables: { className, schoolName },
 		optimisticResponse: {
 			removeOldHomework:
@@ -189,7 +311,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 		update: (proxy, mutation) => {
 			if (mutation && mutation.data?.removeOldHomework) {
 				proxy.writeQuery({
-					query: GET_HOMEWORK,
+					query: Queries.GET_HOMEWORK,
 					variables: { className, schoolName },
 					data: {
 						homework: mutation.data.removeOldHomework,
@@ -219,15 +341,13 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 			},
 			refetchQueries: [
 				{
-					query: GET_HOMEWORK,
+					query: Queries.GET_HOMEWORK,
 					variables: { className, schoolName },
 				},
 			],
 		});
 		setInitContent({});
 	};
-
-	usePolling(homeworkQuery);
 
 	return (
 		<>
@@ -390,7 +510,7 @@ const HomeworkLayout: React.FC<{
 			homeworkId: string;
 			schoolName: string;
 		}
-	>(REMOVE_TASK);
+	>(Mutations.REMOVE_TASK);
 	const remove = (homeworkId: string | undefined) => {
 		if (homeworkId) {
 			removeHomework({
@@ -401,13 +521,13 @@ const HomeworkLayout: React.FC<{
 				},
 				update: (proxy, res) => {
 					const data = proxy.readQuery<{ homework: homework[] }>({
-						query: GET_HOMEWORK,
+						query: Queries.GET_HOMEWORK,
 						variables: { className, schoolName },
 					});
 
 					if (res?.data) {
 						proxy.writeQuery({
-							query: GET_HOMEWORK,
+							query: Queries.GET_HOMEWORK,
 							variables: { className, schoolName },
 							data: {
 								homework:
@@ -430,7 +550,7 @@ const HomeworkLayout: React.FC<{
 			homeworkId: string;
 			updates: Partial<Omit<homework, 'attachments'> & { attachments: attachment[] }>;
 		}
-	>(CHANGE_HOMEWORK);
+	>(Mutations.CHANGE_HOMEWORK);
 	const update = (homeworkId: string | undefined, updates: Partial<WithTypename<homework>>) => {
 		const { __typename, ...updatesWithoutTypename } = updates;
 
@@ -458,13 +578,13 @@ const HomeworkLayout: React.FC<{
 				},
 				update: (proxy, res) => {
 					const data = proxy.readQuery<{ homework: homework[] }>({
-						query: GET_HOMEWORK,
+						query: Queries.GET_HOMEWORK,
 						variables: { className, schoolName },
 					});
 
 					if (res?.data) {
 						proxy.writeQuery({
-							query: GET_HOMEWORK,
+							query: Queries.GET_HOMEWORK,
 							variables: { className, schoolName },
 							data: {
 								homework:
@@ -482,7 +602,7 @@ const HomeworkLayout: React.FC<{
 	const [pinHomework] = useMutation<
 		{ pinHomework: { _id: string; pinned: boolean } },
 		{ schoolName: string; className: string; homeworkId: string }
-	>(TOGGLE_PIN_HOMEWORK);
+	>(Mutations.TOGGLE_PIN_HOMEWORK);
 	const pin = (homeworkId: string) => {
 		const hw = Object.values(homework)
 			.flat()
@@ -508,7 +628,7 @@ const HomeworkLayout: React.FC<{
 	const [unpinAll] = useMutation<
 		{ unpinAllHomework: boolean },
 		{ className: string; schoolName: string }
-	>(UNPIN_ALL_HOMEWORK, {
+	>(Mutations.UNPIN_ALL_HOMEWORK, {
 		variables: {
 			className,
 			schoolName,

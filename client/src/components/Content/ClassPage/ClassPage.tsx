@@ -7,8 +7,8 @@ import StudentsSection, {
 import ScheduleSection from './Sections/ScheduleSection/ScheduleSection';
 import HomeworkSection from './Sections/HomeworkSection/HomeworkSection';
 import AnnouncementsSection from './Sections/ChangesSection/AnnouncementsSection';
-import { gql } from 'apollo-boost';
-import { useMutation, useQuery } from '@apollo/react-hooks';
+import { gql } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { WithTypename, Class, redactorOptions, Student } from '../../../types';
 import { classPreview, GET_CLASSES } from '../Classes/Classes';
 import { Redirect, useHistory, useParams } from 'react-router-dom';
