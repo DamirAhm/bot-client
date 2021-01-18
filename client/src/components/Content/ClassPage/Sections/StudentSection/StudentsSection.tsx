@@ -165,7 +165,6 @@ const StudentsSection: React.FC<{}> = ({}) => {
 	};
 
 	useEffect(() => {
-		console.log(data?.students);
 		if (data?.students) setItems(data?.students);
 	}, [data, setItems]);
 

@@ -1,3 +1,4 @@
+// @format
 import { WebSocketLink } from '@apollo/client/link/ws';
 import { CachePersistor } from 'apollo3-cache-persist';
 import { HttpLink, split, InMemoryCache, ApolloClient, ApolloProvider, gql } from '@apollo/client';
@@ -39,7 +40,7 @@ const splitLink = split(
 	websocketLink,
 	httpLink,
 );
-
+ 
 const resolvers = {
 	Mutation: {
 		deleteClass: (

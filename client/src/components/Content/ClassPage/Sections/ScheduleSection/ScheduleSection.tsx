@@ -1,11 +1,16 @@
 import styles from './ScheduleSection.module.css';
 import { isOptionType, optionType, redactorOptions, WithTypename } from '../../../../../types';
 
-import React, { useState, memo, useEffect, useCallback } from 'react';
+import React, { useState, memo, useEffect, useCallback, MutableRefObject } from 'react';
 import { gql } from '@apollo/client';
 import { useQuery, useMutation, useSubscription } from '@apollo/client';
 import { MdClose } from 'react-icons/md';
-import { DragDropContext, DropResult } from 'react-beautiful-dnd';
+import {
+	DragDropContext,
+	DropResult,
+	OnDragEndResponder,
+	OnDragStartResponder,
+} from 'react-beautiful-dnd';
 import { DraggableEntity, DroppableEntity } from '../../../../Common/DragAndDropEntities';
 import { useParams } from 'react-router-dom';
 import CreatableSelect from 'react-select/creatable';
@@ -16,6 +21,7 @@ import InfoSection from '../../InfoSection/InfoSection';
 import Suspender from '../../../../Common/Suspender/Suspender';
 
 import usePolling from '../../../../../hooks/usePolling';
+import { useRef } from 'react';
 
 const days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 
@@ -86,7 +92,7 @@ const ScheduleSection: React.FC<{}> = ({}) => {
 			onSubscriptionData: ({ subscriptionData }) => {
 				const scheduleChange = subscriptionData.data?.onScheduleChanged;
 
-				if (scheduleChange) {
+				if (scheduleChange && !isAnyLessonDragging) {
 					scheduleQuery.updateQuery((prev) => {
 						return {
 							schedule: prev.schedule.map((day, i) =>
@@ -133,21 +139,25 @@ const ScheduleSection: React.FC<{}> = ({}) => {
 				},
 			});
 		},
-		[changeDay, className, scheduleQuery, schoolName],
+		[className, scheduleQuery, schoolName],
 	);
 
-	const onDragStart = () => {
+	const onDragStart: OnDragStartResponder = () => {
 		setIsAnyLessonDragging(true);
 	};
-	const onDragEnd = (initial: DropResult) => {
+	const onDragEnd: OnDragEndResponder = (initial) => {
 		const schedule = scheduleData?.schedule;
 		if (schedule) {
 			const { destination, source } = initial;
 
 			if (destination && source) {
-				const newSchedule = [...schedule];
+				let newSchedule = [...schedule];
 
-				const lesson = newSchedule[+source.droppableId].splice(source.index, 1)[0];
+				let lesson = newSchedule[+source.droppableId][source.index];
+				//Removes lesson from previous position
+				newSchedule[+source.droppableId] = newSchedule[+source.droppableId].filter(
+					(_, i) => i != source.index,
+				);
 
 				//appends lesson after element at source index
 				newSchedule[+destination.droppableId].splice(destination.index, 0, lesson);
@@ -178,12 +188,20 @@ const ScheduleSection: React.FC<{}> = ({}) => {
 		setScheduleData(newScheduleData);
 	}, [scheduleQuery, lessonsQuery]);
 
-	const lessonsList = [
+	const lessonsList = useRef([
 		...new Set([
 			...(scheduleData?.lessonsList || []),
 			...(scheduleData?.schedule || []).flat(2),
 		]),
-	];
+	]);
+	useEffect(() => {
+		lessonsList.current = [
+			...new Set([
+				...(scheduleData?.lessonsList || []),
+				...(scheduleData?.schedule || []).flat(2),
+			]),
+		];
+	}, [scheduleData]);
 
 	return (
 		<DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
@@ -214,7 +232,7 @@ type ScheduleDayProps = {
 	index: number;
 	lessons: string[];
 	initialLessons: string[];
-	lessonsList: string[];
+	lessonsList: MutableRefObject<string[]>;
 	changeDay: (changes: string[], dayIndex: number) => void;
 	isAnyLessonDragging: boolean;
 };
@@ -224,13 +242,11 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(
 		const [changing, setChanging] = useState(false);
 		const [changes, setChanges] = useState(lessons);
 
-		useEffect(() => {
-			if (!changing) {
-				setChanges(lessons);
-			}
-		}, [lessons]);
-
 		const iconSize = 15;
+
+		useEffect(() => {
+			setChanges(lessons);
+		}, [lessons]);
 
 		const reject = () => {
 			setChanging(false);
@@ -241,20 +257,29 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(
 			changeDay(changes, index);
 		};
 
-		const changeHandler = (index: number, value: string) => {
-			const newChanges = [...changes];
+		const changeHandler = useCallback(
+			(index: number, value: string) => {
+				const newChanges = [...changes];
+				newChanges[index] = value;
+				setChanges(newChanges);
+			},
+			[changes],
+		);
 
-			newChanges[index] = value;
+		const removeLesson = useCallback(
+			(index: number) => {
+				setChanges(changes.filter((_, i) => i !== index));
+			},
+			[changes],
+		);
+		const addLesson = useCallback(() => {
+			setChanges(changes.concat([changes[changes.length - 1] || lessonsList.current[0]]));
+		}, [changes, lessonsList]);
 
-			setChanges(newChanges);
-		};
-
-		const removeLesson = (index: number) => {
-			setChanges(changes.filter((_, i) => i !== index));
-		};
-		const addLesson = () => {
-			setChanges(changes.concat([changes[changes.length - 1] || lessonsList[0]]));
-		};
+		const newLessonsList = useRef([...new Set([...lessonsList.current, ...changes])]);
+		useEffect(() => {
+			newLessonsList.current = [...new Set([...lessonsList.current, ...changes])];
+		}, [changes]);
 
 		return (
 			<DroppableEntity
@@ -274,13 +299,13 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(
 						{changes.map((lesson, i) => (
 							<Lesson
 								changing={changing}
-								key={days[index] + i}
+								key={days[index] + lesson + i}
 								dayIndex={index}
 								index={i}
 								removeLesson={removeLesson}
 								changeHandler={changeHandler}
 								lesson={lesson}
-								lessonsList={[...new Set([...lessonsList, ...changes])]}
+								lessonsList={newLessonsList}
 							/>
 						))}
 						{/*//? In different element because confirm and reject should be on the bottom of component */}
@@ -333,7 +358,7 @@ type LessonProps = {
 	lesson: string;
 	index: number;
 	changeHandler: (index: number, value: string) => void;
-	lessonsList: string[];
+	lessonsList: MutableRefObject<string[]>;
 	removeLesson: (index: number) => void;
 };
 
@@ -375,56 +400,50 @@ export const getSelectTheme = (theme: Theme) => ({
 	},
 });
 
-const Lesson: React.FC<LessonProps> = ({
-	changing,
-	dayIndex,
-	lesson,
-	index,
-	changeHandler,
-	lessonsList,
-	removeLesson,
-}) => {
-	const lessonChangeHandler = (
-		value: ValueType<optionType, false>,
-		meta: ActionMeta<optionType>,
-	) => {
-		if (['create-option', 'select-option'].includes(meta.action) && isOptionType(value)) {
-			changeHandler(index, value.value);
-		}
-	};
+const Lesson: React.FC<LessonProps> = memo(
+	({ changing, dayIndex, lesson, index, changeHandler, lessonsList, removeLesson }) => {
+		const lessonChangeHandler = (
+			value: ValueType<optionType, false>,
+			meta: ActionMeta<optionType>,
+		) => {
+			if (['create-option', 'select-option'].includes(meta.action) && isOptionType(value)) {
+				changeHandler(index, value.value);
+			}
+		};
 
-	const lessonOptions = lessonsList.map((les) => ({ value: les, label: les }));
+		const lessonOptions = lessonsList.current.map((les) => ({ value: les, label: les }));
 
-	return (
-		<DraggableEntity
-			draggableId={String(dayIndex) + String(index)}
-			className={`${styles.lesson} ${changing ? styles.changingLesson : ''}`}
-			index={index}
-			isDragDisabled={!changing}
-		>
-			{!changing ? (
-				<span key={dayIndex + lesson + index}>
-					{index + 1}) {lesson}
-				</span>
-			) : (
-				<div className={styles.lessonChange} key={`picker${dayIndex + lesson + index}`}>
-					<CreatableSelect
-						options={lessonOptions}
-						defaultValue={lessonOptions.find(({ value }) => value === lesson)}
-						onChange={lessonChangeHandler}
-						className={styles.selectLesson}
-						theme={getSelectTheme}
-						formatCreateLabel={(str: string) => <span>Создать {str}</span>}
-						styles={lessonSelectStyle}
-					/>
-					<button className={styles.removeLesson} onClick={() => removeLesson(index)}>
-						<MdClose className={'remove '} size={20} />
-					</button>
-				</div>
-			)}
-		</DraggableEntity>
-	);
-};
+		return (
+			<DraggableEntity
+				draggableId={String(dayIndex) + String(index)}
+				className={`${styles.lesson} ${changing ? styles.changingLesson : ''}`}
+				index={index}
+				isDragDisabled={!changing}
+			>
+				{!changing ? (
+					<span key={dayIndex + lesson + index}>
+						{index + 1}) {lesson}
+					</span>
+				) : (
+					<div className={styles.lessonChange} key={`picker${dayIndex + lesson + index}`}>
+						<CreatableSelect
+							options={lessonOptions}
+							defaultValue={lessonOptions.find(({ value }) => value === lesson)}
+							onChange={lessonChangeHandler}
+							className={styles.selectLesson}
+							theme={getSelectTheme}
+							formatCreateLabel={(str: string) => <span>Создать {str}</span>}
+							styles={lessonSelectStyle}
+						/>
+						<button className={styles.removeLesson} onClick={() => removeLesson(index)}>
+							<MdClose className={'remove '} size={20} />
+						</button>
+					</div>
+				)}
+			</DraggableEntity>
+		);
+	},
+);
 
 export default ScheduleSection;
 

@@ -3,6 +3,7 @@ import styles from './InfoSection.module.css';
 import Searcher from '../../../Common/Searcher/Searcher';
 import Accordion from '../../../Common/Accordion/Accordion';
 import { GoTriangleRight } from 'react-icons/go';
+import { memo } from 'react';
 
 type Props = {
 	name: string;
@@ -15,64 +16,66 @@ type Props = {
 	isOpened?: boolean;
 };
 
-const InfoSection: React.FC<Props> = ({
-	initiallyOpened = true,
-	isOpened = true,
-	name,
-	children,
-	className = '',
-	updateSearchString,
-	Header,
-	defaultSearchString: text = '',
-}) => {
-	const [opened, setOpened] = useState(initiallyOpened);
+const InfoSection: React.FC<Props> = memo(
+	({
+		initiallyOpened = true,
+		isOpened = true,
+		name,
+		children,
+		className = '',
+		updateSearchString,
+		Header,
+		defaultSearchString: text = '',
+	}) => {
+		const [opened, setOpened] = useState(initiallyOpened);
 
-	const onClick = () => setOpened(!opened);
+		const onClick = () => setOpened(!opened);
 
-	useEffect(() => {
-		if (isOpened !== undefined) {
-			setOpened(isOpened);
-		}
-	}, [isOpened]);
+		useEffect(() => {
+			if (isOpened !== undefined) {
+				setOpened(isOpened);
+			}
+		}, [isOpened]);
 
-	return (
-		<div className={styles.section}>
-			<Accordion
-				accordionId={name}
-				isOpened={opened}
-				Head={
-					<>
-						{Header ? (
-							<Header onClick={onClick} opened={opened} />
-						) : (
-							<div onClick={onClick} className={styles.header}>
-								<div className={styles.name}>
-									<div> {name}</div>
-									<GoTriangleRight
-										className={opened ? styles.triangle_opened : ''}
-										size={15}
-									/>
-								</div>
-								{updateSearchString && (
-									<div className={styles.search}>
-										<Searcher
-											value={text}
-											placeholder="Поиск"
-											onChange={(text) => updateSearchString(text)}
+		return (
+			<div className={styles.section}>
+				<Accordion
+					accordionId={name}
+					isOpened={opened}
+					Head={
+						<>
+							{Header ? (
+								<Header onClick={onClick} opened={opened} />
+							) : (
+								<div onClick={onClick} className={styles.header}>
+									<div className={styles.name}>
+										<div> {name}</div>
+										<GoTriangleRight
+											className={opened ? styles.triangle_opened : ''}
+											size={15}
 										/>
 									</div>
-								)}
-							</div>
-						)}
-					</>
-				}
-			>
-				<div className={`${styles.content} ${className}`}>
-					{children && typeof children === 'function' ? children(text) : children}
-				</div>
-			</Accordion>
-		</div>
-	);
-};
+									{updateSearchString && (
+										<div className={styles.search}>
+											<Searcher
+												value={text}
+												placeholder="Поиск"
+												onChange={(text) => updateSearchString(text)}
+											/>
+										</div>
+									)}
+								</div>
+							)}
+						</>
+					}
+				>
+					<div className={`${styles.content} ${className}`}>
+						{children && typeof children === 'function' ? children(text) : children}
+					</div>
+				</Accordion>
+			</div>
+		);
+	},
+);
 
 export default React.memo(InfoSection);
