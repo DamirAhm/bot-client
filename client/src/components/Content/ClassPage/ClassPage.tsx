@@ -20,7 +20,6 @@ import { UserContext } from '../../../App';
 import { studentPreview } from '../Students/Students';
 import { changeTitle } from '../../../utils/functions';
 import { getSchoolNumber } from '../PickClass/PickSchool';
-import Loader from '../../Common/Loader/Loader';
 import usePolling from '../../../hooks/usePolling';
 
 const REMOVE_CLASS = gql`

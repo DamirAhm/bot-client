@@ -21,7 +21,7 @@ import styles from './PickClass.module.css';
 
 export const GET_SCHOOLS_NAMES = gql`
 	query GetSchoolsNames {
-		schools: schoolMany {
+		schools: schoolsMany {
 			_id
 			name
 		}
