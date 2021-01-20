@@ -5,8 +5,8 @@ const CommonResolvers = {
 	Mutations: {},
 	Queries: {
 		//? lessons
-		lessons: {
-			name: 'lessons',
+		getLessons: {
+			name: 'getLessons',
 			type: '[String]',
 			args: {},
 			resolve: async () => {
@@ -14,8 +14,8 @@ const CommonResolvers = {
 			},
 		},
 		//? roles
-		roles: {
-			name: 'roles',
+		getRoles: {
+			name: 'getRoles',
 			type: '[String]',
 			args: {},
 			resolve: async () => {

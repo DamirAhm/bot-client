@@ -12,6 +12,7 @@ const CommonResolvers = require('./resolvers/CommonResolvers');
 const ClassRelations = require('./relations/ClassRelations');
 const StudentsRelations = require('./relations/StudentRelations');
 const SchoolRelations = require('./relations/SchoolRelations');
+const { Query } = require('mongoose');
 
 const appendRelations = (ModelTC, relationsObject) => {
 	for (let relationName in relationsObject) {
@@ -19,6 +20,32 @@ const appendRelations = (ModelTC, relationsObject) => {
 			ModelTC.addRelation(relationName, relationsObject[relationName]);
 		}
 	}
+};
+const appendResolvers = (ModelTC, ModelResolvers) => {
+	const QueryResolvers = Object.keys(ModelResolvers.Queries);
+	const MutationsResolvers = Object.keys(ModelResolvers.Mutations);
+
+	for (const resolverName of QueryResolvers) {
+		ModelTC.addResolver(ModelResolvers.Queries[resolverName]);
+	}
+	for (const resolverName of MutationsResolvers) {
+		ModelTC.addResolver(ModelResolvers.Mutations[resolverName]);
+	}
+
+	return [QueryResolvers, MutationsResolvers];
+};
+const appendFieldsToSchema = (ModelTC, QueryResolverNames, MutationsResolverNames) => {
+	const queryFields = QueryResolverNames.reduce(
+		(acc, resolverName) => ({ ...acc, [resolverName]: ModelTC.getResolver(resolverName) }),
+		{},
+	);
+	const mutationsFields = MutationsResolverNames.reduce(
+		(acc, resolverName) => ({ ...acc, [resolverName]: ModelTC.getResolver(resolverName) }),
+		{},
+	);
+
+	schemaComposer.Query.addFields(queryFields);
+	schemaComposer.Mutation.addFields(mutationsFields);
 };
 
 //! Custom fields
@@ -28,23 +55,42 @@ ClassTC.addFields(ClassFields);
 appendRelations(ClassTC, ClassRelations);
 appendRelations(StudentTC, StudentsRelations);
 appendRelations(SchoolTC, SchoolRelations);
+//! Resolvers
+const [QueryClassResolverNames, MutationsClassResolverNames] = appendResolvers(
+	ClassTC,
+	ClassResolvers,
+);
+const [QueryCommonResolverNames, MutationsCommonResolverNames] = appendResolvers(
+	ClassTC,
+	CommonResolvers,
+);
+const [QueryStudentResolverNames, MutationsStudentResolverNames] = appendResolvers(
+	StudentTC,
+	StudentResolvers,
+);
+const [QuerySchoolResolverNames, MutationsSchoolResolverNames] = appendResolvers(
+	SchoolTC,
+	SchoolResolvers,
+);
+//! Adding fields
+appendFieldsToSchema(
+	ClassTC,
+	QueryClassResolverNames.concat(QueryCommonResolverNames),
+	MutationsClassResolverNames.concat(MutationsCommonResolverNames),
+);
+appendFieldsToSchema(StudentTC, QueryStudentResolverNames, MutationsStudentResolverNames);
+appendFieldsToSchema(SchoolTC, QuerySchoolResolverNames, MutationsSchoolResolverNames);
 
 schemaComposer.Subscription.addFields({
 	...ClassResolvers.Subscriptions,
 	...StudentResolvers.Subscriptions,
 });
 schemaComposer.Query.addFields({
-	...ClassResolvers.Queries,
-	...StudentResolvers.Queries,
-	...SchoolResolvers.Queries,
-	...CommonResolvers.Queries,
 	schoolsMany: SchoolTC.getResolver('findMany'),
+	studentOne: StudentTC.getResolver('findOne'),
+	classOne: ClassTC.getResolver('findOne'),
 });
 schemaComposer.Mutation.addFields({
-	...ClassResolvers.Mutations,
-	...StudentResolvers.Mutations,
-	...SchoolResolvers.Mutations,
-	...CommonResolvers.Mutations,
 	studentUpdateOne: StudentTC.getResolver('updateOne'),
 });
 

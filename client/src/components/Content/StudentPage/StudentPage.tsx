@@ -36,18 +36,20 @@ export const GET_STUDENT_BY_VK_ID = gql`
 export const UPDATE_STUDENT = gql`
 	mutation UpdateStudent($record: UpdateOneStudentInput!, $vkId: Float!) {
 		updatedStudent: studentUpdateOne(filter: { vkId: $vkId }, record: $record) {
-			vkId
-			className
-			role
-			settings {
-				notificationsEnabled
-				notificationTime
-				daysForNotification
+			record {
+				vkId
+				className
+				role
+				settings {
+					notificationsEnabled
+					notificationTime
+					daysForNotification
+				}
+				lastHomeworkCheck
+				fullName
+				_id
+				__typename
 			}
-			lastHomeworkCheck
-			fullName
-			_id
-			__typename
 		}
 	}
 `;
@@ -88,7 +90,7 @@ const StudentPage: React.FC = () => {
 	const { data, loading, error } = studentQuery;
 	const [updater] = useMutation<
 		{
-			updatedStudent: Partial<Student> & { __typename: string };
+			updatedStudent: { record: Partial<Student> & { __typename: string } };
 			__typename: string;
 		},
 		{ record: Partial<Student>; vkId: number }
@@ -202,13 +204,15 @@ const StudentPage: React.FC = () => {
 				optimisticResponse: {
 					__typename: 'Mutation',
 					updatedStudent: {
-						__typename: 'Student',
-						vkId,
-						...data?.studentOne,
-						...diff,
-						settings: {
-							...data?.studentOne.settings,
-							...settings,
+						record: {
+							__typename: 'Student',
+							vkId,
+							...data?.studentOne,
+							...diff,
+							settings: {
+								...data?.studentOne.settings,
+								...settings,
+							},
 						},
 					},
 				},

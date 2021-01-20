@@ -501,8 +501,9 @@ const ClassResolvers = {
 				updates: ClassTC.get('homework').getInputType(),
 				schoolName: 'String!',
 			},
-			resolve: async ({ args: { className, schoolName, homeworkId, updates } }) => {
+			resolve: async ({ args, args: { className, schoolName, homeworkId, updates } }) => {
 				const Class = await DataBase.getClassByName(className, schoolName);
+
 				if (Class.homework.find((e) => e._id.toString() === homeworkId.toString())) {
 					if (updates.attachments) {
 						for (const attachment of updates.attachments) {

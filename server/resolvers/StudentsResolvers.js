@@ -136,22 +136,10 @@ const StudentResolvers = {
 		},
 	},
 	Queries: {
-		//* Override
-		//? Many
-		studentsFindMany: {
-			name: 'studentsFindMany',
-			type: StudentTC.List.getType(),
-			resolve: async () => {
-				return (await DataBase.getAllStudents()).map((student) =>
-					student.toJSON({ virtuals: true }),
-				);
-			},
-		},
-
 		//* Getters
 		//? Get for class
-		getForClass: {
-			name: 'getForClass',
+		studentsForClass: {
+			name: 'studentsForClass',
 			type: StudentTC.List.getType(),
 			args: { className: 'String', schoolName: 'String!' },
 			resolve: async ({ args: { schoolName, className } }) => {
