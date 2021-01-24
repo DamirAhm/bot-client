@@ -11,7 +11,7 @@
     "scripts": {
         "start": "npm run start --prefix ./server",
         "build": "npm run build --prefix ./client",
-        "postbuild": "mv ./client/build ./server && npm run gzip",
+        "postbuild": "rm -rf server/build && mv ./client/build ./server && npm run gzip",
         "install": "npm install --prefix ./server",
         "postinstall": "npm install --prefix ./client",
         "start:server": "PORT=8080 npm run start:dev --prefix ./server",

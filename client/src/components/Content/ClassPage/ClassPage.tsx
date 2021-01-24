@@ -162,7 +162,7 @@ const ClassPage: React.FC = () => {
 
 	return (
 		<>
-			<Suspender query={query} ErrorElement={() => <RedirectTo404 />}>
+			<Suspender query={query}>
 				{({ classOne }: { classOne: Class | null }) =>
 					classOne ? (
 						<>

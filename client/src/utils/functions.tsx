@@ -85,7 +85,11 @@ export const concatObjects = <T extends object>(objects: T[]) => {
 };
 
 export const getDateStrFromDayMonthStr = (dayMonthStr: string): string => {
-	if (new RegExp(`\\d\\s(${Object.values(months).join('|')})`, 'i').test(dayMonthStr)) {
+	if (dayMonthStr.toLowerCase() === 'завтра') {
+		return new Date(new Date().setDate(new Date().getDate() + 1)).toISOString();
+	} else if (dayMonthStr.toLowerCase() === 'послезавтра') {
+		return new Date(new Date().setDate(new Date().getDate() + 2)).toISOString();
+	} else if (new RegExp(`\\d\\s(${Object.values(months).join('|')})`, 'i').test(dayMonthStr)) {
 		const [day, month] = dayMonthStr.split(' ');
 		if (months.indexOf(month) !== -1 && !isNaN(Number(day))) {
 			const monthIndex = months.indexOf(month);

@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { UserContext } from '../../../App';
 
 import { FaPen } from 'react-icons/fa';
-import { MdClose, MdCheck, MdAdd, MdExitToApp } from 'react-icons/md';
+import { MdClose, MdCheck, MdAdd, MdExitToApp, MdSettings } from 'react-icons/md';
 import { GoPin } from 'react-icons/go';
 import { IoIosTrash } from 'react-icons/io';
 
@@ -29,7 +29,7 @@ const UnpinIcon: IconType = (props) => {
 	return (
 		<div className="unpinIcon">
 			<GoPin className="icon" {...props} />
-			<div className="line"></div>
+			{/* <div className="line"></div> */}
 		</div>
 	);
 };
@@ -37,7 +37,7 @@ const PinIcon: IconType = (props) => {
 	return (
 		<div className="pinIcon">
 			<GoPin className="icon" {...props} />
-			<div className="line"></div>
+			{/* <div className="line"></div> */}
 		</div>
 	);
 };

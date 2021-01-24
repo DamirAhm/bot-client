@@ -88,6 +88,7 @@ schemaComposer.Subscription.addFields({
 schemaComposer.Query.addFields({
 	schoolsMany: SchoolTC.getResolver('findMany'),
 	studentOne: StudentTC.getResolver('findOne'),
+	studentMany: StudentTC.getResolver('findMany'),
 	classOne: ClassTC.getResolver('findOne'),
 });
 schemaComposer.Mutation.addFields({

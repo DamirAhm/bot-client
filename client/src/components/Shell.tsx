@@ -10,6 +10,7 @@ import { Class } from '../types';
 import Loader from './Common/Loader/Loader';
 import { GET_CLASSES } from './Content/Classes/Classes';
 import { getMainDefinition } from '@apollo/client/utilities';
+import { NormalizedCacheObject } from 'apollo-boost';
 
 const API_HOST =
 	process.env.NODE_ENV === 'development' ? 'http://localhost:8080/graphql' : '/graphql';
@@ -40,7 +41,7 @@ const splitLink = split(
 	websocketLink,
 	httpLink,
 );
- 
+
 const resolvers = {
 	Mutation: {
 		deleteClass: (
@@ -133,7 +134,6 @@ const Shell: React.FC<{ children: JSX.Element }> = ({ children }) => {
 
 		if (process.env.NODE_ENV === 'production') {
 			const persistor = new CachePersistor({
-				//@ts-ignore
 				cache,
 				storage: window.localStorage,
 				debounce: 1000,
@@ -158,18 +158,10 @@ const Shell: React.FC<{ children: JSX.Element }> = ({ children }) => {
 		setClient(client);
 
 		if (process.env.NODE_ENV === 'production') {
-			// @ts-ignore
-			if (client.queryManager.inFlightLinkObservables.size !== 0)
-				window.addEventListener('blur', client.resetStore);
-			else
-				setTimeout(() => {
-					// @ts-ignore
-					if (client.queryManager.inFlightLinkObservables.size !== 0)
-						window.addEventListener('blur', client.resetStore);
-				}, 500);
-
+			const blurHandler = createDocumentBlurHandler(client);
+			window.addEventListener('blur', blurHandler);
 			return () => {
-				window.removeEventListener('blur', client.resetStore);
+				window.removeEventListener('blur', blurHandler);
 			};
 		}
 	}, []);
@@ -190,3 +182,15 @@ const Shell: React.FC<{ children: JSX.Element }> = ({ children }) => {
 };
 
 export default Shell;
+function createDocumentBlurHandler(
+	client: ApolloClient<NormalizedCacheObject>,
+): (this: Window, ev: FocusEvent) => any {
+	return function onBlur() {
+		//@ts-ignore
+		if (client.queryManager.inFlightLinkObservables.size === 0) client.resetStore();
+		else
+			setTimeout(() => {
+				onBlur.bind(this)();
+			}, 500);
+	};
+}
