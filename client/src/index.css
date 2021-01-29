@@ -124,7 +124,6 @@ html {
 
 .unpinIcon {
 	position: relative;
-	display: inline;
 }
 .unpinIcon .icon {
 	fill: var(--main);
@@ -140,7 +139,7 @@ html {
 	width: 25px;
 	height: 3px;
 	transform: rotate(45deg);
-	top: -3px;
+	top: 10px;
 	left: 2px;
 }
 

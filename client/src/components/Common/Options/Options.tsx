@@ -29,15 +29,7 @@ const UnpinIcon: IconType = (props) => {
 	return (
 		<div className="unpinIcon">
 			<GoPin className="icon" {...props} />
-			{/* <div className="line"></div> */}
-		</div>
-	);
-};
-const PinIcon: IconType = (props) => {
-	return (
-		<div className="pinIcon">
-			<GoPin className="icon" {...props} />
-			{/* <div className="line"></div> */}
+			<div className="line"></div>
 		</div>
 	);
 };
@@ -49,7 +41,7 @@ const OptionsElements = {
 	[redactorOptions.reject]: MdClose,
 	[redactorOptions.add]: MdAdd,
 	[redactorOptions.exit]: MdExitToApp,
-	[redactorOptions.pin]: PinIcon,
+	[redactorOptions.pin]: GoPin,
 	[redactorOptions.unpin]: UnpinIcon,
 };
 

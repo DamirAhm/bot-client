@@ -275,13 +275,39 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 
 				if (updates) {
 					announcementsQuery.updateQuery((prev) => {
-						return {
-							announcements: prev.announcements.map(({ _id, ...announcement }) =>
-								_id === updates._id
-									? { ...announcement, ...updates }
-									: { ...announcement, _id },
+						let announcementToUpdate = {
+							...announcementsQuery.data?.announcements.find(
+								({ _id }) => updates._id === _id,
 							),
 						};
+
+						if (
+							announcementToUpdate !== undefined &&
+							announcementsQuery.data !== undefined
+						) {
+							for (let updateKey in updates) {
+								if (
+									updates.hasOwnProperty(updateKey) &&
+									//@ts-ignore
+									updates[updateKey] != undefined &&
+									!['_id', '__typename'].includes(updateKey)
+								) {
+									//@ts-ignore
+									announcementToUpdate[updateKey] = updates[updateKey];
+								}
+							}
+
+							return {
+								announcements: announcementsQuery.data.announcements.map(
+									({ _id, ...announcement }) =>
+										_id === updates._id
+											? (announcementToUpdate as announcement)
+											: { ...announcement, _id },
+								),
+							};
+						}
+
+						return prev;
 					});
 				}
 			},

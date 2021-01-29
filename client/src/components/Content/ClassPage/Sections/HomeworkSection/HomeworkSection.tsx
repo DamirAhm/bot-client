@@ -270,13 +270,33 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 
 				if (updates) {
 					homeworkQuery.updateQuery((prev) => {
-						return {
-							homework: prev.homework.map(({ _id, ...homework }) =>
-								_id === updates._id
-									? { ...homework, ...updates }
-									: { ...homework, _id },
-							),
+						let homeworkToUpdate = {
+							...homeworkQuery.data?.homework.find(({ _id }) => updates._id === _id),
 						};
+
+						if (homeworkToUpdate !== undefined && homeworkQuery.data !== undefined) {
+							for (let updateKey in updates) {
+								if (
+									updates.hasOwnProperty(updateKey) &&
+									//@ts-ignore
+									updates[updateKey] != undefined &&
+									!['_id', '__typename'].includes(updateKey)
+								) {
+									//@ts-ignore
+									homeworkToUpdate[updateKey] = updates[updateKey];
+								}
+							}
+
+							return {
+								homework: homeworkQuery.data.homework.map(({ _id, ...homework }) =>
+									_id === updates._id
+										? (homeworkToUpdate as homework)
+										: { ...homework, _id },
+								),
+							};
+						}
+
+						return prev;
 					});
 				}
 			},
