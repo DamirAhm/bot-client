@@ -49,7 +49,8 @@ const StudentFields = {
 				} else if (student) {
 					const firstName = await vk
 						.getUser(source.vkId)
-						.then((res) => res[0].first_name);
+						//@ts-ignore
+						.then((res) => res.first_name);
 					student.firstName = firstName;
 					student.save();
 					return firstName;
@@ -70,7 +71,8 @@ const StudentFields = {
 				if (student && student.lastName) {
 					return student.lastName;
 				} else if (student) {
-					const lastName = await vk.getUser(source.vkId).then((res) => res[0].last_name);
+					//@ts-ignore
+					const lastName = await vk.getUser(source.vkId).then((res) => res.last_name);
 					student.lastName = lastName;
 					student.save();
 					return lastName;
@@ -93,7 +95,7 @@ const StudentFields = {
 				} else if (student) {
 					const fullName = await vk
 						.getUser(source.vkId)
-						.then((res) => res[0])
+						//@ts-ignore
 						.then((res) => res.first_name + ' ' + res.last_name);
 					student.fullName = fullName;
 					student.save();

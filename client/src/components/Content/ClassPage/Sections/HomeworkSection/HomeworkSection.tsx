@@ -1,5 +1,11 @@
 import styles from '../Common/ContentSection.module.css';
-import { attachment, WithTypename, homework, redactorOptions } from '../../../../../types';
+import {
+	attachment,
+	WithTypename,
+	homework,
+	redactorOptions,
+	changeTypes,
+} from '../../../../../types';
 
 import React, { useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
@@ -23,8 +29,8 @@ import Accordion from '../../../../Common/Accordion/Accordion';
 import Suspender from '../../../../Common/Suspender/Suspender';
 import InfoSection from '../../InfoSection/InfoSection';
 
-import usePolling from '../../../../../hooks/usePolling';
 import { UserContext } from '../../../../../App';
+import ChangePreferences from '../../../../Common/ChangeContent/ChangePreferences';
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -40,6 +46,7 @@ const Queries = {
 					value
 					_id
 				}
+				userPreferences
 				lesson
 				pinned
 				_id
@@ -69,6 +76,7 @@ const Mutations = {
 			) {
 				_id
 				text
+				userPreferences
 				attachments {
 					url
 					value
@@ -109,6 +117,7 @@ const Mutations = {
 					url
 					value
 				}
+				userPreferences
 				__typename
 			}
 		}
@@ -124,6 +133,7 @@ const Mutations = {
 					value
 					_id
 				}
+				userPreferences
 				lesson
 				createdBy
 				__typename
@@ -160,6 +170,7 @@ const Subscriptions = {
 					value
 					_id
 				}
+				userPreferences
 				to
 				pinned
 				__typename
@@ -190,6 +201,7 @@ const Subscriptions = {
 					value
 					_id
 				}
+				userPreferences
 				to
 				pinned
 				__typename
@@ -355,6 +367,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 				addHomework: {
 					...homeworkData,
 					pinned: false,
+					userPreferences: {},
 					_id: Date.now().toString(),
 					__typename: 'ClassHomework',
 				},
@@ -517,9 +530,14 @@ const HomeworkLayout: React.FC<{
 	setHomeworkCreating: (state: boolean) => void;
 	setInitContent: (initContent: Partial<homework>) => void;
 }> = React.memo(({ homework, setHomeworkCreating, setInitContent, initiallyOpened = true }) => {
-	const [changingId, setChangingId] = useState<string | null>(null);
-	const changingHomework = changingId ? findHomeworkById(changingId) : null;
 	const { schoolName, className } = useParams<{ schoolName: string; className: string }>();
+	const { uid: userVkId, settings } = useContext(UserContext);
+
+	const [changingInfo, setChangingInfo] = useState<{
+		_id: string;
+		changeType: changeTypes;
+	} | null>(null);
+	const changingHomework = changingInfo ? findHomeworkById(changingInfo._id) : null;
 
 	const [removeHomework] = useMutation<
 		WithTypename<{
@@ -562,7 +580,7 @@ const HomeworkLayout: React.FC<{
 
 	const [updateHomework] = useMutation<
 		WithTypename<{
-			updateHomework: WithTypename<Partial<homework>>;
+			updateHomework: WithTypename<Partial<homework>> | null;
 		}>,
 		{
 			className: string;
@@ -602,7 +620,7 @@ const HomeworkLayout: React.FC<{
 						variables: { className, schoolName },
 					});
 
-					if (res?.data) {
+					if (res.data && res.data.updateHomework !== null) {
 						proxy.writeQuery({
 							query: Queries.GET_HOMEWORK,
 							variables: { className, schoolName },
@@ -645,19 +663,19 @@ const HomeworkLayout: React.FC<{
 		}
 	};
 
-	const [unpinAll] = useMutation<
-		{ unpinAllHomework: boolean },
-		{ className: string; schoolName: string }
-	>(Mutations.UNPIN_ALL_HOMEWORK, {
-		variables: {
-			className,
-			schoolName,
-		},
-	});
+	// const [unpinAll] = useMutation<
+	// 	{ unpinAllHomework: boolean },
+	// 	{ className: string; schoolName: string }
+	// >(Mutations.UNPIN_ALL_HOMEWORK, {
+	// 	variables: {
+	// 		className,
+	// 		schoolName,
+	// 	},
+	// });
 
 	useEffect(() => {
-		if (changingHomework === null && changingId !== null) {
-			setChangingId(null);
+		if (changingHomework === null && changingInfo !== null) {
+			setChangingInfo(null);
 		}
 	}, [changingHomework]);
 
@@ -727,7 +745,9 @@ const HomeworkLayout: React.FC<{
 									{parsedHomework[hwDate][lesson].map((hw) => (
 										<ContentElement
 											pin={pin}
-											setChanging={setChangingId}
+											setChanging={(_id, changeType) =>
+												setChangingInfo({ _id, changeType })
+											}
 											key={hw._id}
 											removeContent={remove}
 											content={hw}
@@ -739,23 +759,63 @@ const HomeworkLayout: React.FC<{
 					</>
 				</Accordion>
 			))}
-			{changingId &&
-				changingId !== null &&
-				changingHomework !== null &&
-				changeContentModalRoot &&
-				ReactDOM.createPortal(
-					<div className="modal" onMouseDown={() => setChangingId(null)}>
-						<ChangeHomework
-							initState={changingHomework}
-							confirm={(newContent) => {
-								update(changingHomework._id, newContent);
-								setChangingId(null);
-							}}
-							reject={() => setChangingId(null)}
-						/>
-					</div>,
-					changeContentModalRoot,
-				)}
+			{changingInfo && changingHomework && changeContentModalRoot && (
+				<>
+					{changingInfo.changeType === changeTypes.content &&
+						ReactDOM.createPortal(
+							<div className="modal" onMouseDown={() => setChangingInfo(null)}>
+								<ChangeHomework
+									initState={changingHomework}
+									confirm={(newContent) => {
+										update(changingHomework._id, newContent);
+									}}
+									final={() => setChangingInfo(null)}
+								/>
+							</div>,
+							changeContentModalRoot,
+						)}
+					{changingInfo.changeType === changeTypes.userPreferences &&
+						ReactDOM.createPortal(
+							<div className="modal" onMouseDown={() => setChangingInfo(null)}>
+								<ChangePreferences
+									initState={{
+										daysForNotification:
+											changingHomework.userPreferences[
+												userVkId
+											]?.daysForNotification?.join(', ') ??
+											settings.daysForNotification,
+										notificationTime:
+											changingHomework.userPreferences[userVkId]
+												?.notificationTime ?? settings.notificationTime,
+										notificationEnabled:
+											changingHomework.userPreferences[userVkId]
+												?.notificationEnabled ??
+											settings.notificationsEnabled,
+									}}
+									confirm={(newPreferences) => {
+										const daysForNotification = newPreferences.daysForNotification
+											.split(',')
+											.map((s) => +s.trim())
+											.filter((n) => !isNaN(n));
+
+										update(changingHomework._id, {
+											userPreferences: {
+												[userVkId]: {
+													...newPreferences,
+													daysForNotification,
+												},
+											},
+										});
+									}}
+									final={() => {
+										setChangingInfo(null);
+									}}
+								/>
+							</div>,
+							changeContentModalRoot,
+						)}
+				</>
+			)}
 		</>
 	);
 });

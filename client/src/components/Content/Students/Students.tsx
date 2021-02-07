@@ -29,7 +29,7 @@ export type studentPreview = {
 	className?: string;
 	role: roles;
 	fullName?: string;
-	schoolName: string;
+	schoolName?: string;
 	_id: string;
 };
 

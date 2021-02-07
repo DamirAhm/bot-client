@@ -19,7 +19,6 @@ import {
 } from '../../Content/ClassPage/Sections/ScheduleSection/ScheduleSection';
 import { ChangeContentProps } from './ChangeContent';
 import { memoize } from '../../../utils/functions';
-import usePolling from '../../../hooks/usePolling';
 
 const DEFAULT_LESSON = 'Выберите предмет';
 

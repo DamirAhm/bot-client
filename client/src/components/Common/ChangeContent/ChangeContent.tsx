@@ -30,6 +30,48 @@ export type ChangeContentPropsType = {
 	[K in keyof changableContent]: ContentSectionProps<changableContent[K], persistentState>;
 };
 
+const getPhotoUploadURL = () => {
+	if (document.location.hostname === 'localhost') {
+		return 'http://localhost:8080/saveAttachment';
+	} else if (document.location.origin.endsWith('/')) {
+		return document.location.origin + `saveAttachment`;
+	} else {
+		return document.location.origin + `/saveAttachment`;
+	}
+};
+const uploadPhoto = async (files: any) => {
+	try {
+		if (files) {
+			const fd = new FormData();
+			for (let i = 0; i < files.length; i++) {
+				fd.append('newAttachment', files[i]);
+			}
+
+			const { photos }: { photos: vkPhoto[] } = await fetch(getPhotoUploadURL(), {
+				method: 'POST',
+				body: fd,
+				headers: {
+					accepts: 'application/json',
+				},
+			}).then((res) => res.json());
+
+			const newAttachments: WithTypename<attachment>[] = photos.map((photo, i) => ({
+				url: findMaxPhotoResolution(photo),
+				value: parseAttachment(photo),
+				_id: i + Date.now().toString(),
+				__typename: 'ClassHomeworkAttachment',
+			}));
+
+			return newAttachments;
+		} else {
+			return null;
+		}
+	} catch (e) {
+		console.error(e);
+		return null;
+	}
+};
+
 export const ChangeContentProps: ChangeContentPropsType = {
 	to: {
 		title: 'Дата',
@@ -55,54 +97,21 @@ export const ChangeContentProps: ChangeContentPropsType = {
 	},
 	attachments: {
 		Header: ({ changeHandler, value, setPersistentState, persistentState }) => {
-			const onPhotoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-				try {
-					const { files } = e.target;
+			const uploadHandler = async (e: ChangeEvent<HTMLInputElement>) => {
+				setPersistentState({
+					...persistentState,
+					placeholdersCount: persistentState.placeholdersCount + 1,
+				});
 
+				const newAttachments = await uploadPhoto(e.target.files);
+
+				if (newAttachments) {
 					setPersistentState({
 						...persistentState,
-						placeholdersCount: persistentState.placeholdersCount + 1,
+						placeholdersCount: Math.max(persistentState.placeholdersCount - 1, 0),
 					});
 
-					if (files) {
-						const fd = new FormData();
-						for (let i = 0; i < files.length; i++) {
-							fd.append('newAttachment', files[i]);
-						}
-
-						const { photos }: { photos: vkPhoto[] } = await fetch(
-							document.location.hostname === 'localhost'
-								? 'http://localhost:8080/saveAttachment'
-								: document.location.origin.endsWith('/')
-								? document.location.origin + `saveAttachment`
-								: document.location.origin + `/saveAttachment`,
-							{
-								method: 'POST',
-								body: fd,
-								headers: {
-									accepts: 'application/json',
-								},
-							},
-						).then((res) => res.json());
-
-						setPersistentState({
-							...persistentState,
-							placeholdersCount: Math.max(persistentState.placeholdersCount - 1, 0),
-						});
-
-						const newAttachments: WithTypename<attachment>[] = photos.map(
-							(photo, i) => ({
-								url: findMaxPhotoResolution(photo),
-								value: parseAttachment(photo),
-								_id: i + Date.now().toString(),
-								__typename: 'ClassHomeworkAttachment',
-							}),
-						);
-
-						changeHandler([...value, ...newAttachments]);
-					}
-				} catch (e) {
-					console.error(e);
+					changeHandler([...value, ...newAttachments]);
 				}
 			};
 
@@ -111,7 +120,7 @@ export const ChangeContentProps: ChangeContentPropsType = {
 					<h1 className={styles.title}> Вложения </h1>
 					<FileUploader
 						View={<MdFileUpload size={25} className={styles.uploaderIcon} />}
-						onChange={onPhotoUpload}
+						onChange={uploadHandler}
 					/>
 				</div>
 			);

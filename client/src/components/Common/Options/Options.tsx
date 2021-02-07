@@ -43,6 +43,7 @@ const OptionsElements = {
 	[redactorOptions.exit]: MdExitToApp,
 	[redactorOptions.pin]: GoPin,
 	[redactorOptions.unpin]: UnpinIcon,
+	[redactorOptions.settings]: MdSettings,
 };
 
 const isSoloIconProps = (

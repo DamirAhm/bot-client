@@ -30,8 +30,9 @@ export type stateType<T extends { [K: string]: ContentSectionProps<any, any> }> 
 };
 
 export type ContentChangerProps<T extends { [key: string]: any }> = {
-	reject: () => void;
-	confirm: (value: T) => void;
+	reject?: () => void;
+	confirm?: (value: T) => void;
+	final?: (value: T) => void;
 	onChange?: (value: T, changed: string) => void;
 	initState?: Partial<T>;
 	sectionClassName?: string;
@@ -48,8 +49,9 @@ const createContentFiller = <
 	validator?: (state: stateType<T>, persistentState: PS) => string | undefined,
 ): React.ComponentType<ContentChangerProps<stateType<T>>> => {
 	return ({
-		reject,
 		confirm,
+		reject,
+		final,
 		onChange,
 		initState = {} as Partial<stateType<T>>,
 		sectionClassName,
@@ -70,7 +72,7 @@ const createContentFiller = <
 
 			for (const key in contentFillers) {
 				if (contentFillers.hasOwnProperty(key)) {
-					const validator = contentFillers[key].validator;
+					const { validator } = contentFillers[key];
 					if (validator) {
 						const validationResult = validator(state[key], persistentState);
 						if (validationResult !== undefined) {
@@ -88,7 +90,8 @@ const createContentFiller = <
 			}
 
 			if (newErrors.length === 0) {
-				confirm(state);
+				confirm?.(state);
+				final?.(state);
 			} else {
 				setErrors(newErrors);
 			}
@@ -97,7 +100,8 @@ const createContentFiller = <
 		const onReject = () => {
 			setErrors([]);
 			setState({ ...stateFromDefaults, ...initState });
-			reject();
+			reject?.();
+			final?.(state);
 		};
 
 		return (

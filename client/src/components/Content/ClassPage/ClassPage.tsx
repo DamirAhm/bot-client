@@ -114,7 +114,7 @@ const ClassPage: React.FC = () => {
 					} catch (e) {}
 
 					setUser((user) =>
-						user ? { ...user, className: null, schoolName: null } : null,
+						user ? { ...user, className: undefined, schoolName: undefined } : null,
 					);
 					history.push(`/pickClass/${schoolName || ''}`);
 				}

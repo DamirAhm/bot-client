@@ -14,6 +14,12 @@ export enum redactorOptions {
 	exit = 'EXIT',
 	pin = 'PIN',
 	unpin = 'UNPIN',
+	settings = 'SETTINGS',
+}
+
+export enum changeTypes {
+	content = 'CONTENT',
+	userPreferences = 'USER_PREFERENCES',
 }
 
 export const lessons = [
@@ -43,7 +49,7 @@ export type Student = {
 	firstName?: string;
 	lastName?: string;
 	className?: string;
-	schoolName: string;
+	schoolName?: string;
 	_id: string;
 };
 export type StudentInfoType = {
@@ -60,6 +66,7 @@ export type StudentInfoType = {
 export type studentSettings = {
 	notificationsEnabled: boolean;
 	notificationTime: string;
+	daysForNotification: string;
 };
 
 export type attachment = {
@@ -91,8 +98,16 @@ export type content = {
 	pinned: boolean;
 };
 
+export type userPreferences = {
+	notificationTime: string | null;
+	daysForNotification: number[] | null;
+	notificationEnabled: boolean | null;
+};
 export type homework = {
 	lesson: string;
+	userPreferences: {
+		[studentVkId: string]: userPreferences | undefined;
+	};
 } & content;
 
 export type Class = {
@@ -133,8 +148,6 @@ export type User = {
 	photo: string;
 	photo_rec: string;
 	role: roles;
-	className: string | null;
-	schoolName: string | null;
-};
+} & Student;
 
 export type setStateProp<T> = T | ((user: T) => T);

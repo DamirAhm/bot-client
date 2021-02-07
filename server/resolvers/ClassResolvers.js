@@ -502,48 +502,55 @@ const ClassResolvers = {
 				schoolName: 'String!',
 			},
 			resolve: async ({ args, args: { className, schoolName, homeworkId, updates } }) => {
-				const Class = await DataBase.getClassByName(className, schoolName);
+				try {
+					const Class = await DataBase.getClassByName(className, schoolName);
 
-				if (Class.homework.find((e) => e._id.toString() === homeworkId.toString())) {
-					if (updates.attachments) {
-						for (const attachment of updates.attachments) {
-							delete attachment._id;
+					if (Class.homework.find((e) => e._id.toString() === homeworkId.toString())) {
+						if (updates.attachments) {
+							for (const attachment of updates.attachments) {
+								delete attachment._id;
+							}
 						}
+
+						pubsub.publish(ON_HOMEWORK_CHANGED, {
+							onHomeworkChanged: {
+								_id: homeworkId,
+								...updates,
+								className,
+								schoolName,
+							},
+						});
+
+						const updatedHomework = await DataBase.updateHomework(
+							{ classNameOrInstance: className, schoolName },
+							homeworkId,
+							updates,
+						);
+
+						return updatedHomework.find(
+							(e) => e._id.toString() === homeworkId.toString(),
+						);
+					} else {
+						const unchangedHomeworks = await DataBase.getHomework({
+							classNameOrInstance: className,
+							schoolName,
+						});
+						const unchangedHomework = unchangedHomeworks.find(
+							({ _id }) => _id.toString() === homeworkId,
+						);
+
+						pubsub.publish(ON_HOMEWORK_CHANGED, {
+							onHomeworkChanged: {
+								...unchangedHomework,
+								className,
+								schoolName,
+							},
+						});
+
+						return null;
 					}
-
-					pubsub.publish(ON_HOMEWORK_CHANGED, {
-						onHomeworkChanged: {
-							_id: homeworkId,
-							...updates,
-							className,
-							schoolName,
-						},
-					});
-
-					const updatedHomework = await DataBase.updateHomework(
-						{ classNameOrInstance: className, schoolName },
-						homeworkId,
-						updates,
-					);
-
-					return updatedHomework.find((e) => e._id.toString() === homeworkId.toString());
-				} else {
-					const unchangedHomeworks = await DataBase.getHomework({
-						classNameOrInstance: className,
-						schoolName,
-					});
-					const unchangedHomework = unchangedHomeworks.find(
-						({ _id }) => _id.toString() === homeworkId,
-					);
-
-					pubsub.publish(ON_HOMEWORK_CHANGED, {
-						onHomeworkChanged: {
-							...unchangedHomework,
-							className,
-							schoolName,
-						},
-					});
-
+				} catch (e) {
+					console.error(e);
 					return null;
 				}
 			},

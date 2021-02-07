@@ -21,14 +21,22 @@ export const UserContext = React.createContext<
 >({
 	isAuth: false,
 	role: roles.student,
-	className: null,
+	firstName: '',
+	lastName: '',
+	lastHomeworkCheck: '',
+	_id: '',
+	settings: {
+		notificationTime: '16:00',
+		daysForNotification: '1',
+		notificationsEnabled: true,
+	},
+	vkId: -1,
 	photo: '',
 	photo_rec: '',
 	last_name: '',
 	first_name: '',
 	uid: NaN,
-	schoolName: null,
-	setUser: () => void 0,
+	setUser: () => undefined,
 });
 
 function App() {
