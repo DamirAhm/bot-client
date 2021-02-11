@@ -1,7 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-require('dotenv').config();
+require('dotenv').config({
+	path: process.env.NODE_ENV === 'production' ? './.env' : './.env.development',
+});
 const app = require('express')();
 const http = require('http');
 const sirv = require('sirv');

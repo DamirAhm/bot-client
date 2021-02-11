@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index",
+    "start": "NODE_ENV=production node index",
     "start:debug": "supervisor --inspect index",
-    "start:dev": "supervisor index",
+    "start:dev": "NODE_ENV=development supervisor index",
     "postinstall": "mkdir uploads -p"
   },
   "author": "",

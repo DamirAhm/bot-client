@@ -135,7 +135,7 @@ export const parseContentByDate = <T extends content>(
 		} else if (isDateWithOffset(new Date(cont.to), 1)) {
 			contDate = 'Завтра';
 		} else if (isDateWithOffset(new Date(cont.to), 2)) {
-			contDate = 'После завтра';
+			contDate = 'Послезавтра';
 		} else {
 			contDate = parseDate(cont.to, 'd MM');
 		}
