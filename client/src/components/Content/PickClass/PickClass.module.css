@@ -87,6 +87,7 @@
 }
 .city .add:hover {
 	border-color: var(--main);
+	transform: scale(1.05);
 }
 
 .citySchools {

@@ -13,8 +13,8 @@ export enum redactorOptions {
 	add = 'ADD',
 	exit = 'EXIT',
 	pin = 'PIN',
-	unpin = 'UNPIN',
 	settings = 'SETTINGS',
+	upload = 'UPLOAD',
 }
 
 export enum changeTypes {

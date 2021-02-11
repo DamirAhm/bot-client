@@ -1,8 +1,7 @@
-import React, { ChangeEvent, useState } from 'react';
-import { MdFileUpload } from 'react-icons/md';
+import React, { ChangeEvent } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { content, attachment, WithTypename, vkPhoto } from '../../../types';
+import { content, attachment, WithTypename, vkPhoto, redactorOptions } from '../../../types';
 
 import styles from './ChangeContent.module.css';
 import FileUploader from '../FileUploader/FileUploader';
@@ -11,6 +10,7 @@ import createContentFiller, {
 	ContentSectionProps,
 } from '../../../utils/createContentChanger/createContentChanger';
 import Loader from '../Loader/Loader';
+import Options from '../Options/Options';
 
 const parseAttachment = (photo: vkPhoto) => {
 	return `photo${photo.owner_id}_${photo.id}`;
@@ -119,7 +119,13 @@ export const ChangeContentProps: ChangeContentPropsType = {
 				<div className={styles.header}>
 					<h1 className={styles.title}> Вложения </h1>
 					<FileUploader
-						View={<MdFileUpload size={25} className={styles.uploaderIcon} />}
+						View={
+							<Options
+								include={redactorOptions.upload}
+								size={25}
+								className={styles.uploaderIcon}
+							/>
+						}
 						onChange={uploadHandler}
 					/>
 				</div>

@@ -89,11 +89,14 @@
 
 .pen {
 	position: absolute;
-	top: 10px;
-	right: 10px;
+	top: 6px;
+	right: 6px;
 	visibility: hidden;
 	cursor: pointer;
-	color: var(--accent);
+	fill: var(--accent);
+}
+.pen:hover {
+	transform: scale(1.05);
 }
 
 .day:hover .pen {
@@ -109,6 +112,14 @@
 
 .changer {
 	cursor: pointer;
+}
+.changer:global(.remove):hover {
+	fill: var(--negative-darken);
+	transform: scale(1.05);
+}
+.changer:global(.confirm):hover {
+	transform: scale(1.05);
+	fill: var(--positive-darken);
 }
 
 select,

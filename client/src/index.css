@@ -1,11 +1,17 @@
 * {
 	--main: #2e2f47;
-	--main-lighten: #2e2f479a;
 	--negative: #e34a4a;
 	--positive: #71a842;
 	--accent: #f5f5f5;
 	--secondary: #d1dee4;
-	--secondary-light: #b9d6e4;
+	--main-lighten: #2e2f479a;
+	--negative-lighten: #e07272;
+	--positive-lighten: #81a85e;
+	--secondary-lighten: #b9d6e4;
+	--main-darken: #26273a;
+	--negative-darken: #d11818;
+	--positive-darken: #578f27;
+	--secondary-darken: #bcc7cc;
 	/* color: #f5f5f5; */
 	font-family: 'Roboto', sans-serif !important;
 	box-sizing: border-box;
@@ -86,7 +92,7 @@ html {
 }
 
 .accordion:hover {
-	background-color: var(--secondary-light);
+	background-color: var(--secondary-lighten);
 }
 
 .highlight {
@@ -113,34 +119,6 @@ html {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-}
-
-.pinIcon .icon {
-	fill: var(--main);
-}
-.pinIcon:hover .icon {
-	fill: var(--positive);
-}
-
-.unpinIcon {
-	position: relative;
-}
-.unpinIcon .icon {
-	fill: var(--main);
-}
-.unpinIcon:hover .icon {
-	fill: var(--negative);
-	position: relative;
-}
-.unpinIcon:hover .line {
-	content: ' ';
-	background-color: var(--negative);
-	position: absolute;
-	width: 25px;
-	height: 3px;
-	transform: rotate(45deg);
-	top: 10px;
-	left: 2px;
 }
 
 @media screen and (max-width: 776px) {

@@ -120,6 +120,7 @@ const createContentFiller = <
 								className: 'negative',
 							},
 						}}
+						className={styles.optionIcon}
 						style={{ cursor: 'pointer' }}
 						size={25}
 					/>

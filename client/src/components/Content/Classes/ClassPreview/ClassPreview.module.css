@@ -96,6 +96,13 @@
 	color: var(--negative);
 }
 
+.button:global(.remove):hover {
+	fill: var(--negative-darken);
+}
+.button:global(.confirm):hover {
+	fill: var(--positive-darken);
+}
+
 @media screen and (max-width: 776px) {
 	.creator {
 		width: calc(80% - 20px); /* preview size */

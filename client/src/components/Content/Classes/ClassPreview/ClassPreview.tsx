@@ -69,7 +69,7 @@ const ClassPreview: React.FC<Props> = ({ className, studentsCount, searchText = 
 					props={{
 						onClick: () => setWaitForConfirm(true),
 						size: 20,
-						className: 'remove',
+						className: `remove ${styles.button}`,
 					}}
 					withRoleControl
 					allowOnlyAdmin

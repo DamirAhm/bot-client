@@ -182,7 +182,7 @@ const ClassPage: React.FC = () => {
 													renderIf: () => className === userClassName,
 												},
 											}}
-											className={'remove'}
+											className={`remove ${styles.button}`}
 											style={{ cursor: 'pointer' }}
 											size={30}
 										/>

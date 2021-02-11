@@ -39,3 +39,12 @@
 	color: var(--negative);
 	font-size: 1.8rem;
 }
+
+.optionIcon:global(.positive):hover {
+	fill: var(--positive-darken);
+	transform: scale(1.05);
+}
+.optionIcon:global(.negative):hover {
+	fill: var(--negative-darken);
+	transform: scale(1.05);
+}

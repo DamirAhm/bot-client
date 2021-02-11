@@ -26,6 +26,11 @@
 	color: var(--main);
 }
 
+.uploaderIcon:hover {
+	transform: scale(1.05);
+	fill: var(--main-darken);
+}
+
 .text {
 	width: 100%;
 }

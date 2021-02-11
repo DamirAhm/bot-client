@@ -287,7 +287,7 @@ const StudentPage: React.FC = () => {
 										}
 										props={{
 											[redactorOptions.reject]: {
-												className: styles.icon + ' negative',
+												className: 'remove',
 												onClick: () => {
 													setDiff({});
 													setChanging(false);
@@ -295,11 +295,11 @@ const StudentPage: React.FC = () => {
 											},
 											[redactorOptions.change]: {
 												onClick: () => setChanging(true),
-												className: `${styles.icon} ${styles.pen}`,
+												className: styles.pen,
 												size: iconSize * 0.64,
 											},
 											[redactorOptions.confirm]: {
-												className: styles.icon + ' positive',
+												className: 'positive',
 												onClick: () => {
 													updateStudent();
 													setChanging(false);
@@ -307,10 +307,11 @@ const StudentPage: React.FC = () => {
 											},
 											[redactorOptions.delete]: {
 												onClick: () => setWaitForConfirm(true),
-												className: `${styles.icon} remove`,
+												className: 'remove',
 												allowOnlyAdmin: true,
 											},
 										}}
+										className={styles.icon}
 										size={iconSize}
 									/>
 								</div>

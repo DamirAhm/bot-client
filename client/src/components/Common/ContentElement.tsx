@@ -50,7 +50,7 @@ const ContentElement: React.FC<Props> = ({ content, removeContent, setChanging, 
 			<div className={styles.controls}>
 				<Options
 					include={[
-						content.pinned ? redactorOptions.unpin : redactorOptions.pin,
+						redactorOptions.pin,
 						redactorOptions.settings,
 						redactorOptions.change,
 						redactorOptions.delete,
@@ -58,9 +58,7 @@ const ContentElement: React.FC<Props> = ({ content, removeContent, setChanging, 
 					props={{
 						[redactorOptions.pin]: {
 							onClick: () => pin(content._id as string),
-						},
-						[redactorOptions.unpin]: {
-							onClick: () => pin(content._id as string),
+							className: content.pinned ? styles.unpin : styles.pin,
 						},
 						[redactorOptions.settings]: {
 							onClick: () =>
@@ -68,14 +66,15 @@ const ContentElement: React.FC<Props> = ({ content, removeContent, setChanging, 
 						},
 						[redactorOptions.change]: {
 							onClick: () => setChanging(content._id as string, changeTypes.content),
-							className: `${styles.pen}`,
+							className: styles.pen,
 							size: 20,
 						},
 						[redactorOptions.delete]: {
 							onClick: () => removeContent(content._id as string),
-							className: `${styles.remove}`,
+							className: styles.remove,
 						},
 					}}
+					className={styles.optionIcon}
 					size={25}
 					withRoleControl
 				/>

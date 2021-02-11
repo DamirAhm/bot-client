@@ -36,6 +36,16 @@
 	align-self: center;
 	cursor: pointer;
 }
+.icon:hover {
+	transform: scale(1.05);
+	fill: var(--positive);
+}
+.icon:global(.remove):hover {
+	fill: var(--negative-darken);
+}
+.icon:global(.positive):hover {
+	fill: var(--positive-darken);
+}
 .icon * {
 	color: var(--accent);
 }

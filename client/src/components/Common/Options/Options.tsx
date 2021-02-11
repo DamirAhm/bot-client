@@ -5,6 +5,7 @@ import { FaPen } from 'react-icons/fa';
 import { MdClose, MdCheck, MdAdd, MdExitToApp, MdSettings } from 'react-icons/md';
 import { GoPin } from 'react-icons/go';
 import { IoIosTrash } from 'react-icons/io';
+import { MdFileUpload } from 'react-icons/md';
 
 import { IconBaseProps, IconType } from 'react-icons/lib';
 import { redactorOptions, roles } from '../../../types';
@@ -25,15 +26,6 @@ export type iconSpecialProps = {
 	renderIf?: () => boolean;
 };
 
-const UnpinIcon: IconType = (props) => {
-	return (
-		<div className="unpinIcon">
-			<GoPin className="icon" {...props} />
-			<div className="line"></div>
-		</div>
-	);
-};
-
 const OptionsElements = {
 	[redactorOptions.delete]: IoIosTrash,
 	[redactorOptions.change]: FaPen,
@@ -42,8 +34,8 @@ const OptionsElements = {
 	[redactorOptions.add]: MdAdd,
 	[redactorOptions.exit]: MdExitToApp,
 	[redactorOptions.pin]: GoPin,
-	[redactorOptions.unpin]: UnpinIcon,
 	[redactorOptions.settings]: MdSettings,
+	[redactorOptions.upload]: MdFileUpload,
 };
 
 const isSoloIconProps = (
@@ -94,6 +86,7 @@ const Options: React.FC<Props> = ({
 
 				const { allowOnlyAdmin, allowOnlyRedactor, renderIf, onClick, ...restProps } =
 					props?.[e] || {};
+
 				if (
 					(allowOnlyRedactor && ![roles.admin, roles.contributor].includes(role)) ||
 					(allowOnlyAdmin && role !== roles.admin) ||
@@ -103,12 +96,14 @@ const Options: React.FC<Props> = ({
 				return (
 					<button
 						style={{ cursor: 'pointer' }}
+						className={restProps.className}
 						key={i}
 						onClick={(onClick as any) || (() => {})}
 					>
 						{React.createElement(OptionsElements[e], {
 							...iconProps,
 							...restProps,
+							className: `${iconProps.className || ''} ${restProps.className || ''}`,
 							['data-testid']: e,
 						})}
 					</button>
