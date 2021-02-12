@@ -71,10 +71,11 @@ const Students: React.FC = () => {
 	const setSearchText = (str: string): void => {
 		str = str.toLowerCase();
 		setText(str);
-		setFilter(({ fullName = '', className = '', role }) => {
+		setFilter(({ fullName = '', className = '', role, schoolName }) => {
 			return (
 				fullName.toLowerCase().search(str) !== -1 ||
 				(className ?? 'Нету').toLowerCase().search(str) !== -1 ||
+				(schoolName ?? 'Не указано').toLowerCase().search(str) !== -1 ||
 				RoleNames[role].toLowerCase().search(str) !== -1
 			);
 		});

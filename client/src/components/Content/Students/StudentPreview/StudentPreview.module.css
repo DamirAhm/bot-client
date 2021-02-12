@@ -60,6 +60,10 @@
 	.role {
 		display: none;
 	}
+
+	.removeOnSmall {
+		display: none !important;
+	}
 }
 
 @media screen and (max-width: 350px) {
