@@ -118,10 +118,14 @@ const StudentPage: React.FC = () => {
 				},
 			},
 			update: (proxy, response) => {
-				const data = proxy.readQuery<{ students: Student[] }>({ query: GET_STUDENTS });
+				const data = proxy.readQuery<{ students: Student[] }, { schoolName: string }>({
+					query: GET_STUDENTS,
+					variables: { schoolName },
+				});
 
 				proxy.writeQuery({
 					query: GET_STUDENTS,
+					variables: { schoolName },
 					data: {
 						students: data?.students.filter(
 							(s) => s.vkId !== response?.data?.removed.vkId,

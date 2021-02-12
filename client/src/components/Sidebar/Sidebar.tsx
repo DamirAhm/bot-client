@@ -77,9 +77,12 @@ const Sidebar: React.FC<{ logOut: () => void }> = ({ logOut }) => {
 								Классы
 							</NavLink>
 							<NavLink
-								to={`/students`}
+								to={`/${schoolName}/students`}
 								className={styles.link}
 								activeClassName={styles.active}
+								isActive={(_, location) =>
+									location.pathname.toLowerCase().indexOf('student') !== -1
+								}
 							>
 								Ученики
 							</NavLink>

@@ -93,7 +93,7 @@ function App() {
 										/>
 										<Route
 											exact
-											path="/students"
+											path="/:schoolName/students"
 											component={() => withRedirect(<Students />)}
 										/>
 										<Route

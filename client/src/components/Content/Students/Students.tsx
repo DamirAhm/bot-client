@@ -10,10 +10,11 @@ import Suspender from '../../Common/Suspender/Suspender';
 import { changeTitle } from '../../../utils/functions';
 import { RoleNames } from '../StudentPage/StudentInfo/StudentInfo';
 import usePolling from '../../../hooks/usePolling';
+import { useParams } from 'react-router-dom';
 
 export const GET_STUDENTS = gql`
-	query GetStudents {
-		students: studentMany {
+	query GetStudents($schoolName: String!) {
+		students: studentsForSchool(schoolName: $schoolName) {
 			vkId
 			className
 			role
@@ -39,19 +40,20 @@ export type sort<T = any> = {
 };
 
 const Students: React.FC = () => {
-	const studentsQuery = useQuery<{ students: studentPreview[] }>(GET_STUDENTS);
+	const { schoolName } = useParams<{ schoolName: string }>();
+
+	const studentsQuery = useQuery<{ students: studentPreview[] }, { schoolName: string }>(
+		GET_STUDENTS,
+		{ variables: { schoolName } },
+	);
 	const { data, loading, error } = studentsQuery;
+
 	const { items, setSort, setFilter, setItems } = useList<studentPreview>([]);
 	const [text, setText] = useState('');
 	const sorts: sort<studentPreview>[] = [
 		{
 			name: 'Классу',
 			sort: ({ className: aName = '' }, { className: bName = '' }) =>
-				aName > bName ? 1 : -1,
-		},
-		{
-			name: 'Школе',
-			sort: ({ schoolName: aName = '' }, { schoolName: bName = '' }) =>
 				aName > bName ? 1 : -1,
 		},
 		{
