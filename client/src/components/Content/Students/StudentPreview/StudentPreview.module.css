@@ -22,6 +22,11 @@
 	cursor: pointer;
 	text-decoration: none;
 }
+.link > span {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+}
 
 .info {
 	display: flex;

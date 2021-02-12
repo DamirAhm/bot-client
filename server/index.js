@@ -4,7 +4,7 @@ const path = require('path');
 require('dotenv').config({
 	path: process.env.NODE_ENV === 'production' ? './.env' : './.env.development',
 });
-const app = require('express')();
+const express = require('express');
 const http = require('http');
 const sirv = require('sirv');
 const cors = require('cors');
@@ -17,7 +17,9 @@ const { graphqlSchema } = require('./schema');
 const { VK_API, DataBase: DB } = require('bot-database');
 
 const config = require('./config.json');
+const { pubsub } = require('./PubSub');
 
+const app = express();
 const DataBase = new DB(process.env.MONGODB_URI);
 const vk = new VK_API(process.env.VK_API_KEY, config['GROUP_ID'], config['ALBUM_ID']);
 
@@ -94,6 +96,13 @@ app.post('/saveAttachment', upload.array('newAttachment'), async (req, res) => {
 	}
 });
 
+app.post('/updateNotification', express.json(), async (req, res) => {
+	const { trigger, data } = req.body;
+	console.log(req.body);
+	//pubsub.publish(trigger, data);
+
+	res.end();
+});
 app.get('/*', (_, res) => {
 	res.sendFile(path.join(__dirname, 'build/index.html'));
 });

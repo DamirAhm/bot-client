@@ -9,7 +9,7 @@ import HomeworkSection from './Sections/HomeworkSection/HomeworkSection';
 import AnnouncementsSection from './Sections/ChangesSection/AnnouncementsSection';
 import { gql } from '@apollo/client';
 import { useMutation, useQuery } from '@apollo/client';
-import { WithTypename, Class, redactorOptions, Student } from '../../../types';
+import { WithTypename, Class, redactorOptions, Student, roles } from '../../../types';
 import { classPreview, GET_CLASSES } from '../Classes/Classes';
 import { Redirect, useHistory, useParams } from 'react-router-dom';
 import Options from '../../Common/Options/Options';
@@ -41,7 +41,7 @@ const GET_CLASS = gql`
 const ClassPage: React.FC = () => {
 	const { className, schoolName } = useParams<{ className: string; schoolName: string }>();
 
-	const { uid, className: userClassName, setUser } = useContext(UserContext);
+	const { uid, className: userClassName, setUser, role } = useContext(UserContext);
 	const history = useHistory();
 
 	const query = useQuery<{ classOne: Class | null }, { className: string; schoolName: string }>(
@@ -189,7 +189,9 @@ const ClassPage: React.FC = () => {
 									</div>
 								</div>
 								<div className={styles.content}>
-									<StudentsSection />
+									{[roles.contributor, roles.admin].includes(role) && (
+										<StudentsSection />
+									)}
 									<ScheduleSection />
 									<HomeworkSection />
 									<AnnouncementsSection />

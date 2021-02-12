@@ -192,7 +192,7 @@ const StudentsSection: React.FC<{}> = ({}) => {
 							{data.map((e) => (
 								<div className={styles.student} key={e.vkId}>
 									<StudentPreview
-										visibleInfo={['fullName', 'vkId']}
+										visibleInfo={['fullName']}
 										searchText={searchString}
 										{...e}
 									/>
