@@ -110,15 +110,6 @@
 	width: 100%;
 }
 
-.imagePlaceholder {
-	height: 300px;
-	background-color: var(--accent);
-	border: 2px dashed var(--main);
-	display: flex;
-	justify-content: center;
-	text-align: center;
-}
-
 @media screen and (max-width: 675px) {
 	.attachmentsContainer img {
 		object-fit: contain;

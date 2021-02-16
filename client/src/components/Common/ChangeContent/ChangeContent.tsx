@@ -1,7 +1,8 @@
 import React, { ChangeEvent } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { content, attachment, WithTypename, vkPhoto, redactorOptions } from '../../../types';
+
+import { content, attachment, redactorOptions } from '../../../types';
 
 import styles from './ChangeContent.module.css';
 import FileUploader from '../FileUploader/FileUploader';
@@ -9,17 +10,10 @@ import DeletableAttachment from '../OpenableImage/DeletableAttachment';
 import createContentFiller, {
 	ContentSectionProps,
 } from '../../../utils/createContentChanger/createContentChanger';
-import Loader from '../Loader/Loader';
 import Options from '../Options/Options';
 
-const parseAttachment = (photo: vkPhoto) => {
-	return `photo${photo.owner_id}_${photo.id}`;
-};
-const findMaxPhotoResolution = (photo: vkPhoto) =>
-	photo.sizes.reduce<{ url: string; height: number }>(
-		(acc, c) => (c.height > acc.height ? c : acc),
-		{ height: 0, url: '' },
-	).url;
+import { uploadPhoto } from '../../../utils/functions';
+import Placeholder from '../Placeholder';
 
 type persistentState = {
 	placeholdersCount: number;
@@ -30,66 +24,38 @@ export type ChangeContentPropsType = {
 	[K in keyof changableContent]: ContentSectionProps<changableContent[K], persistentState>;
 };
 
-const getPhotoUploadURL = () => {
-	if (document.location.hostname === 'localhost') {
-		return 'http://localhost:8080/saveAttachment';
-	} else if (document.location.origin.endsWith('/')) {
-		return document.location.origin + `saveAttachment`;
-	} else {
-		return document.location.origin + `/saveAttachment`;
-	}
-};
-const uploadPhoto = async (files: any) => {
-	try {
-		if (files) {
-			const fd = new FormData();
-			for (let i = 0; i < files.length; i++) {
-				fd.append('newAttachment', files[i]);
-			}
-
-			const { photos }: { photos: vkPhoto[] } = await fetch(getPhotoUploadURL(), {
-				method: 'POST',
-				body: fd,
-				headers: {
-					accepts: 'application/json',
-				},
-			}).then((res) => res.json());
-
-			const newAttachments: WithTypename<attachment>[] = photos.map((photo, i) => ({
-				url: findMaxPhotoResolution(photo),
-				value: parseAttachment(photo),
-				_id: i + Date.now().toString(),
-				__typename: 'ClassHomeworkAttachment',
-			}));
-
-			return newAttachments;
-		} else {
-			return null;
-		}
-	} catch (e) {
-		console.error(e);
-		return null;
-	}
-};
-
 export const ChangeContentProps: ChangeContentPropsType = {
 	to: {
 		title: 'Дата',
-		ContentComponent: ({ changeHandler, value }) => (
-			<DatePicker
-				selected={new Date(value)}
-				onChange={(date) => {
-					if (date !== null) {
-						changeHandler(date.toISOString());
-					}
-				}}
-				minDate={new Date()}
-				dateFormat={'dd/MM/yyyy'}
-				className={styles.datePickerInput}
-				showPopperArrow={false}
-				calendarClassName={styles.datePickerCalendar}
-			/>
-		),
+		ContentComponent: ({ changeHandler, value }) => {
+			const onChange = (newDate: string) => {
+				changeHandler(newDate);
+
+				const prevSavedValue = JSON.parse(
+					localStorage.getItem('initAnnouncementContent') ?? '{}',
+				);
+				localStorage.setItem(
+					'initAnnouncementContent',
+					JSON.stringify({ ...prevSavedValue, to: newDate }),
+				);
+			};
+
+			return (
+				<DatePicker
+					selected={new Date(value)}
+					onChange={(date) => {
+						if (date !== null) {
+							onChange(date.toISOString());
+						}
+					}}
+					minDate={new Date()}
+					dateFormat={'dd/MM/yyyy'}
+					className={styles.datePickerInput}
+					showPopperArrow={false}
+					calendarClassName={styles.datePickerCalendar}
+				/>
+			);
+		},
 		defaultValue: new Date().toISOString(),
 		validator: (date) => {
 			if (+date >= Date.now()) return 'Дата на которую задано задание должно быть в будущем';
@@ -112,6 +78,17 @@ export const ChangeContentProps: ChangeContentPropsType = {
 					});
 
 					changeHandler([...value, ...newAttachments]);
+
+					const prevSavedValue = JSON.parse(
+						localStorage.getItem('initAnnouncementContent') ?? '{}',
+					);
+					localStorage.setItem(
+						'initAnnouncementContent',
+						JSON.stringify({
+							...prevSavedValue,
+							attachments: [...value, ...newAttachments],
+						}),
+					);
 				}
 			};
 
@@ -144,16 +121,27 @@ export const ChangeContentProps: ChangeContentPropsType = {
 				},
 			);
 
+			const onDelete = (_idToRemove: string) => {
+				const updatedAttachments = value.filter(({ _id }) => _id !== _idToRemove);
+
+				changeHandler(updatedAttachments);
+
+				const prevSavedValue = JSON.parse(
+					localStorage.getItem('initAnnouncementContent') ?? '{}',
+				);
+				localStorage.setItem(
+					'initAnnouncementContent',
+					JSON.stringify({
+						...prevSavedValue,
+						attachments: updatedAttachments,
+					}),
+				);
+			};
+
 			return (
 				<div className={styles.attachmentsContainer}>
 					{value.map((att: attachment) => (
-						<DeletableAttachment
-							key={att._id}
-							attachment={att.url}
-							remove={() => {
-								changeHandler(value.filter(({ _id }) => _id !== att._id));
-							}}
-						/>
+						<DeletableAttachment key={att._id} attachment={att} remove={onDelete} />
 					))}
 					{placeholders}
 				</div>
@@ -171,6 +159,18 @@ export const ChangeContentProps: ChangeContentPropsType = {
 	text: {
 		title: 'Домашняя работа',
 		ContentComponent: ({ value, changeHandler }) => {
+			const onChange = (newText: string) => {
+				changeHandler(newText);
+
+				const prevSavedValue = JSON.parse(
+					localStorage.getItem('initAnnouncementContent') ?? '{}',
+				);
+				localStorage.setItem(
+					'initAnnouncementContent',
+					JSON.stringify({ ...prevSavedValue, text: newText }),
+				);
+			};
+
 			return (
 				<textarea
 					autoFocus
@@ -178,7 +178,7 @@ export const ChangeContentProps: ChangeContentPropsType = {
 					value={value}
 					className={styles.text}
 					onChange={(e) => {
-						changeHandler(e.target.value);
+						onChange(e.target.value);
 					}}
 					rows={5}
 				>
@@ -188,14 +188,6 @@ export const ChangeContentProps: ChangeContentPropsType = {
 		},
 		defaultValue: '',
 	},
-};
-
-const Placeholder: React.FC<{ width: number }> = ({ width }) => {
-	return (
-		<div className={styles.imagePlaceholder} style={{ width }}>
-			<Loader height={300} />
-		</div>
-	);
 };
 
 const ChangeContent = createContentFiller<persistentState, ChangeContentPropsType>(

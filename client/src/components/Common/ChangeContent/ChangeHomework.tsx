@@ -1,6 +1,6 @@
-import { homework, isOptionType, optionType } from '../../../types';
+import { attachment, homework, isOptionType, optionType, redactorOptions } from '../../../types';
 
-import React, { useEffect, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import DatePicker from 'react-datepicker';
 import { useQuery } from '@apollo/client';
@@ -14,11 +14,13 @@ import createContentFiller, {
 import Suspender from '../Suspender/Suspender';
 import {
 	GET_SCHEDULE,
-	GET_LESSONS,
 	getSelectTheme,
 } from '../../Content/ClassPage/Sections/ScheduleSection/ScheduleSection';
-import { ChangeContentProps } from './ChangeContent';
-import { memoize } from '../../../utils/functions';
+import { memoize, uploadPhoto } from '../../../utils/functions';
+import FileUploader from '../FileUploader/FileUploader';
+import DeletableAttachment from '../OpenableImage/DeletableAttachment';
+import Options from '../Options/Options';
+import Placeholder from '../Placeholder';
 
 const DEFAULT_LESSON = 'Выберите предмет';
 
@@ -92,12 +94,19 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 					variables: { className, schoolName },
 				});
 
-				const onChange = (value: ValueType<optionType, false>) => {
-					if (isOptionType(value)) {
-						changeHandler(value.value);
+				const onChange = (newLessonOption: ValueType<optionType, false>) => {
+					if (isOptionType(newLessonOption)) {
+						changeHandler(newLessonOption.value);
+
+						const prevSavedValue = JSON.parse(
+							localStorage.getItem('initHomeworkContent') ?? '{}',
+						);
+						localStorage.setItem(
+							'initHomeworkContent',
+							JSON.stringify({ ...prevSavedValue, lesson: newLessonOption.value }),
+						);
 					}
 				};
-
 				return (
 					<Suspender queries={[scheduleQuery]}>
 						{({ schedule }: { schedule: string[][] }) => {
@@ -125,7 +134,6 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 				if (lesson === '' || lesson === DEFAULT_LESSON) return 'Выберите урок';
 			},
 		},
-		...(ChangeContentProps as any),
 		to: {
 			title: 'Дата',
 			ContentComponent: ({ changeHandler, value, state: { lesson } }) => {
@@ -139,22 +147,34 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 				>(GET_SCHEDULE, { variables: { className, schoolName } });
 				const [schedule, setSchedule] = useState<string[][]>();
 
+				const onChange = (newDate: string) => {
+					changeHandler(newDate);
+
+					const prevSavedValue = JSON.parse(
+						localStorage.getItem('initHomeworkContent') ?? '{}',
+					);
+					localStorage.setItem(
+						'initHomeworkContent',
+						JSON.stringify({ ...prevSavedValue, to: newDate }),
+					);
+				};
+
 				useEffect(() => {
 					if (query.data?.schedule) setSchedule(query.data.schedule);
 				}, [query, query.data]);
 
 				if (!lesson || query.loading) {
-					return <ToSection changeHandler={changeHandler} value={value} />;
+					return <ToSection changeHandler={onChange} value={value} />;
 				} else {
 					return (
 						<Suspender
-							fallback={<ToSection changeHandler={changeHandler} value={value} />}
+							fallback={<ToSection changeHandler={onChange} value={value} />}
 							query={query}
 						>
 							<>
 								{schedule && (
 									<ToSection
-										changeHandler={changeHandler}
+										changeHandler={onChange}
 										value={value}
 										renderDayContents={(day, date) => (
 											<OutlinedDay
@@ -183,6 +203,133 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 				if (+date >= Date.now())
 					return 'Дата на которую задано задание должно быть в будущем';
 			},
+		},
+		attachments: {
+			Header: ({ changeHandler, value, setPersistentState, persistentState }) => {
+				const uploadHandler = async (e: ChangeEvent<HTMLInputElement>) => {
+					setPersistentState({
+						...persistentState,
+						placeholdersCount: persistentState.placeholdersCount + 1,
+					});
+
+					const newAttachments = await uploadPhoto(e.target.files);
+
+					if (newAttachments) {
+						setPersistentState({
+							...persistentState,
+							placeholdersCount: Math.max(persistentState.placeholdersCount - 1, 0),
+						});
+
+						changeHandler([...value, ...newAttachments]);
+
+						const prevSavedValue = JSON.parse(
+							localStorage.getItem('initHomeworkContent') ?? '{}',
+						);
+						localStorage.setItem(
+							'initHomeworkContent',
+							JSON.stringify({
+								...prevSavedValue,
+								attachments: [...value, ...newAttachments],
+							}),
+						);
+					}
+				};
+
+				return (
+					<div className={styles.header}>
+						<h1 className={styles.title}> Вложения </h1>
+						<FileUploader
+							View={
+								<Options
+									include={redactorOptions.upload}
+									size={25}
+									className={styles.uploaderIcon}
+								/>
+							}
+							onChange={uploadHandler}
+						/>
+					</div>
+				);
+			},
+			ContentComponent: ({ value, changeHandler, persistentState }) => {
+				const placeholders = Array.from(
+					{ length: persistentState.placeholdersCount },
+					function () {
+						return (
+							<Placeholder
+								key={Date.now()}
+								width={Math.floor(Math.random() * 200) + 400}
+							/>
+						);
+					},
+				);
+
+				const onDelete = (_idToRemove: string) => {
+					const updatedAttachments = value.filter(({ _id }) => _id !== _idToRemove);
+
+					changeHandler(updatedAttachments);
+
+					const prevSavedValue = JSON.parse(
+						localStorage.getItem('initHomeworkContent') ?? '{}',
+					);
+					localStorage.setItem(
+						'initHomeworkContent',
+						JSON.stringify({
+							...prevSavedValue,
+							attachments: updatedAttachments,
+						}),
+					);
+				};
+
+				return (
+					<div className={styles.attachmentsContainer}>
+						{value.map((att: attachment) => (
+							<DeletableAttachment key={att._id} attachment={att} remove={onDelete} />
+						))}
+						{placeholders}
+					</div>
+				);
+			},
+			defaultValue: [],
+			validator: (_, persistentState) => {
+				if (persistentState.placeholdersCount > 0) {
+					return 'Подождите пока загружаются вложения';
+				}
+
+				return;
+			},
+		},
+		text: {
+			title: 'Домашняя работа',
+			ContentComponent: ({ value, changeHandler }) => {
+				const onChange = (newText: string) => {
+					changeHandler(newText);
+
+					const prevSavedValue = JSON.parse(
+						localStorage.getItem('initHomeworkContent') ?? '{}',
+					);
+					localStorage.setItem(
+						'initHomeworkContent',
+						JSON.stringify({ ...prevSavedValue, text: newText }),
+					);
+				};
+
+				return (
+					<textarea
+						autoFocus
+						name="text"
+						value={value}
+						className={styles.text}
+						onChange={(e) => {
+							onChange(e.target.value);
+						}}
+						rows={5}
+					>
+						{value}
+					</textarea>
+				);
+			},
+			defaultValue: '',
 		},
 	},
 	{

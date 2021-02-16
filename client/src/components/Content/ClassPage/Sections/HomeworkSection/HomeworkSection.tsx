@@ -7,7 +7,7 @@ import {
 	changeTypes,
 } from '../../../../../types';
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { gql, useSubscription } from '@apollo/client';
 import { useQuery, useMutation } from '@apollo/client';
@@ -20,6 +20,7 @@ import {
 	getDateStrFromDayMonthStr,
 	getPinnedContent,
 	concatObjects,
+	findContentById,
 } from '../../../../../utils/functions';
 
 import Options from '../../../../Common/Options/Options';
@@ -213,8 +214,12 @@ const Subscriptions = {
 const HomeworkSection: React.FC<{}> = ({}) => {
 	const { schoolName, className } = useParams<{ schoolName: string; className: string }>();
 	const { uid } = useContext(UserContext);
-	const [homeworkCreating, setHomeworkCreating] = useState(false);
-	const [initContent, setInitContent] = useState({});
+	const [homeworkCreating, setHomeworkCreating] = useState(
+		Boolean(localStorage.getItem('homeworkCreating')),
+	);
+	const [initContent, setInitHomeworkContent] = useState<Partial<homework>>(
+		JSON.parse(localStorage.getItem('initHomeworkContent') ?? '{}'),
+	);
 
 	const homeworkQuery = useQuery<
 		{ homework: homework[] },
@@ -315,20 +320,24 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 		},
 	);
 
-	const [addHomework] = useMutation<
-		WithTypename<{
-			addHomework: WithTypename<homework>;
-		}>,
-		{
-			className: string;
-			schoolName: string;
-			text: string;
-			lesson: string;
-			attachments: attachment[];
-			to: string;
-			student_id: number;
+	const setCreating = (val: boolean) => {
+		setHomeworkCreating(val);
+
+		if (val) {
+			localStorage.setItem('homeworkCreating', val.toString());
+		} else {
+			localStorage.removeItem('homeworkCreating');
 		}
-	>(Mutations.ADD_HOMEWORK);
+	};
+	const setInitContent = (
+		val: Partial<homework> | ((prev: Partial<homework>) => Partial<homework>),
+	) => {
+		const resumedValue = typeof val === 'function' ? val(initContent) : val;
+
+		setInitHomeworkContent(val);
+		localStorage.setItem('initHomeworkContent', JSON.stringify(resumedValue));
+	};
+
 	const [removeOldHomework] = useMutation<
 		{ removeOldHomework: homework[] },
 		{ className: string; schoolName: string }
@@ -353,6 +362,20 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 		},
 	});
 
+	const [addHomework] = useMutation<
+		WithTypename<{
+			addHomework: WithTypename<homework>;
+		}>,
+		{
+			className: string;
+			schoolName: string;
+			text: string;
+			lesson: string;
+			attachments: attachment[];
+			to: string;
+			student_id: number;
+		}
+	>(Mutations.ADD_HOMEWORK);
 	const add = (homeworkData: Pick<homework, 'text' | 'attachments' | 'lesson' | 'to'>) => {
 		addHomework({
 			variables: {
@@ -404,7 +427,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 						<Add
 							onClick={(e) => {
 								e.stopPropagation();
-								setHomeworkCreating(true);
+								setCreating(true);
 							}}
 						/>
 					</div>
@@ -451,7 +474,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 											<HomeworkLayout
 												homework={pinnedHw}
 												initiallyOpened={false}
-												setHomeworkCreating={setHomeworkCreating}
+												setHomeworkCreating={setCreating}
 												setInitContent={setInitContent}
 											/>
 										</div>
@@ -489,7 +512,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 											<HomeworkLayout
 												homework={oldHw}
 												initiallyOpened={false}
-												setHomeworkCreating={setHomeworkCreating}
+												setHomeworkCreating={setCreating}
 												setInitContent={setInitContent}
 											/>
 										</div>
@@ -497,7 +520,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 								)}
 								<HomeworkLayout
 									homework={newHw}
-									setHomeworkCreating={setHomeworkCreating}
+									setHomeworkCreating={setCreating}
 									setInitContent={setInitContent}
 								/>
 							</div>
@@ -511,7 +534,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 					<CreateHomeworkModal
 						returnHomework={add}
 						close={() => {
-							setHomeworkCreating(false);
+							setCreating(false);
 							setInitContent({});
 						}}
 						initContent={initContent}
@@ -528,7 +551,7 @@ const HomeworkLayout: React.FC<{
 	};
 	initiallyOpened?: boolean;
 	setHomeworkCreating: (state: boolean) => void;
-	setInitContent: (initContent: Partial<homework>) => void;
+	setInitContent: Dispatch<SetStateAction<Partial<homework>>>;
 }> = React.memo(({ homework, setHomeworkCreating, setInitContent, initiallyOpened = true }) => {
 	const { schoolName, className } = useParams<{ schoolName: string; className: string }>();
 	const { uid: userVkId, settings } = useContext(UserContext);
@@ -536,8 +559,14 @@ const HomeworkLayout: React.FC<{
 	const [changingInfo, setChangingInfo] = useState<{
 		_id: string;
 		changeType: changeTypes;
-	} | null>(null);
-	const changingHomework = changingInfo ? findHomeworkById(changingInfo._id) : null;
+	} | null>(JSON.parse(localStorage.getItem('homeworkChangingInfo') ?? 'null'));
+	const changingHomework = changingInfo ? findContentById(homework, changingInfo._id) : null;
+	const [
+		changeHomeworkInitState,
+		setChangeHomeworkInitState,
+	] = useState<Partial<homework> | null>(
+		JSON.parse(localStorage.getItem('initHomeworkContent') ?? 'null') ?? changingHomework,
+	);
 
 	const [removeHomework] = useMutation<
 		WithTypename<{
@@ -679,11 +708,22 @@ const HomeworkLayout: React.FC<{
 		}
 	}, [changingHomework]);
 
-	function findHomeworkById(id: string) {
-		const homeworkArray = Object.values(homework).flat();
+	const setChanging = (newInfo: { _id: string; changeType: changeTypes } | null) => {
+		setChangingInfo(newInfo);
 
-		return homeworkArray.find((homework) => homework._id === id) || null;
-	}
+		localStorage.setItem('homeworkChangingInfo', JSON.stringify(newInfo));
+
+		if (newInfo) {
+			setChangeHomeworkInitState(findContentById(homework, newInfo._id));
+			localStorage.setItem(
+				'initHomeworkContent',
+				JSON.stringify(findContentById(homework, newInfo._id)),
+			);
+		} else {
+			setChangeHomeworkInitState(null);
+			localStorage.removeItem('initHomeworkContent');
+		}
+	};
 
 	const parsedHomework = objectForEach(homework, parseHomeworkByLesson);
 
@@ -703,13 +743,18 @@ const HomeworkLayout: React.FC<{
 									size={15}
 								/>
 							</div>
-							<Add
-								onClick={(e) => {
-									e.stopPropagation();
-									setHomeworkCreating(true);
-									setInitContent({ to: getDateStrFromDayMonthStr(hwDate) });
-								}}
-							/>
+							{new Date(hwDate) > new Date() && (
+								<Add
+									onClick={(e) => {
+										e.stopPropagation();
+										setHomeworkCreating(true);
+										setInitContent((prev) => ({
+											...prev,
+											to: getDateStrFromDayMonthStr(hwDate),
+										}));
+									}}
+								/>
+							)}
 						</div>
 					)}
 				>
@@ -732,10 +777,11 @@ const HomeworkLayout: React.FC<{
 											onClick={(e) => {
 												e.stopPropagation();
 												setHomeworkCreating(true);
-												setInitContent({
+												setInitContent((prev) => ({
+													...prev,
 													to: getDateStrFromDayMonthStr(hwDate),
 													lesson,
-												});
+												}));
 											}}
 										/>
 									</div>
@@ -746,7 +792,7 @@ const HomeworkLayout: React.FC<{
 										<ContentElement
 											pin={pin}
 											setChanging={(_id, changeType) =>
-												setChangingInfo({ _id, changeType })
+												setChanging({ _id, changeType })
 											}
 											key={hw._id}
 											removeContent={remove}
@@ -759,36 +805,36 @@ const HomeworkLayout: React.FC<{
 					</>
 				</Accordion>
 			))}
-			{changingInfo && changingHomework && changeContentModalRoot && (
+			{changingInfo && changeHomeworkInitState && changeContentModalRoot && (
 				<>
 					{changingInfo.changeType === changeTypes.content &&
 						ReactDOM.createPortal(
-							<div className="modal" onMouseDown={() => setChangingInfo(null)}>
+							<div className="modal" onMouseDown={() => setChanging(null)}>
 								<ChangeHomework
-									initState={changingHomework}
+									initState={changeHomeworkInitState}
 									confirm={(newContent) => {
-										update(changingHomework._id, newContent);
+										update(changeHomeworkInitState._id, newContent);
 									}}
-									final={() => setChangingInfo(null)}
+									final={() => setChanging(null)}
 								/>
 							</div>,
 							changeContentModalRoot,
 						)}
 					{changingInfo.changeType === changeTypes.userPreferences &&
 						ReactDOM.createPortal(
-							<div className="modal" onMouseDown={() => setChangingInfo(null)}>
+							<div className="modal" onMouseDown={() => setChanging(null)}>
 								<ChangePreferences
 									initState={{
 										daysForNotification:
-											changingHomework.userPreferences[
+											changeHomeworkInitState.userPreferences?.[
 												userVkId
 											]?.daysForNotification?.join(', ') ??
 											settings.daysForNotification,
 										notificationTime:
-											changingHomework.userPreferences[userVkId]
+											changeHomeworkInitState.userPreferences?.[userVkId]
 												?.notificationTime ?? settings.notificationTime,
 										notificationEnabled:
-											changingHomework.userPreferences[userVkId]
+											changeHomeworkInitState.userPreferences?.[userVkId]
 												?.notificationEnabled ??
 											settings.notificationsEnabled,
 									}}
@@ -798,7 +844,7 @@ const HomeworkLayout: React.FC<{
 											.map((s) => +s.trim())
 											.filter((n) => !isNaN(n));
 
-										update(changingHomework._id, {
+										update(changeHomeworkInitState._id, {
 											userPreferences: {
 												[userVkId]: {
 													...newPreferences,
@@ -808,7 +854,7 @@ const HomeworkLayout: React.FC<{
 										});
 									}}
 									final={() => {
-										setChangingInfo(null);
+										setChanging(null);
 									}}
 								/>
 							</div>,

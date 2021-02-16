@@ -1,0 +1,8 @@
+.placeholder {
+	height: 300px;
+	background-color: var(--accent);
+	border: 2px dashed var(--main);
+	display: flex;
+	justify-content: center;
+	text-align: center;
+}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { RoleNames } from '../components/Content/StudentPage/StudentInfo/StudentInfo';
-import { content, StudentInfoType } from '../types';
+import { attachment, content, StudentInfoType, vkPhoto, WithTypename } from '../types';
 import { parseDate, months } from './date';
 
 type c = content;
@@ -398,4 +398,63 @@ export function retranslit(engWord: string) {
 }
 export function capitalize(word: string) {
 	return word[0].toUpperCase() + word.slice(1);
+}
+
+export const parseAttachment = (photo: vkPhoto) => {
+	return `photo${photo.owner_id}_${photo.id}`;
+};
+export const findMaxPhotoResolution = (photo: vkPhoto) =>
+	photo.sizes.reduce<{ url: string; height: number }>(
+		(acc, c) => (c.height > acc.height ? c : acc),
+		{ height: 0, url: '' },
+	).url;
+export const getPhotoUploadURL = () => {
+	if (document.location.hostname === 'localhost') {
+		return 'http://localhost:8080/saveAttachment';
+	} else if (document.location.origin.endsWith('/')) {
+		return document.location.origin + `saveAttachment`;
+	} else {
+		return document.location.origin + `/saveAttachment`;
+	}
+};
+export const uploadPhoto = async (files: any) => {
+	try {
+		if (files) {
+			const fd = new FormData();
+			for (let i = 0; i < files.length; i++) {
+				fd.append('newAttachment', files[i]);
+			}
+
+			const { photos }: { photos: vkPhoto[] } = await fetch(getPhotoUploadURL(), {
+				method: 'POST',
+				body: fd,
+				headers: {
+					accepts: 'application/json',
+				},
+			}).then((res) => res.json());
+
+			const newAttachments: WithTypename<attachment>[] = photos.map((photo, i) => ({
+				url: findMaxPhotoResolution(photo),
+				value: parseAttachment(photo),
+				_id: i + Date.now().toString(),
+				__typename: 'ClassHomeworkAttachment',
+			}));
+
+			return newAttachments;
+		} else {
+			return null;
+		}
+	} catch (e) {
+		console.error(e);
+		return null;
+	}
+};
+
+export function findContentById<T extends content, ContentMap extends Record<string, T[]>>(
+	content: ContentMap,
+	id: string,
+): T | null {
+	const contentArray: T[] = Object.values(content).flat();
+
+	return contentArray.find((content) => content._id === id) || null;
 }

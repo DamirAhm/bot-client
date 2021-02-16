@@ -2,7 +2,7 @@ import styles from '../Common/ContentSection.module.css';
 
 import { attachment, WithTypename, announcement, redactorOptions } from '../../../../../types';
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { gql, useSubscription } from '@apollo/client';
 import { useQuery, useMutation } from '@apollo/client';
@@ -14,6 +14,7 @@ import {
 	getDateStrFromDayMonthStr,
 	concatObjects,
 	getPinnedContent,
+	findContentById,
 } from '../../../../../utils/functions';
 
 import Accordion from '../../../../Common/Accordion/Accordion';
@@ -24,8 +25,6 @@ import InfoSection from '../../InfoSection/InfoSection';
 import ContentElement from '../../../../Common/ContentElement';
 
 import { UserContext } from '../../../../../App';
-import usePolling from '../../../../../hooks/usePolling';
-import useUnmount from '../../../../../hooks/useUnmount';
 
 const announcementContentModalRoot = document.getElementById('changeContentModal');
 
@@ -145,7 +144,7 @@ const Mutations = {
 		}
 	`,
 	UNPIN_ALL_ANNOUNCEMENTS: gql`
-		mutation UnpinAllHomework($className: String!, $schoolName: String!) {
+		mutation UnpinAllAnnouncements($className: String!, $schoolName: String!) {
 			unpinAllAnnouncements(className: $className, schoolName: $schoolName)
 		}
 	`,
@@ -201,8 +200,12 @@ const Subscriptions = {
 const AnnouncementsSection: React.FC<{}> = ({}) => {
 	const { className, schoolName } = useParams<{ className: string; schoolName: string }>();
 	const { uid } = useContext(UserContext);
-	const [announcementCreating, setAnnouncementCreating] = useState(false);
-	const [initContent, setInitContent] = useState({});
+	const [announcementCreating, setAnnouncementCreating] = useState(
+		Boolean(localStorage.getItem('announcementCreating')),
+	);
+	const [initContent, setInitAnnouncementContent] = useState<Partial<announcement>>(
+		JSON.parse(localStorage.getItem('initAnnouncementContent') ?? '{}'),
+	);
 
 	const announcementsQuery = useQuery<
 		{ announcements: announcement[] },
@@ -314,6 +317,24 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 		},
 	);
 
+	const setCreating = (val: boolean) => {
+		setAnnouncementCreating(val);
+
+		if (val) {
+			localStorage.setItem('announcementCreating', val.toString());
+		} else {
+			localStorage.removeItem('announcementCreating');
+		}
+	};
+	const setInitContent = (
+		val: Partial<announcement> | ((prev: Partial<announcement>) => Partial<announcement>),
+	) => {
+		const resumedValue = typeof val === 'function' ? val(initContent) : val;
+
+		setInitAnnouncementContent(val);
+		localStorage.setItem('initAnnouncementContent', JSON.stringify(resumedValue));
+	};
+
 	const [removeOldAnnouncements] = useMutation<
 		{ removeOldAnnouncements: announcement[] },
 		{ className: string; schoolName: string }
@@ -404,7 +425,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 						<Add
 							onClick={(e) => {
 								e.stopPropagation();
-								setAnnouncementCreating(true);
+								setCreating(true);
 							}}
 						/>
 					</div>
@@ -457,9 +478,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 												<AnnouncementLayout
 													announcements={oldAnnouncements}
 													initiallyOpened={false}
-													setAnnouncementCreating={
-														setAnnouncementCreating
-													}
+													setAnnouncementCreating={setCreating}
 													setInitContent={setInitContent}
 												/>
 											</div>
@@ -499,9 +518,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 												<AnnouncementLayout
 													announcements={oldAnnouncements}
 													initiallyOpened={false}
-													setAnnouncementCreating={
-														setAnnouncementCreating
-													}
+													setAnnouncementCreating={setCreating}
 													setInitContent={setInitContent}
 												/>
 											</div>
@@ -509,7 +526,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 									)}
 									<AnnouncementLayout
 										announcements={actualAnnouncements}
-										setAnnouncementCreating={setAnnouncementCreating}
+										setAnnouncementCreating={setCreating}
 										setInitContent={setInitContent}
 									/>
 								</div>
@@ -525,7 +542,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 				ReactDOM.createPortal(
 					<CreateAnnouncementModal
 						returnAnnouncement={add}
-						close={() => setAnnouncementCreating(false)}
+						close={() => setCreating(false)}
 						initContent={initContent}
 					/>,
 					announcementContentModalRoot,
@@ -534,18 +551,31 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 	);
 };
 
-const AnnouncementLayout: React.FC<{
+type AnnouncementLayoutProps = {
 	announcements: {
 		[day: string]: announcement[];
 	};
 	initiallyOpened?: boolean;
 	setAnnouncementCreating: (state: boolean) => void;
-	setInitContent: (initContent: Partial<announcement>) => void;
-}> = React.memo(
+	setInitContent: Dispatch<SetStateAction<Partial<announcement>>>;
+};
+const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 	({ announcements, setAnnouncementCreating, setInitContent, initiallyOpened = true }) => {
-		const [changingId, setChangingId] = useState<string | null>(null);
-		const changingAnnouncement = changingId ? findAnnouncementById(changingId) : null;
 		const { schoolName, className } = useParams<{ className: string; schoolName: string }>();
+
+		const [changingInfo, setChangingInfo] = useState<{
+			_id: string;
+		} | null>(JSON.parse(localStorage.getItem('announcementChangingInfo') ?? 'null'));
+		const changingAnnouncementNew = changingInfo
+			? findContentById(announcements, changingInfo._id)
+			: null;
+		const [
+			changingAnnouncementInitState,
+			setChangeAnnouncementInitState,
+		] = useState<Partial<announcement> | null>(
+			JSON.parse(localStorage.getItem('initAnnouncementContent') ?? 'null') ??
+				changingAnnouncementNew,
+		);
 
 		const [removeAnnouncement] = useMutation<
 			WithTypename<{
@@ -638,7 +668,7 @@ const AnnouncementLayout: React.FC<{
 								query: Queries.GET_ANNOUNCEMENTS,
 								variables: { className, schoolName },
 								data: {
-									homework:
+									announcements:
 										data?.announcements.map((chng) =>
 											chng._id === announcementId
 												? res.data?.updateAnnouncement
@@ -679,7 +709,7 @@ const AnnouncementLayout: React.FC<{
 		};
 
 		const [unpinAll] = useMutation<
-			{ unpinAllHomework: boolean },
+			{ unpinAllAnnouncements: boolean },
 			{ className: string; schoolName: string }
 		>(Mutations.UNPIN_ALL_ANNOUNCEMENTS, {
 			variables: {
@@ -688,17 +718,28 @@ const AnnouncementLayout: React.FC<{
 			},
 		});
 
+		const setChanging = (newInfo: { _id: string } | null) => {
+			setChangingInfo(newInfo);
+
+			localStorage.setItem('announcementChangingInfo', JSON.stringify(newInfo));
+
+			if (newInfo) {
+				setChangeAnnouncementInitState(findContentById(announcements, newInfo._id));
+				localStorage.setItem(
+					'initAnnouncementContent',
+					JSON.stringify(findContentById(announcements, newInfo._id)),
+				);
+			} else {
+				setChangeAnnouncementInitState(null);
+				localStorage.removeItem('initAnnouncementContent');
+			}
+		};
+
 		useEffect(() => {
-			if (changingAnnouncement === null && changingId !== null) {
-				setChangingId(null);
+			if (changingAnnouncementNew?._id === undefined) {
+				setChangingInfo(null);
 			}
 		});
-
-		function findAnnouncementById(id: string) {
-			const announcementsArray = Object.values(announcements).flat();
-
-			return announcementsArray.find(({ _id }) => _id === id) || null;
-		}
 
 		return (
 			<>
@@ -716,15 +757,18 @@ const AnnouncementLayout: React.FC<{
 										size={15}
 									/>
 								</div>
-								<Add
-									onClick={(e) => {
-										e.stopPropagation();
-										setAnnouncementCreating(true);
-										setInitContent({
-											to: getDateStrFromDayMonthStr(announcementDate),
-										});
-									}}
-								/>
+								{new Date(announcementDate) > new Date() && (
+									<Add
+										onClick={(e) => {
+											e.stopPropagation();
+											setAnnouncementCreating(true);
+											setInitContent((prev) => ({
+												...prev,
+												to: getDateStrFromDayMonthStr(announcementDate),
+											}));
+										}}
+									/>
+								)}
 							</div>
 						)}
 					>
@@ -733,7 +777,9 @@ const AnnouncementLayout: React.FC<{
 								{announcements[announcementDate].map((announcement, i) => (
 									<ContentElement
 										pin={pin}
-										setChanging={setChangingId}
+										setChanging={(_id) => {
+											setChanging({ _id });
+										}}
 										key={announcement._id}
 										removeContent={remove}
 										content={announcement}
@@ -744,19 +790,18 @@ const AnnouncementLayout: React.FC<{
 					</Accordion>
 				))}
 
-				{changingId &&
-					changingId !== null &&
-					changingAnnouncement !== null &&
+				{changingInfo?._id !== undefined &&
+					changingAnnouncementInitState !== null &&
 					announcementContentModalRoot &&
 					ReactDOM.createPortal(
-						<div className="modal" onMouseDown={() => setChangingId(null)}>
+						<div className="modal" onMouseDown={() => setChanging(null)}>
 							<ChangeContent
-								initState={changingAnnouncement}
+								initState={changingAnnouncementInitState}
 								confirm={(newContent) => {
-									update(changingAnnouncement._id, newContent);
-									setChangingId(null);
+									update(changingAnnouncementInitState._id, newContent);
+									setChanging(null);
 								}}
-								reject={() => setChangingId(null)}
+								reject={() => setChanging(null)}
 							/>
 						</div>,
 						announcementContentModalRoot,
