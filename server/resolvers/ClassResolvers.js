@@ -693,12 +693,30 @@ const ClassResolvers = {
 			name: 'getAnnouncements',
 			// @ts-ignore
 			type: ClassTC.get('announcements').List.getType(),
-			args: { className: 'String!', date: 'Date', schoolName: 'String!' },
-			resolve: async ({ args: { className, schoolName, date } }) => {
-				return await DataBase.getAnnouncements(
+			args: {
+				className: 'String!',
+				date: 'Date',
+				schoolName: 'String!',
+				requestingUserVkId: 'Int',
+			},
+			resolve: async ({ args: { className, schoolName, date, requestingUserVkId } }) => {
+				const announcements = await DataBase.getAnnouncements(
 					{ classNameOrInstance: className, schoolName },
 					date,
 				);
+
+				if (announcements) {
+					if (requestingUserVkId) {
+						return announcements.filter(
+							({ onlyFor }) =>
+								onlyFor.length === 0 || onlyFor.includes(requestingUserVkId),
+						);
+					} else {
+						return announcements;
+					}
+				} else {
+					return [];
+				}
 			},
 		},
 
@@ -708,14 +726,30 @@ const ClassResolvers = {
 			name: 'getHomework',
 			// @ts-ignore
 			type: ClassTC.get('homework').List.getType(),
-			args: { className: 'String!', date: 'Date', schoolName: 'String!' },
-			resolve: async ({ args: { className, schoolName, date } }) => {
-				return (
-					(await DataBase.getHomework(
-						{ classNameOrInstance: className, schoolName },
-						date,
-					)) || []
+			args: {
+				className: 'String!',
+				date: 'Date',
+				schoolName: 'String!',
+				requestingUserVkId: 'Int',
+			},
+			resolve: async ({ args: { className, schoolName, date, requestingUserVkId } }) => {
+				const homework = await DataBase.getHomework(
+					{ classNameOrInstance: className, schoolName },
+					date,
 				);
+
+				if (homework) {
+					if (requestingUserVkId) {
+						return homework.filter(
+							({ onlyFor }) =>
+								onlyFor.length === 0 || onlyFor.includes(requestingUserVkId),
+						);
+					} else {
+						return homework;
+					}
+				} else {
+					return [];
+				}
 			},
 		},
 	},

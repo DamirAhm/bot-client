@@ -37,8 +37,12 @@ const changeContentModalRoot = document.getElementById('changeContentModal');
 
 const Queries = {
 	GET_HOMEWORK: gql`
-		query GetHomework($className: String!, $schoolName: String!) {
-			homework: getHomework(className: $className, schoolName: $schoolName) {
+		query GetHomework($className: String!, $schoolName: String!, $vkId: Int!) {
+			homework: getHomework(
+				className: $className
+				schoolName: $schoolName
+				requestingUserVkId: $vkId
+			) {
 				text
 				createdBy
 				to
@@ -223,14 +227,13 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 
 	const homeworkQuery = useQuery<
 		{ homework: homework[] },
-		{ className: string; schoolName: string }
+		{ className: string; schoolName: string; vkId: number }
 	>(Queries.GET_HOMEWORK, {
-		variables: { className, schoolName },
+		variables: { className, schoolName, vkId: uid },
 	});
 	useSubscription<{ onHomeworkAdded: homework | null }>(Subscriptions.ON_HOMEWORK_ADDED, {
 		variables: { className, schoolName },
 		onSubscriptionData: ({ subscriptionData }) => {
-			console.log(subscriptionData);
 			const newHomework = subscriptionData.data?.onHomeworkAdded;
 			if (newHomework) {
 				homeworkQuery.updateQuery((prev) => {

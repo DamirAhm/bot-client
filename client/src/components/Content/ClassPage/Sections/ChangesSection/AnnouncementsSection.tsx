@@ -30,8 +30,12 @@ const announcementContentModalRoot = document.getElementById('changeContentModal
 
 const Queries = {
 	GET_ANNOUNCEMENTS: gql`
-		query GetAnnouncements($className: String!, $schoolName: String!) {
-			announcements: getAnnouncements(className: $className, schoolName: $schoolName) {
+		query GetAnnouncements($className: String!, $schoolName: String!, $vkId: Int!) {
+			announcements: getAnnouncements(
+				className: $className
+				schoolName: $schoolName
+				requestingUserVkId: $vkId
+			) {
 				text
 				createdBy
 				to
@@ -209,9 +213,9 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 
 	const announcementsQuery = useQuery<
 		{ announcements: announcement[] },
-		{ schoolName: string; className: string }
+		{ schoolName: string; className: string; vkId: number }
 	>(Queries.GET_ANNOUNCEMENTS, {
-		variables: { className, schoolName },
+		variables: { className, schoolName, vkId: uid },
 	});
 	useSubscription<{ onAnnouncementAdded: announcement | null }>(
 		Subscriptions.ON_ANNOUNCEMENT_ADDED,
