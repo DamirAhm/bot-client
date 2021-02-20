@@ -12,6 +12,9 @@ import Options from '../../../../Common/Options/Options';
 import InfoSection from '../../InfoSection/InfoSection';
 
 import useList from '../../../../../hooks/useList';
+import usePolling from '../../../../../hooks/usePolling';
+
+const FIVE_MINS = 1000 * 60 * 5;
 
 export const REMOVE_STUDENT_FROM_CLASS = gql`
 	mutation RemoveStudentFromClass($vkId: Int!) {
@@ -131,6 +134,7 @@ const StudentsSection: React.FC<{}> = ({}) => {
 			},
 		},
 	);
+	usePolling(studentsQuery, FIVE_MINS);
 
 	const [remove] = useMutation<{ removed: number }, { vkId: number }>(
 		Mutations.REMOVE_STUDENT_FROM_CLASS,

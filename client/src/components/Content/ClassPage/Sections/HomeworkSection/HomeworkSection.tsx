@@ -32,8 +32,11 @@ import InfoSection from '../../InfoSection/InfoSection';
 
 import { UserContext } from '../../../../../App';
 import ChangePreferences from '../../../../Common/ChangeContent/ChangePreferences';
+import usePolling from '../../../../../hooks/usePolling';
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
+
+const FIVE_MINS = 1000 * 60 * 5;
 
 const Queries = {
 	GET_HOMEWORK: gql`
@@ -322,6 +325,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 			},
 		},
 	);
+	usePolling(homeworkQuery, FIVE_MINS);
 
 	const setCreating = (val: boolean) => {
 		setHomeworkCreating(val);

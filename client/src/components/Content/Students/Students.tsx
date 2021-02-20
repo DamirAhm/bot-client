@@ -10,7 +10,7 @@ import Suspender from '../../Common/Suspender/Suspender';
 import { changeTitle } from '../../../utils/functions';
 import { RoleNames } from '../StudentPage/StudentInfo/StudentInfo';
 import usePolling from '../../../hooks/usePolling';
-import { useParams, useRouteMatch } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 export const GET_STUDENTS = gql`
 	query GetStudents($schoolName: String!) {

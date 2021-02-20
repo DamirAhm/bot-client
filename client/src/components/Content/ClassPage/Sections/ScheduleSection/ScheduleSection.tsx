@@ -25,6 +25,8 @@ import { useRef } from 'react';
 
 const days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 
+const FIVE_MINS = 1000 * 60 * 5;
+
 export const GET_SCHEDULE = gql`
 	query GetSchedule($className: String!, $schoolName: String!) {
 		schedule: getSchedule(className: $className, schoolName: $schoolName)
@@ -104,6 +106,8 @@ const ScheduleSection: React.FC<{}> = ({}) => {
 			},
 		},
 	);
+
+	usePolling(scheduleQuery, FIVE_MINS);
 
 	const lessonsQuery = useQuery<{ lessons: string[] }>(Queries.GET_LESSONS);
 

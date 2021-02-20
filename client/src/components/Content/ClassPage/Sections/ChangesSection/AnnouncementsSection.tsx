@@ -25,8 +25,11 @@ import InfoSection from '../../InfoSection/InfoSection';
 import ContentElement from '../../../../Common/ContentElement';
 
 import { UserContext } from '../../../../../App';
+import usePolling from '../../../../../hooks/usePolling';
 
 const announcementContentModalRoot = document.getElementById('changeContentModal');
+
+const FIVE_MINS = 1000 * 60 * 5;
 
 const Queries = {
 	GET_ANNOUNCEMENTS: gql`
@@ -320,6 +323,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 			},
 		},
 	);
+	usePolling(announcementsQuery, FIVE_MINS);
 
 	const setCreating = (val: boolean) => {
 		setAnnouncementCreating(val);
