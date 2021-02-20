@@ -5,6 +5,7 @@ import {
 	homework,
 	redactorOptions,
 	changeTypes,
+	userPreferences,
 } from '../../../../../types';
 
 import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
@@ -31,8 +32,12 @@ import Suspender from '../../../../Common/Suspender/Suspender';
 import InfoSection from '../../InfoSection/InfoSection';
 
 import { UserContext } from '../../../../../App';
-import ChangePreferences from '../../../../Common/ChangeContent/ChangePreferences';
+import ChangePreferences, {
+	ChangePreferencesProps,
+} from '../../../../Common/ChangeContent/ChangePreferences';
 import usePolling from '../../../../../hooks/usePolling';
+import Modal from '../../../../Common/Modal';
+import { stateType } from '../../../../../utils/createContentChanger/createContentChanger';
 
 const changeContentModalRoot = document.getElementById('changeContentModal');
 
@@ -804,6 +809,7 @@ const HomeworkLayout: React.FC<{
 											key={hw._id}
 											removeContent={remove}
 											content={hw}
+											withUserPreferences
 										/>
 									))}
 								</div>
@@ -814,57 +820,36 @@ const HomeworkLayout: React.FC<{
 			))}
 			{changingInfo && changeHomeworkInitState && changeContentModalRoot && (
 				<>
-					{changingInfo.changeType === changeTypes.content &&
-						ReactDOM.createPortal(
-							<div className="modal" onMouseDown={() => setChanging(null)}>
-								<ChangeHomework
-									initState={changeHomeworkInitState}
-									confirm={(newContent) => {
-										update(changeHomeworkInitState._id, newContent);
-									}}
-									final={() => setChanging(null)}
-								/>
-							</div>,
-							changeContentModalRoot,
-						)}
+					{changingInfo.changeType === changeTypes.content && (
+						<ChangeHomeworkModal
+							changeType={changeTypes.content}
+							initState={changeHomeworkInitState}
+							close={() => setChanging(null)}
+							update={update}
+							changingHomeworkId={changingInfo._id}
+						/>
+					)}
 					{changingInfo.changeType === changeTypes.userPreferences &&
 						ReactDOM.createPortal(
-							<div className="modal" onMouseDown={() => setChanging(null)}>
-								<ChangePreferences
-									initState={{
-										daysForNotification:
-											changeHomeworkInitState.userPreferences?.[
-												userVkId
-											]?.daysForNotification?.join(', ') ??
-											settings.daysForNotification,
-										notificationTime:
-											changeHomeworkInitState.userPreferences?.[userVkId]
-												?.notificationTime ?? settings.notificationTime,
-										notificationEnabled:
-											changeHomeworkInitState.userPreferences?.[userVkId]
-												?.notificationEnabled ??
-											settings.notificationsEnabled,
-									}}
-									confirm={(newPreferences) => {
-										const daysForNotification = newPreferences.daysForNotification
-											.split(',')
-											.map((s) => +s.trim())
-											.filter((n) => !isNaN(n));
-
-										update(changeHomeworkInitState._id, {
-											userPreferences: {
-												[userVkId]: {
-													...newPreferences,
-													daysForNotification,
-												},
-											},
-										});
-									}}
-									final={() => {
-										setChanging(null);
-									}}
-								/>
-							</div>,
+							<ChangeHomeworkModal
+								changeType={changeTypes.userPreferences}
+								initState={{
+									daysForNotification:
+										changeHomeworkInitState.userPreferences?.[
+											userVkId
+										]?.daysForNotification?.join(', ') ??
+										settings.daysForNotification,
+									notificationTime:
+										changeHomeworkInitState.userPreferences?.[userVkId]
+											?.notificationTime ?? settings.notificationTime,
+									notificationEnabled:
+										changeHomeworkInitState.userPreferences?.[userVkId]
+											?.notificationEnabled ?? settings.notificationsEnabled,
+								}}
+								close={() => setChanging(null)}
+								update={update}
+								changingHomeworkId={changingInfo._id}
+							/>,
 							changeContentModalRoot,
 						)}
 				</>
@@ -884,8 +869,8 @@ const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({
 	initContent = {},
 }) => {
 	if (changeContentModalRoot) {
-		return ReactDOM.createPortal(
-			<div className={'modal'} onMouseDown={close}>
+		return (
+			<Modal onClose={close} rootElement={changeContentModalRoot}>
 				<ChangeHomework
 					initState={initContent}
 					confirm={(homework) => {
@@ -894,10 +879,88 @@ const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({
 					}}
 					reject={close}
 				/>
-			</div>,
-			changeContentModalRoot,
+			</Modal>
 		);
 	}
+	return null;
+};
+type ChangeHomeworkModalProps =
+	| {
+			close: () => void;
+			initState: Partial<homework>;
+			update: (
+				homeworkId: string | undefined,
+				updates: Partial<WithTypename<homework>>,
+			) => void;
+			changingHomeworkId: string;
+			changeType: changeTypes.content;
+	  }
+	| {
+			close: () => void;
+			initState: Partial<stateType<ChangePreferencesProps>>;
+			update: (
+				homeworkId: string | undefined,
+				updates: Partial<WithTypename<homework>>,
+			) => void;
+			changingHomeworkId: string;
+			changeType: changeTypes.userPreferences;
+	  };
+
+const ChangeHomeworkModal: React.FC<ChangeHomeworkModalProps> = ({
+	close,
+	initState,
+	update,
+	changingHomeworkId,
+	changeType,
+}) => {
+	const { uid: userVkId } = useContext(UserContext);
+
+	if (changeType === changeTypes.content) {
+		return (
+			<>
+				{changeContentModalRoot && (
+					<Modal onClose={close} rootElement={changeContentModalRoot}>
+						<ChangeHomework
+							initState={initState as Partial<homework>}
+							confirm={(newContent) => {
+								update(changingHomeworkId, newContent);
+							}}
+							final={close}
+						/>
+					</Modal>
+				)}
+			</>
+		);
+	} else if (changeType === changeTypes.userPreferences) {
+		return (
+			<>
+				{changeContentModalRoot && (
+					<Modal onClose={close} rootElement={changeContentModalRoot}>
+						<ChangePreferences
+							initState={initState as Partial<stateType<ChangePreferencesProps>>}
+							confirm={(newPreferences) => {
+								const daysForNotification = newPreferences.daysForNotification
+									.split(',')
+									.map((s) => +s.trim())
+									.filter((n) => !isNaN(n));
+
+								update(changingHomeworkId, {
+									userPreferences: {
+										[userVkId]: {
+											...newPreferences,
+											daysForNotification,
+										},
+									},
+								});
+							}}
+							final={close}
+						/>
+					</Modal>
+				)}
+			</>
+		);
+	}
+
 	return null;
 };
 

@@ -10,9 +10,16 @@ type Props = {
 	removeContent: (contentId: string) => void;
 	setChanging: (contentId: string, changeType: changeTypes) => void;
 	pin: (contentId: string) => void;
+	withUserPreferences?: boolean;
 };
 
-const ContentElement: React.FC<Props> = ({ content, removeContent, setChanging, pin }) => {
+const ContentElement: React.FC<Props> = ({
+	content,
+	removeContent,
+	setChanging,
+	pin,
+	withUserPreferences = false,
+}) => {
 	const textWithReplacedHrefs = replaceHrefsByAnchors(content.text, styles);
 
 	return (
@@ -49,12 +56,16 @@ const ContentElement: React.FC<Props> = ({ content, removeContent, setChanging, 
 			</div>
 			<div className={styles.controls}>
 				<Options
-					include={[
-						redactorOptions.pin,
-						redactorOptions.settings,
-						redactorOptions.change,
-						redactorOptions.delete,
-					]}
+					include={
+						withUserPreferences
+							? [
+									redactorOptions.pin,
+									redactorOptions.settings,
+									redactorOptions.change,
+									redactorOptions.delete,
+							  ]
+							: [redactorOptions.pin, redactorOptions.change, redactorOptions.delete]
+					}
 					props={{
 						[redactorOptions.pin]: {
 							onClick: () => pin(content._id as string),

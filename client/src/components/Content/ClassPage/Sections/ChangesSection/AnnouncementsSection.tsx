@@ -19,13 +19,17 @@ import {
 
 import Accordion from '../../../../Common/Accordion/Accordion';
 import Suspender from '../../../../Common/Suspender/Suspender';
-import ChangeContent from '../../../../Common/ChangeContent/ChangeContent';
+import ChangeContent, {
+	ChangeContentPropsType,
+} from '../../../../Common/ChangeContent/ChangeContent';
 import Options from '../../../../Common/Options/Options';
 import InfoSection from '../../InfoSection/InfoSection';
 import ContentElement from '../../../../Common/ContentElement';
 
 import { UserContext } from '../../../../../App';
 import usePolling from '../../../../../hooks/usePolling';
+import Modal from '../../../../Common/Modal';
+import { stateType } from '../../../../../utils/createContentChanger/createContentChanger';
 
 const announcementContentModalRoot = document.getElementById('changeContentModal');
 
@@ -798,22 +802,14 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 					</Accordion>
 				))}
 
-				{changingInfo?._id !== undefined &&
-					changingAnnouncementInitState !== null &&
-					announcementContentModalRoot &&
-					ReactDOM.createPortal(
-						<div className="modal" onMouseDown={() => setChanging(null)}>
-							<ChangeContent
-								initState={changingAnnouncementInitState}
-								confirm={(newContent) => {
-									update(changingAnnouncementInitState._id, newContent);
-									setChanging(null);
-								}}
-								reject={() => setChanging(null)}
-							/>
-						</div>,
-						announcementContentModalRoot,
-					)}
+				{changingInfo?._id !== undefined && changingAnnouncementInitState !== null && (
+					<ChangeAnnouncementModal
+						initState={changingAnnouncementInitState}
+						update={update}
+						close={() => setChanging(null)}
+						changingAnnouncementId={changingInfo._id}
+					/>
+				)}
 			</>
 		);
 	},
@@ -830,8 +826,8 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
 	initContent = {},
 }) => {
 	if (announcementContentModalRoot) {
-		return ReactDOM.createPortal(
-			<div className={'modal'} onMouseDown={close}>
+		return (
+			<Modal onClose={close} rootElement={announcementContentModalRoot}>
 				<ChangeContent
 					initState={initContent}
 					confirm={(content) => {
@@ -840,11 +836,41 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
 					}}
 					reject={close}
 				/>
-			</div>,
-			announcementContentModalRoot,
+			</Modal>
 		);
 	}
 	return null;
+};
+type ChangeAnnouncementModalProps = {
+	initState: Partial<stateType<ChangeContentPropsType>>;
+	update: (
+		announcementId: string,
+		changedAnnouncement: Partial<stateType<ChangeContentPropsType>>,
+	) => void;
+	close: () => void;
+	changingAnnouncementId: string;
+};
+const ChangeAnnouncementModal: React.FC<ChangeAnnouncementModalProps> = ({
+	close,
+	initState,
+	update,
+	changingAnnouncementId,
+}) => {
+	if (announcementContentModalRoot) {
+		return (
+			<Modal rootElement={announcementContentModalRoot} onClose={close}>
+				<ChangeContent
+					initState={initState}
+					confirm={(newContent) => {
+						update(changingAnnouncementId, newContent);
+					}}
+					final={close}
+				/>
+			</Modal>
+		);
+	} else {
+		return null;
+	}
 };
 
 const Add: React.FC<{ onClick: (e: React.MouseEvent<SVGElement, MouseEvent>) => void }> = ({

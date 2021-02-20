@@ -3,13 +3,12 @@ import { userPreferences } from '../../../types';
 import createContentFiller, {
 	ContentSectionProps,
 } from '../../../utils/createContentChanger/createContentChanger';
-import styles from './ChangeContent.module.css';
 
 type userPreferencesInput = Omit<userPreferences, 'daysForNotification'> & {
 	daysForNotification: string;
 };
 
-type ChangePreferencesProps = {
+export type ChangePreferencesProps = {
 	[K in keyof userPreferencesInput]: ContentSectionProps<userPreferencesInput[K], {}>;
 };
 

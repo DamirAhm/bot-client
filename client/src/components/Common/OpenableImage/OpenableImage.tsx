@@ -1,6 +1,7 @@
 import React, { ImgHTMLAttributes, useState, HTMLAttributes } from 'react';
 import ReactDOM from 'react-dom';
 import { MdNavigateBefore, MdNavigateNext } from 'react-icons/md';
+import Modal from '../Modal';
 import styles from './OpenableImage.module.css';
 
 export type OpenableImgProps = {
@@ -43,22 +44,17 @@ const OpenableImg: React.FC<OpenableImgProps> = ({ prevImg, nextImg, ...props })
 		</>
 	);
 };
+
+const photoModal = document.getElementById('photoModal');
 export const ImgStab: React.FC<
 	OpenableImgProps & { Stab: React.FC<HTMLAttributes<HTMLDivElement> & { onClick: () => void }> }
 > = ({ Stab, ...props }) => {
 	const [modalOpened, setModalOpened] = useState(false);
 
-	const photoModal = document.getElementById('photoModal');
-
 	return (
 		<>
 			<Stab onClick={() => setModalOpened(true)} />
-			{modalOpened &&
-				photoModal &&
-				ReactDOM.createPortal(
-					<ModalImg close={() => setModalOpened(false)} {...props} />,
-					photoModal,
-				)}
+			{modalOpened && <ModalImg close={() => setModalOpened(false)} {...props} />}
 		</>
 	);
 };
@@ -82,33 +78,37 @@ export const ModalImg: React.FC<ModalImgProps> = ({
 	};
 
 	return (
-		<div className="modal" onMouseDown={close}>
-			{prev && (
-				<MdNavigateBefore
-					data-testid="prevImg"
-					size={40}
-					className={`${styles.imageChanger} ${styles.prev}`}
-					onMouseDown={(e) => toImg(prev, e)}
-				/>
+		<>
+			{photoModal && (
+				<Modal rootElement={photoModal} onClose={close}>
+					{prev && (
+						<MdNavigateBefore
+							data-testid="prevImg"
+							size={40}
+							className={`${styles.imageChanger} ${styles.prev}`}
+							onMouseDown={(e) => toImg(prev, e)}
+						/>
+					)}
+					<img
+						data-testid="modalImg"
+						alt={props.alt || 'Открытое изображение'}
+						src={src}
+						onMouseDown={(e) => e.stopPropagation()}
+						onScroll={(e) => e.stopPropagation()}
+						{...props}
+						className={styles.modalImage}
+					/>
+					{next && (
+						<MdNavigateNext
+							data-testid="nextImg"
+							size={40}
+							className={`${styles.imageChanger} ${styles.next}`}
+							onMouseDown={(e) => toImg(next, e)}
+						/>
+					)}
+				</Modal>
 			)}
-			<img
-				data-testid="modalImg"
-				alt={props.alt || 'Открытое изображение'}
-				src={src}
-				onMouseDown={(e) => e.stopPropagation()}
-				onScroll={(e) => e.stopPropagation()}
-				{...props}
-				className={styles.modalImage}
-			/>
-			{next && (
-				<MdNavigateNext
-					data-testid="nextImg"
-					size={40}
-					className={`${styles.imageChanger} ${styles.next}`}
-					onMouseDown={(e) => toImg(next, e)}
-				/>
-			)}
-		</div>
+		</>
 	);
 };
 
