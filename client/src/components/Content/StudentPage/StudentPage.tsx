@@ -73,7 +73,6 @@ export const DELETE_STUDENT = gql`
 `;
 
 const StudentPage: React.FC = () => {
-	const { schoolName } = useParams<{ schoolName: string }>();
 	const vkId = Number(useParams<{ vkId: string }>().vkId);
 
 	const [changing, setChanging] = useState(false);
@@ -118,22 +117,29 @@ const StudentPage: React.FC = () => {
 				},
 			},
 			update: (proxy, response) => {
-				const data = proxy.readQuery<{ students: Student[] }, { schoolName: string }>({
-					query: GET_STUDENTS,
-					variables: { schoolName },
-				});
+				const schoolName = data?.studentOne.schoolName;
 
-				proxy.writeQuery({
-					query: GET_STUDENTS,
-					variables: { schoolName },
-					data: {
-						students: data?.students.filter(
-							(s) => s.vkId !== response?.data?.removed.vkId,
-						),
-					},
-				});
-				//TODO почему появляются ошибки
-				setRemoved(true);
+				if (schoolName) {
+					const queryData = proxy.readQuery<
+						{ students: Student[] },
+						{ schoolName: string }
+					>({
+						query: GET_STUDENTS,
+						variables: { schoolName },
+					});
+
+					proxy.writeQuery({
+						query: GET_STUDENTS,
+						variables: { schoolName },
+						data: {
+							students: queryData?.students.filter(
+								(s) => s.vkId !== response?.data?.removed.vkId,
+							),
+						},
+					});
+					//TODO почему появляются ошибки
+					setRemoved(true);
+				}
 			},
 		});
 	};
@@ -165,20 +171,26 @@ const StudentPage: React.FC = () => {
 	const updateStudent = () => {
 		if (diff.className) {
 			const { className } = diff;
-			if (typeof className === 'string') {
-				changeClass({
-					variables: { className, vkId, schoolName },
-					optimisticResponse: {
-						changeClass: {
-							vkId,
-							__typename: 'Student',
-							className: className,
-							schoolName: schoolName,
+
+			if (data?.studentOne) {
+				const { schoolName, _id } = data?.studentOne;
+
+				if (typeof className === 'string' && schoolName !== undefined) {
+					changeClass({
+						variables: { className, vkId, schoolName },
+						optimisticResponse: {
+							changeClass: {
+								vkId,
+								_id,
+								__typename: 'Student',
+								className: className,
+								schoolName: schoolName,
+							},
+							__typename: 'Mutation',
 						},
-						__typename: 'Mutation',
-					},
-				});
-				delete diff.className;
+					});
+					delete diff.className;
+				}
 			}
 		}
 		if (diff.settings?.notificationTime) {
