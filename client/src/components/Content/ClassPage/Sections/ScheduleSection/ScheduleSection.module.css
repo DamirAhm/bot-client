@@ -18,6 +18,9 @@
 .day .addLesson {
 	color: var(--accent);
 }
+.day .currentDay {
+	color: var(--positive);
+}
 .droppableDay {
 	padding: 10px 0;
 	background-color: var(--main);

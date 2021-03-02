@@ -297,7 +297,12 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(
 							changing && isAnyLessonDragging ? styles.lessonDraging : ''
 						}`}
 					>
-						<div className={styles.dayName} onClick={() => setChanging(true)}>
+						<div
+							className={`${styles.dayName} ${
+								new Date().getDay() === index + 1 ? styles.currentDay : ''
+							}`}
+							onClick={() => setChanging(true)}
+						>
 							{days[index]}
 						</div>
 						{changes.map((lesson, i) => (
