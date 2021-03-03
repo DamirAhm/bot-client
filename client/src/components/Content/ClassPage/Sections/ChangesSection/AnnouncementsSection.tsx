@@ -1,6 +1,12 @@
 import styles from '../Common/ContentSection.module.css';
 
-import { attachment, WithTypename, announcement, redactorOptions } from '../../../../../types';
+import {
+	attachment,
+	WithTypename,
+	announcement,
+	redactorOptions,
+	changableInAnnouncement,
+} from '../../../../../types';
 
 import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
@@ -52,6 +58,7 @@ const Queries = {
 					_id
 				}
 				_id
+				onlyFor
 				__typename
 			}
 		}
@@ -66,6 +73,7 @@ const Mutations = {
 			$to: String
 			$attachments: [ClassHomeworkAttachmentsInput]!
 			$student_id: Int!
+			$onlyFor: [Float]
 		) {
 			addAnnouncement(
 				className: $className
@@ -74,6 +82,7 @@ const Mutations = {
 				to: $to
 				attachments: $attachments
 				student_id: $student_id
+				onlyFor: $onlyFor
 			) {
 				text
 				_id
@@ -82,6 +91,7 @@ const Mutations = {
 					url
 					value
 				}
+				onlyFor
 				__typename
 			}
 		}
@@ -120,6 +130,7 @@ const Mutations = {
 					_id
 				}
 				to
+				onlyFor
 			}
 		}
 	`,
@@ -134,6 +145,7 @@ const Mutations = {
 					_id
 				}
 				createdBy
+				onlyFor
 				_id
 			}
 		}
@@ -173,6 +185,7 @@ const Subscriptions = {
 				}
 				to
 				pinned
+				onlyFor
 				__typename
 			}
 		}
@@ -202,6 +215,7 @@ const Subscriptions = {
 				}
 				to
 				pinned
+				onlyFor
 				__typename
 			}
 		}
@@ -384,7 +398,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 			student_id: number;
 		}
 	>(Mutations.ADD_ANNOUNCEMENT);
-	const add = (announcementData: Pick<announcement, 'text' | 'attachments' | 'to'>) => {
+	const add = (announcementData: changableInAnnouncement) => {
 		addAnnouncement({
 			variables: {
 				...announcementData,
@@ -420,7 +434,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 						announcementsQuery?.data?.announcements.length > 0
 					)
 				}
-				name="Обьявления"
+				name='Обьявления'
 				Header={({ opened, onClick }) => (
 					<div
 						className={`${styles.sectionHeader} ${styles.contentHeader}`}
@@ -458,7 +472,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 								<div className={styles.content}>
 									{Object.keys(pinnedAnnouncements).length > 0 && (
 										<Accordion
-											accordionId="pinnedAnnouncements"
+											accordionId='pinnedAnnouncements'
 											initiallyOpened={false}
 											Head={({ opened }) => (
 												<div className={styles.oldContentHeader}>
@@ -498,7 +512,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 									)}
 									{Object.keys(oldAnnouncements).length > 0 && (
 										<Accordion
-											accordionId="oldAnnouncements"
+											accordionId='oldAnnouncements'
 											initiallyOpened={false}
 											Head={({ opened }) => (
 												<div className={styles.oldContentHeader}>
@@ -817,7 +831,7 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 
 type CreateAnnouncementModalProps = {
 	initContent?: Partial<announcement>;
-	returnAnnouncement: (hw: Pick<announcement, 'text' | 'attachments' | 'to'>) => void;
+	returnAnnouncement: (hw: changableInAnnouncement) => void;
 	close: () => void;
 };
 const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({

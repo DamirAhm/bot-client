@@ -1,8 +1,8 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useContext } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-import { content, attachment, redactorOptions } from '../../../types';
+import { content, attachment, redactorOptions, changableInAnnouncement } from '../../../types';
 
 import styles from './ChangeContent.module.css';
 import FileUploader from '../FileUploader/FileUploader';
@@ -14,17 +14,22 @@ import Options from '../Options/Options';
 
 import { uploadPhoto } from '../../../utils/functions';
 import Placeholder from '../Placeholder';
+import { UserContext } from '../../../App';
 
 type persistentState = {
 	placeholdersCount: number;
 };
 
-type changableContent = Pick<content, 'to' | 'attachments' | 'text'>;
 export type ChangeContentPropsType = {
-	[K in keyof changableContent]: ContentSectionProps<changableContent[K], persistentState>;
+	[K in keyof changableInAnnouncement]: ContentSectionProps<
+		changableInAnnouncement[K],
+		persistentState
+	>;
 };
 
-export const ChangeContentProps: ChangeContentPropsType = {
+export const createContentPropsChanger = (
+	localStorageItemName: string,
+): ChangeContentPropsType => ({
 	to: {
 		title: 'Дата',
 		ContentComponent: ({ changeHandler, value }) => {
@@ -32,10 +37,10 @@ export const ChangeContentProps: ChangeContentPropsType = {
 				changeHandler(newDate);
 
 				const prevSavedValue = JSON.parse(
-					localStorage.getItem('initAnnouncementContent') ?? '{}',
+					localStorage.getItem(localStorageItemName) ?? '{}',
 				);
 				localStorage.setItem(
-					'initAnnouncementContent',
+					localStorageItemName,
 					JSON.stringify({ ...prevSavedValue, to: newDate }),
 				);
 			};
@@ -80,10 +85,10 @@ export const ChangeContentProps: ChangeContentPropsType = {
 					changeHandler([...value, ...newAttachments]);
 
 					const prevSavedValue = JSON.parse(
-						localStorage.getItem('initAnnouncementContent') ?? '{}',
+						localStorage.getItem(localStorageItemName) ?? '{}',
 					);
 					localStorage.setItem(
-						'initAnnouncementContent',
+						localStorageItemName,
 						JSON.stringify({
 							...prevSavedValue,
 							attachments: [...value, ...newAttachments],
@@ -127,10 +132,10 @@ export const ChangeContentProps: ChangeContentPropsType = {
 				changeHandler(updatedAttachments);
 
 				const prevSavedValue = JSON.parse(
-					localStorage.getItem('initAnnouncementContent') ?? '{}',
+					localStorage.getItem(localStorageItemName) ?? '{}',
 				);
 				localStorage.setItem(
-					'initAnnouncementContent',
+					localStorageItemName,
 					JSON.stringify({
 						...prevSavedValue,
 						attachments: updatedAttachments,
@@ -163,10 +168,10 @@ export const ChangeContentProps: ChangeContentPropsType = {
 				changeHandler(newText);
 
 				const prevSavedValue = JSON.parse(
-					localStorage.getItem('initAnnouncementContent') ?? '{}',
+					localStorage.getItem(localStorageItemName) ?? '{}',
 				);
 				localStorage.setItem(
-					'initAnnouncementContent',
+					localStorageItemName,
 					JSON.stringify({ ...prevSavedValue, text: newText }),
 				);
 			};
@@ -174,7 +179,7 @@ export const ChangeContentProps: ChangeContentPropsType = {
 			return (
 				<textarea
 					autoFocus
-					name="text"
+					name='text'
 					value={value}
 					className={styles.text}
 					onChange={(e) => {
@@ -188,7 +193,42 @@ export const ChangeContentProps: ChangeContentPropsType = {
 		},
 		defaultValue: '',
 	},
-};
+	onlyFor: {
+		ContentComponent: ({ changeHandler, value }) => {
+			const { uid } = useContext(UserContext);
+			const checked = Number.isInteger(value?.find((userId) => userId === uid));
+
+			const onChange = () => {
+				let newValue;
+				if (checked) {
+					newValue = value.filter((userId) => userId !== uid);
+				} else {
+					newValue = [...value, uid];
+				}
+
+				const prevSavedValue = JSON.parse(
+					localStorage.getItem(localStorageItemName) ?? '{}',
+				);
+				localStorage.setItem(
+					localStorageItemName,
+					JSON.stringify({ ...prevSavedValue, onlyFor: newValue }),
+				);
+
+				changeHandler(newValue);
+			};
+			console.log(value);
+			return (
+				<label className={styles.onlyFor}>
+					Сделать доступным только для меня
+					<input onChange={onChange} type='checkbox' checked={checked} />
+				</label>
+			);
+		},
+	},
+});
+export const ChangeContentProps: ChangeContentPropsType = createContentPropsChanger(
+	'initAnnouncementContent',
+);
 
 const ChangeContent = createContentFiller<persistentState, ChangeContentPropsType>(
 	ChangeContentProps,

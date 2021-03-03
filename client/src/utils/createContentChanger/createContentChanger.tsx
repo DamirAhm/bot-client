@@ -153,10 +153,11 @@ const createContentFiller = <
 									)}
 								</>
 							) : (
-								<h1 className={`${styles.title} ${titleClassName || ''}`}>
-									{' '}
-									{title}{' '}
-								</h1>
+								title && (
+									<h1 className={`${styles.title} ${titleClassName || ''}`}>
+										{title}
+									</h1>
+								)
 							)}
 							<ContentComponent
 								persistentState={persistentState}

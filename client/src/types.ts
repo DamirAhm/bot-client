@@ -96,7 +96,9 @@ export type content = {
 	to: string;
 	ceratedBy?: number;
 	pinned: boolean;
+	onlyFor: number[];
 };
+export type changableInContent = Pick<content, 'text' | 'attachments' | 'to' | 'onlyFor'>;
 
 export type userPreferences = {
 	notificationTime: string | null;
@@ -109,6 +111,10 @@ export type homework = {
 		[studentVkId: string]: userPreferences | undefined;
 	};
 } & content;
+export type changableInHomework = Pick<
+	homework,
+	'lesson' | 'text' | 'attachments' | 'to' | 'onlyFor'
+>;
 
 export type Class = {
 	students: string[];
@@ -139,6 +145,8 @@ export type schoolPreview = {
 };
 
 export type announcement = content;
+export type changableInAnnouncement = changableInContent;
+
 export type WithTypename<T> = T & { __typename: string };
 
 export type User = {

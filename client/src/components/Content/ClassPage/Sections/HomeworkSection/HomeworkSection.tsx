@@ -6,6 +6,7 @@ import {
 	redactorOptions,
 	changeTypes,
 	userPreferences,
+	changableInHomework,
 } from '../../../../../types';
 
 import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
@@ -63,6 +64,7 @@ const Queries = {
 				lesson
 				pinned
 				_id
+				onlyFor
 				__typename
 			}
 		}
@@ -97,6 +99,7 @@ const Mutations = {
 				}
 				to
 				lesson
+				onlyFor
 				pinned
 				__typename
 			}
@@ -110,6 +113,7 @@ const Mutations = {
 			$to: String
 			$lesson: String!
 			$attachments: [ClassHomeworkAttachmentsInput]!
+			$onlyFor: [Float]
 			$student_id: Int!
 		) {
 			addHomework(
@@ -120,6 +124,7 @@ const Mutations = {
 				attachments: $attachments
 				student_id: $student_id
 				schoolName: $schoolName
+				onlyFor: $onlyFor
 			) {
 				_id
 				text
@@ -131,6 +136,7 @@ const Mutations = {
 					value
 				}
 				userPreferences
+				onlyFor
 				__typename
 			}
 		}
@@ -149,6 +155,7 @@ const Mutations = {
 				userPreferences
 				lesson
 				createdBy
+				onlyFor
 				__typename
 			}
 		}
@@ -186,6 +193,7 @@ const Subscriptions = {
 				userPreferences
 				to
 				pinned
+				onlyFor
 				__typename
 			}
 		}
@@ -217,6 +225,7 @@ const Subscriptions = {
 				userPreferences
 				to
 				pinned
+				onlyFor
 				__typename
 			}
 		}
@@ -386,9 +395,10 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 			attachments: attachment[];
 			to: string;
 			student_id: number;
+			onlyFor: number[];
 		}
 	>(Mutations.ADD_HOMEWORK);
-	const add = (homeworkData: Pick<homework, 'text' | 'attachments' | 'lesson' | 'to'>) => {
+	const add = (homeworkData: changableInHomework) => {
 		addHomework({
 			variables: {
 				...homeworkData,
@@ -423,7 +433,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 				isOpened={
 					!!(homeworkQuery?.data?.homework && homeworkQuery?.data?.homework.length > 0)
 				}
-				name="Домашняя работа"
+				name='Домашняя работа'
 				Header={({ opened, onClick }) => (
 					<div
 						className={`${styles.sectionHeader} ${styles.contentHeader}`}
@@ -456,7 +466,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 							<div className={styles.content}>
 								{Object.keys(pinnedHw).length > 0 && (
 									<Accordion
-										accordionId="pinnedHomework"
+										accordionId='pinnedHomework'
 										initiallyOpened={false}
 										Head={({ opened }) => (
 											<div className={styles.oldContentHeader}>
@@ -494,7 +504,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 								)}
 								{Object.keys(oldHw).length > 0 && (
 									<Accordion
-										accordionId="oldHomework"
+										accordionId='oldHomework'
 										initiallyOpened={false}
 										Head={({ opened }) => (
 											<div className={styles.oldContentHeader}>
@@ -859,7 +869,7 @@ const HomeworkLayout: React.FC<{
 });
 
 type CreateHomeworkModalProps = {
-	returnHomework: (hw: Pick<homework, 'text' | 'attachments' | 'lesson' | 'to'>) => void;
+	returnHomework: (hw: changableInHomework) => void;
 	close: () => void;
 	initContent?: Partial<homework>;
 };

@@ -110,6 +110,17 @@
 	width: 100%;
 }
 
+.onlyFor {
+	font-size: 1.5rem;
+	display: flex;
+	align-items: center;
+}
+.onlyFor [type='checkbox'] {
+	margin-left: 15px;
+	width: 16px;
+	height: 16px;
+}
+
 @media screen and (max-width: 675px) {
 	.attachmentsContainer img {
 		object-fit: contain;
