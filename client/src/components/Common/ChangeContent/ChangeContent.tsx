@@ -224,6 +224,7 @@ export const createContentPropsChanger = (
 				</label>
 			);
 		},
+		defaultValue: [],
 	},
 });
 export const ChangeContentProps: ChangeContentPropsType = createContentPropsChanger(

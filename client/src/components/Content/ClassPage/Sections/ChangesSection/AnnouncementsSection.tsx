@@ -69,20 +69,14 @@ const Mutations = {
 		mutation addAnnouncement(
 			$className: String!
 			$schoolName: String!
-			$text: String!
-			$to: String
-			$attachments: [ClassHomeworkAttachmentsInput]!
 			$student_id: Int!
-			$onlyFor: [Float]
+			$content: ClassAnnouncementsInput!
 		) {
 			addAnnouncement(
 				className: $className
 				schoolName: $schoolName
-				text: $text
-				to: $to
-				attachments: $attachments
 				student_id: $student_id
-				onlyFor: $onlyFor
+				content: $content
 			) {
 				text
 				_id
@@ -376,7 +370,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 			if (mutation && mutation.data?.removeOldAnnouncements) {
 				proxy.writeQuery({
 					query: Queries.GET_ANNOUNCEMENTS,
-					variables: { className, schoolName },
+					variables: { className, schoolName, vkId: uid },
 					data: {
 						announcements: mutation.data.removeOldAnnouncements,
 					},
@@ -392,19 +386,16 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 		{
 			className: string;
 			schoolName: string;
-			text: string;
-			attachments: attachment[];
-			to: string;
 			student_id: number;
+			content: changableInAnnouncement;
 		}
 	>(Mutations.ADD_ANNOUNCEMENT);
 	const add = (announcementData: changableInAnnouncement) => {
 		addAnnouncement({
 			variables: {
-				...announcementData,
+				content: announcementData,
 				className,
 				schoolName,
-				attachments: announcementData?.attachments?.map(({ __typename, ...att }) => att),
 				student_id: uid,
 			},
 			optimisticResponse: {
@@ -419,7 +410,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 			refetchQueries: [
 				{
 					query: Queries.GET_ANNOUNCEMENTS,
-					variables: { className, schoolName },
+					variables: { className, schoolName, vkId: uid },
 				},
 			],
 		});
@@ -587,6 +578,7 @@ type AnnouncementLayoutProps = {
 };
 const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 	({ announcements, setAnnouncementCreating, setInitContent, initiallyOpened = true }) => {
+		const { uid } = useContext(UserContext);
 		const { schoolName, className } = useParams<{ className: string; schoolName: string }>();
 
 		const [changingInfo, setChangingInfo] = useState<{
@@ -624,13 +616,13 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 					update: (proxy, res) => {
 						const data = proxy.readQuery<{ announcements: announcement[] }>({
 							query: Queries.GET_ANNOUNCEMENTS,
-							variables: { className, schoolName },
+							variables: { className, schoolName, vkId: uid },
 						});
 
 						if (res?.data) {
 							proxy.writeQuery({
 								query: Queries.GET_ANNOUNCEMENTS,
-								variables: { className, schoolName },
+								variables: { className, schoolName, vkId: uid },
 								data: {
 									announcements:
 										data?.announcements.filter(
@@ -686,13 +678,13 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 					update: (proxy, res) => {
 						const data = proxy.readQuery<{ announcements: announcement[] }>({
 							query: Queries.GET_ANNOUNCEMENTS,
-							variables: { className, schoolName },
+							variables: { className, schoolName, vkId: uid },
 						});
 
 						if (res?.data) {
 							proxy.writeQuery({
 								query: Queries.GET_ANNOUNCEMENTS,
-								variables: { className, schoolName },
+								variables: { className, schoolName, vkId: uid },
 								data: {
 									announcements:
 										data?.announcements.map((chng) =>

@@ -109,22 +109,14 @@ const Mutations = {
 		mutation addHomework(
 			$schoolName: String!
 			$className: String!
-			$text: String!
-			$to: String
-			$lesson: String!
-			$attachments: [ClassHomeworkAttachmentsInput]!
-			$onlyFor: [Float]
 			$student_id: Int!
+			$content: ClassHomeworkInput!
 		) {
 			addHomework(
 				className: $className
-				text: $text
-				to: $to
-				lesson: $lesson
-				attachments: $attachments
 				student_id: $student_id
 				schoolName: $schoolName
-				onlyFor: $onlyFor
+				content: $content
 			) {
 				_id
 				text
@@ -374,7 +366,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 			if (mutation && mutation.data?.removeOldHomework) {
 				proxy.writeQuery({
 					query: Queries.GET_HOMEWORK,
-					variables: { className, schoolName },
+					variables: { className, schoolName, vkId: uid },
 					data: {
 						homework: mutation.data.removeOldHomework,
 					},
@@ -390,21 +382,16 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 		{
 			className: string;
 			schoolName: string;
-			text: string;
-			lesson: string;
-			attachments: attachment[];
-			to: string;
+			content: changableInHomework;
 			student_id: number;
-			onlyFor: number[];
 		}
 	>(Mutations.ADD_HOMEWORK);
 	const add = (homeworkData: changableInHomework) => {
 		addHomework({
 			variables: {
-				...homeworkData,
+				content: homeworkData,
 				className,
 				schoolName,
-				attachments: homeworkData.attachments.map(({ __typename, ...att }) => att),
 				student_id: uid,
 			},
 			optimisticResponse: {
@@ -420,7 +407,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 			refetchQueries: [
 				{
 					query: Queries.GET_HOMEWORK,
-					variables: { className, schoolName },
+					variables: { className, schoolName, vkId: uid },
 				},
 			],
 		});
@@ -611,13 +598,13 @@ const HomeworkLayout: React.FC<{
 				update: (proxy, res) => {
 					const data = proxy.readQuery<{ homework: homework[] }>({
 						query: Queries.GET_HOMEWORK,
-						variables: { className, schoolName },
+						variables: { className, schoolName, vkId: userVkId },
 					});
 
 					if (res?.data) {
 						proxy.writeQuery({
 							query: Queries.GET_HOMEWORK,
-							variables: { className, schoolName },
+							variables: { className, schoolName, vkId: userVkId },
 							data: {
 								homework:
 									data?.homework.filter((hw) => hw._id !== homeworkId) || [],
@@ -668,13 +655,13 @@ const HomeworkLayout: React.FC<{
 				update: (proxy, res) => {
 					const data = proxy.readQuery<{ homework: homework[] }>({
 						query: Queries.GET_HOMEWORK,
-						variables: { className, schoolName },
+						variables: { className, schoolName, vkId: userVkId },
 					});
 
 					if (res.data && res.data.updateHomework !== null) {
 						proxy.writeQuery({
 							query: Queries.GET_HOMEWORK,
-							variables: { className, schoolName },
+							variables: { className, schoolName, vkId: userVkId },
 							data: {
 								homework:
 									data?.homework.map((hw) =>

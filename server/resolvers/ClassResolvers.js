@@ -119,20 +119,14 @@ const ClassResolvers = {
 			args: {
 				student_id: 'Int!',
 				className: 'String!',
-				text: 'String!',
-				to: 'String',
-				attachments: ClassTC.get('homework.attachments')
-					//@ts-ignore
-					.getInputTypeComposer()
-					.List.NonNull.getType(),
 				schoolName: 'String!',
+				// @ts-ignore
+				content: ClassTC.get('announcements').getInputType(),
 			},
-			resolve: async ({
-				args: { attachments, text, to, className, student_id, schoolName },
-			}) => {
+			resolve: async ({ args: { content, className, student_id, schoolName } }) => {
 				try {
-					if (attachments) {
-						for (const attachment of attachments) {
+					if (content.attachments) {
+						for (const attachment of content.attachments) {
 							delete attachment._id;
 						}
 					}
@@ -140,9 +134,7 @@ const ClassResolvers = {
 					const stabId = Date.now().toString();
 					pubsub.publish(ON_ANNOUNCEMENT_ADDED, {
 						onAnnouncementAdded: {
-							text,
-							to,
-							attachments,
+							...content,
 							student_id,
 							_id: stabId,
 							pinned: false,
@@ -152,8 +144,8 @@ const ClassResolvers = {
 					});
 					const announcement_Id = await DataBase.addAnnouncement(
 						{ classNameOrInstance: className, schoolName },
-						{ attachments, text },
-						new Date(to),
+						content,
+						new Date(content.to),
 						false,
 						student_id,
 					);
@@ -427,20 +419,13 @@ const ClassResolvers = {
 			args: {
 				student_id: 'Int!',
 				className: 'String!',
-				text: 'String!',
-				to: 'String',
-				lesson: 'String!',
-				attachments: ClassTC.get('homework.attachments')
-					// @ts-ignore
-					.getInputTypeComposer()
-					.List.NonNull.getType(),
 				schoolName: 'String!',
+				//@ts-ignore
+				content: ClassTC.get('homework').getInputType(),
 			},
-			resolve: async ({
-				args: { className, schoolName, attachments, text, lesson, student_id, to },
-			}) => {
-				if (attachments) {
-					for (const attachment of attachments) {
+			resolve: async ({ args: { className, schoolName, student_id, content } }) => {
+				if (content.attachments) {
+					for (const attachment of content.attachments) {
 						delete attachment._id;
 					}
 				}
@@ -448,9 +433,7 @@ const ClassResolvers = {
 				const stabId = Date.now().toString();
 				pubsub.publish(ON_HOMEWORK_ADDED, {
 					onHomeworkAdded: {
-						text,
-						to,
-						attachments,
+						...content,
 						student_id,
 						_id: stabId,
 						pinned: false,
@@ -461,11 +444,9 @@ const ClassResolvers = {
 
 				const homework_id = await DataBase.addHomework(
 					{ classNameOrInstance: className, schoolName },
-					lesson,
-					// @ts-ignore
-					{ text, attachments },
+					content,
 					student_id,
-					to,
+					content.to,
 				);
 				if (homework_id) {
 					pubsub.publish(ON_HOMEWORK_CONFIRMED, {
