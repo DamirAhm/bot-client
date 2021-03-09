@@ -27,7 +27,6 @@ const DELETE_CLASS = gql`
 		}
 	}
 `;
-//TODO добавить модалку спрашивающую уверен ли ты в удалении класса
 const ClassPreview: React.FC<Props> = ({ className, studentsCount, searchText = '' }) => {
 	const { schoolName } = useParams<{ schoolName: string }>();
 

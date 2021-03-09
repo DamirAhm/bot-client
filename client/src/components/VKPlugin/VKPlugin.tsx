@@ -74,7 +74,7 @@ const VKPlugin: React.FC<Props> = ({ setUser }) => {
 			</div>
 		);
 	else {
-		return <div ref={pluginRef} id="vk_auth"></div>;
+		return <div ref={pluginRef} id='vk_auth'></div>;
 	}
 };
 

@@ -44,6 +44,7 @@
 	font-weight: bolder;
 	margin-top: 20px;
 	box-sizing: border-box;
+	color: var(--secondary);
 }
 .class:hover,
 .school:hover {
@@ -113,6 +114,7 @@
 	border: 2px solid transparent;
 	cursor: pointer;
 	font-weight: bolder;
+	color: var(--secondary);
 }
 
 .createCity {

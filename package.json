@@ -20,6 +20,7 @@
         "test": "npm run test --prefix ./client && npm run test --prefix ./server",
         "predeploy": "npm run build",
         "deploy": "cd server && rsync -e \"sshpass -p $(cat ~/.ssh/damirahm.ru_password) ssh -i $HOME/.ssh/damirahm.ru_key -o StrictHostKeyChecking=no\" --archive --compress --progress --delete . root@damirahm.ru:/root/bot-client-server",
+        "deploy:dev": "cd server && rsync -e \"sshpass -p $(cat ~/.ssh/damirahm.ru_password) ssh -i $HOME/.ssh/damirahm.ru_key -o StrictHostKeyChecking=no\" --archive --compress --progress --delete . root@damirahm.ru:/root/client-test",
         "gzip": "gzip -9 -f server/build/static/js/* && gzip -9 -f server/build/static/css/*"
     },
     "repository": {
@@ -30,5 +31,8 @@
     "license": "ISC",
     "bugs": {
         "url": "https://github.com/Proger3228/bot-client/issues"
+    },
+    "dependencies": {
+        "@vkontakte/vk-tunnel": "^0.1.0"
     }
 }

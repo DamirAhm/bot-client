@@ -13,16 +13,16 @@ const useAuth = () => {
 		vkUser: Omit<returnUserType, 'hash' | 'session'>,
 	): Promise<User | null> => {
 		const {
-			data: { studentOne },
-		} = await ApolloClient.query<{ studentOne?: Student }, { vkId: number }>({
+			data: { student },
+		} = await ApolloClient.query<{ student?: Student }, { vkId: number }>({
 			query: GET_STUDENT_BY_VK_ID,
 			variables: {
 				vkId: vkUser.uid,
 			},
 		});
 
-		if (studentOne) {
-			return { ...vkUser, ...studentOne };
+		if (student) {
+			return { ...vkUser, ...student };
 		} else {
 			return null;
 		}
@@ -31,9 +31,13 @@ const useAuth = () => {
 	const onUser = async ({ hash, session, ...user }: returnUserType) => {
 		const fullUser = await getFullUser(user);
 
-		setUser(fullUser);
-		localStorage.setItem('user', JSON.stringify(user));
-		localStorage.setItem('hash', hash);
+		if (fullUser) {
+			setUser(fullUser);
+			localStorage.setItem('user', JSON.stringify(user));
+			localStorage.setItem('hash', hash);
+		} else {
+			cleanLocalStorage();
+		}
 	};
 
 	const logOut = () => {
@@ -50,15 +54,7 @@ const useAuth = () => {
 		}
 	}, []);
 
-	const setUserThatCanReceiveFunctions = (valueOrFn: setStateProp<User | null>) => {
-		if (typeof valueOrFn === 'function') {
-			setUser(valueOrFn(user));
-		} else {
-			setUser(valueOrFn);
-		}
-	};
-
-	return [user, onUser, logOut, setUserThatCanReceiveFunctions] as const;
+	return [user, onUser, logOut, setUser] as const;
 };
 
 export default useAuth;

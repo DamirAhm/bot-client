@@ -1,8 +1,11 @@
 // @ts-check
 const { withFilter } = require('apollo-server-express');
-const { DataBase: DB } = require('bot-database');
+const { DataBase: DB, VK_API } = require('bot-database');
 const { StudentTC } = require('../ModelTypeComposers');
+const config = require('../config.json');
 const { pubsub, ON_STUDENT_REMOVED_FROM_CLASS, ON_STUDENT_ADDED_TO_CLASS } = require('../PubSub');
+
+const vk = new VK_API(process.env.VK_API_KEY, +config['GROUP_ID'], +config['ALBUM_ID']);
 const DataBase = new DB(process.env.MONGODB_URI);
 
 const isRightClass = (name) => (response, variables) =>
@@ -167,6 +170,32 @@ const StudentResolvers = {
 					return (await DataBase.getAllStudents()).map((student) =>
 						student.toJSON({ virtuals: true }),
 					);
+				}
+			},
+		},
+		studentByVkId: {
+			name: 'studentByVkId',
+			type: StudentTC.getType(),
+			args: { vkId: 'Int!' },
+			resolve: async ({ args: { vkId } }) => {
+				if (vkId) {
+					let Student = await DataBase.getStudentByVkId(vkId);
+
+					if (!Student) {
+						const { first_name, last_name } = await vk.getUser(vkId);
+
+						Student = await DataBase.createStudent(vkId, {
+							class_id: null,
+							firstName: first_name,
+							lastName: last_name,
+							registered: false,
+							schoolName: null,
+						});
+					}
+					console.log(Student);
+					return Student;
+				} else {
+					return null;
 				}
 			},
 		},

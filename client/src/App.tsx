@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React, { Dispatch, lazy, SetStateAction, Suspense } from 'react';
 import { Redirect, Route, Switch } from 'react-router';
 import { roles, setStateProp, User } from './types';
 import withRedirect from './HOCs/withAuth';
@@ -17,7 +17,7 @@ const Auth = lazy(() => import('./components/Content/Auth/Auth'));
 const PickSchool = lazy(() => import('./components/Content/PickClass/PickSchool'));
 
 export const UserContext = React.createContext<
-	{ isAuth: boolean; setUser: (user: setStateProp<User | null>) => void } & User
+	{ isAuth: boolean; setUser: Dispatch<SetStateAction<User | null>> } & User
 >({
 	isAuth: false,
 	role: roles.student,
@@ -53,12 +53,12 @@ function App() {
 					) : (
 						<Suspense fallback={<Loader />}>
 							<Sidebar logOut={logOut} />
-							<div className="content">
+							<div className='content'>
 								<Suspense fallback={<Loader />}>
 									<Switch>
 										<Route
 											exact
-											path="/pickClass/:schoolName?"
+											path='/pickClass/:schoolName?'
 											component={() =>
 												withRedirect(
 													<PickClass setUser={setUser} />,
@@ -68,7 +68,7 @@ function App() {
 										/>
 										<Route
 											exact
-											path="/pickSchool"
+											path='/pickSchool'
 											component={() =>
 												withRedirect(
 													<PickSchool />,
@@ -78,12 +78,12 @@ function App() {
 										/>
 										<Route
 											exact
-											path="/:schoolName/classes"
+											path='/:schoolName/classes'
 											component={() => withRedirect(<Classes />)}
 										/>
 										<Route
 											exact
-											path="/:schoolName/classes/:className"
+											path='/:schoolName/classes/:className'
 											render={(props) =>
 												withRedirect(
 													<ClassPage />,
@@ -93,21 +93,21 @@ function App() {
 										/>
 										<Route
 											exact
-											path="/:schoolName/students"
+											path='/:schoolName/students'
 											component={() => withRedirect(<Students />)}
 										/>
 										<Route
 											exact
-											path="/students/:vkId"
+											path='/students/:vkId'
 											component={() => withRedirect(<StudentPage />, true)}
 										/>
 										<Route
 											exact
-											path="/404"
+											path='/404'
 											component={() => withRedirect(<Page404 />, true)}
 										/>
 										<Route
-											path="*"
+											path='*'
 											render={() => {
 												return user.schoolName ? (
 													<Redirect to={`/${user.schoolName}/classes`} />

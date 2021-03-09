@@ -48,6 +48,19 @@ const appendFieldsToSchema = (ModelTC, QueryResolverNames, MutationsResolverName
 	schemaComposer.Mutation.addFields(mutationsFields);
 };
 
+schemaComposer.Subscription.addFields({
+	...ClassResolvers.Subscriptions,
+	...StudentResolvers.Subscriptions,
+});
+schemaComposer.Query.addFields({
+	schoolsMany: SchoolTC.getResolver('findMany'),
+	studentOne: StudentTC.getResolver('findOne'),
+	studentMany: StudentTC.getResolver('findMany'),
+	classOne: ClassTC.getResolver('findOne'),
+});
+schemaComposer.Mutation.addFields({
+	studentUpdateOne: StudentTC.getResolver('updateOne'),
+});
 //! Custom fields
 StudentTC.addFields(StudentFields);
 ClassTC.addFields(ClassFields);
@@ -80,20 +93,6 @@ appendFieldsToSchema(
 );
 appendFieldsToSchema(StudentTC, QueryStudentResolverNames, MutationsStudentResolverNames);
 appendFieldsToSchema(SchoolTC, QuerySchoolResolverNames, MutationsSchoolResolverNames);
-
-schemaComposer.Subscription.addFields({
-	...ClassResolvers.Subscriptions,
-	...StudentResolvers.Subscriptions,
-});
-schemaComposer.Query.addFields({
-	schoolsMany: SchoolTC.getResolver('findMany'),
-	studentOne: StudentTC.getResolver('findOne'),
-	studentMany: StudentTC.getResolver('findMany'),
-	classOne: ClassTC.getResolver('findOne'),
-});
-schemaComposer.Mutation.addFields({
-	studentUpdateOne: StudentTC.getResolver('updateOne'),
-});
 
 schemaComposer.addTypeDefs(`
 	type creationConfirmation {

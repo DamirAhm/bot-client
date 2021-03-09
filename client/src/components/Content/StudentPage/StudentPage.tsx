@@ -15,8 +15,8 @@ import { changeTitle } from '../../../utils/functions';
 import usePolling from '../../../hooks/usePolling';
 
 export const GET_STUDENT_BY_VK_ID = gql`
-	query StudentByVkId($vkId: Float!) {
-		studentOne(filter: { vkId: $vkId }) {
+	query StudentByVkId($vkId: Int!) {
+		student: studentByVkId(vkId: $vkId) {
 			vkId
 			className
 			schoolName
@@ -82,10 +82,10 @@ const StudentPage: React.FC = () => {
 
 	const iconSize = 30;
 
-	const studentQuery = useQuery<
-		{ studentOne: Student & { __typename: string } },
-		{ vkId: number }
-	>(GET_STUDENT_BY_VK_ID, { variables: { vkId } });
+	const studentQuery = useQuery<{ student: Student & { __typename: string } }, { vkId: number }>(
+		GET_STUDENT_BY_VK_ID,
+		{ variables: { vkId } },
+	);
 	const { data, loading, error } = studentQuery;
 	const [updater] = useMutation<
 		{
@@ -117,7 +117,7 @@ const StudentPage: React.FC = () => {
 				},
 			},
 			update: (proxy, response) => {
-				const schoolName = data?.studentOne.schoolName;
+				const schoolName = data?.student.schoolName;
 
 				if (schoolName) {
 					const queryData = proxy.readQuery<
@@ -172,8 +172,8 @@ const StudentPage: React.FC = () => {
 		if (diff.className) {
 			const { className } = diff;
 
-			if (data?.studentOne) {
-				const { schoolName, _id } = data?.studentOne;
+			if (data?.student) {
+				const { schoolName, _id } = data?.student;
 
 				if (typeof className === 'string' && schoolName !== undefined) {
 					changeClass({
@@ -223,10 +223,10 @@ const StudentPage: React.FC = () => {
 						record: {
 							__typename: 'Student',
 							vkId,
-							...data?.studentOne,
+							...data?.student,
 							...diff,
 							settings: {
-								...data?.studentOne.settings,
+								...data?.student.settings,
 								...settings,
 							},
 						},
@@ -239,8 +239,8 @@ const StudentPage: React.FC = () => {
 	};
 
 	useEffect(() => {
-		if (data?.studentOne.fullName) {
-			changeTitle(data?.studentOne.fullName);
+		if (data?.student.fullName) {
+			changeTitle(data?.student.fullName);
 		} else {
 			changeTitle('Ученик');
 		}
@@ -254,9 +254,9 @@ const StudentPage: React.FC = () => {
 	return (
 		<>
 			<Suspender query={{ data, loading, error }}>
-				{({ studentOne }: { studentOne?: Student & { __typename: string } }) => {
-					if (studentOne) {
-						const { fullName, __typename, _id, ...info } = studentOne;
+				{({ student }: { student?: Student & { __typename: string } }) => {
+					if (student) {
+						const { fullName, __typename, _id, ...info } = student;
 
 						const studentCanChange = [
 							'settings',

@@ -166,7 +166,7 @@ const PickSchool: React.FC<{}> = ({}) => {
 	usePolling(query);
 
 	return (
-		<div className="centerer">
+		<div className='centerer'>
 			<Suspender query={query}>
 				<div className={styles.container}>
 					<span className={styles.title}>В какой школе вы учитесь? 🏫</span>
