@@ -216,7 +216,7 @@ export const createContentPropsChanger = (
 
 				changeHandler(newValue);
 			};
-			console.log(value);
+
 			return (
 				<label className={styles.onlyFor}>
 					Сделать доступным только для меня

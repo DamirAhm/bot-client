@@ -12,7 +12,6 @@ const CommonResolvers = require('./resolvers/CommonResolvers');
 const ClassRelations = require('./relations/ClassRelations');
 const StudentsRelations = require('./relations/StudentRelations');
 const SchoolRelations = require('./relations/SchoolRelations');
-const { Query } = require('mongoose');
 
 const appendRelations = (ModelTC, relationsObject) => {
 	for (let relationName in relationsObject) {

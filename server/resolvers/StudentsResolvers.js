@@ -192,7 +192,7 @@ const StudentResolvers = {
 							schoolName: null,
 						});
 					}
-					console.log(Student);
+
 					return Student;
 				} else {
 					return null;

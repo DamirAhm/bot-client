@@ -26,18 +26,9 @@ const isRightClass = (name) => (response, variables) =>
 const ClassResolvers = {
 	Mutations: {
 		//* Ovreride
-		//? get
-		classOne: {
-			name: 'classOne',
-			type: ClassTC.getType(),
-			args: { filter: ClassTC.getInputType() },
-			resolve: async ({ args: { filter } }) => {
-				return await ClassModel.findOne(filter);
-			},
-		},
 		//? create
-		createOne: {
-			name: 'createOne',
+		classCreateOne: {
+			name: 'classCreateOne',
 			type: ClassTC.getType(),
 			args: { className: 'String!', schoolName: 'String!' },
 			resolve: async ({ args: { className, schoolName } }) => {
