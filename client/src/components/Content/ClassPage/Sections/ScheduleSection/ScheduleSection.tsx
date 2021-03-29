@@ -305,18 +305,21 @@ const ScheduleDay: React.FC<ScheduleDayProps> = memo(
 						>
 							{days[index]}
 						</div>
-						{changes.map((lesson, i) => (
-							<Lesson
-								changing={changing}
-								key={days[index] + lesson + i}
-								dayIndex={index}
-								index={i}
-								removeLesson={removeLesson}
-								changeHandler={changeHandler}
-								lesson={lesson}
-								lessonsList={newLessonsList}
-							/>
-						))}
+						{
+							//@ts-ignore
+							changes.map((lesson, i) => (
+								<Lesson
+									changing={changing}
+									key={days[index] + lesson + i}
+									dayIndex={index}
+									index={i}
+									removeLesson={removeLesson}
+									changeHandler={changeHandler}
+									lesson={lesson}
+									lessonsList={newLessonsList}
+								/>
+							))
+						}
 						{/*//? In different element because confirm and reject should be on the bottom of component */}
 						{changing && !isAnyLessonDragging && (
 							<button className={styles.addLesson} onClick={addLesson}>
@@ -421,6 +424,10 @@ const Lesson: React.FC<LessonProps> = memo(
 		};
 
 		const lessonOptions = lessonsList.current.map((les) => ({ value: les, label: les }));
+
+		if (!lessonOptions.find(({ value }) => value === lesson)) {
+			lessonOptions.push({ value: lesson, label: lesson });
+		}
 
 		return (
 			<DraggableEntity
