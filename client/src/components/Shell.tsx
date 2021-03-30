@@ -17,7 +17,7 @@ const API_HOST =
 const WEB_SOCKET_HOST =
 	process.env.NODE_ENV === 'development'
 		? 'ws://localhost:8080/graphql'
-		: `ws://${document.location.origin}/graphql`;
+		: `wss://${document.location.origin}/graphql`;
 const SCHEMA_VERSION = '1';
 const SCHEMA_VERSION_KEY = 'apollo-schema-version';
 const currentVersion = window.localStorage.getItem(SCHEMA_VERSION_KEY);
@@ -168,7 +168,7 @@ const Shell: React.FC<{ children: JSX.Element }> = ({ children }) => {
 
 	if (client === null) {
 		return (
-			<div className="wrapper app">
+			<div className='wrapper app'>
 				<Loader />
 			</div>
 		);
