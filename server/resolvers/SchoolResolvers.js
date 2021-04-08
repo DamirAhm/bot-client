@@ -1,6 +1,6 @@
 // @ts-check
 const { DataBase: DB } = require('bot-database');
-const { ClassTC } = require('../ModelTypeComposers');
+const { SchoolTC } = require('../ModelTypeComposers');
 
 const DataBase = new DB(process.env.MONGODB_URI);
 
@@ -10,7 +10,7 @@ const SchoolsResolvers = {
 		//? create
 		schoolCreateOne: {
 			name: 'schoolCreateOne',
-			type: ClassTC.getType(),
+			type: SchoolTC.getType(),
 			args: { schoolName: 'String!' },
 			resolve: async ({ args: { schoolName } }) => {
 				if (/^[a-z]*:\d*$/i.test(schoolName)) {
@@ -21,7 +21,17 @@ const SchoolsResolvers = {
 			},
 		},
 	},
-	Queries: {},
+	Queries: {
+		//? get
+		findByName: {
+			name: 'findByName',
+			type: SchoolTC.getType(),
+			args: { schoolName: 'String' },
+			resolve: async ({ args, args: { schoolName } }) => {
+				return await DataBase.getSchoolByName(schoolName);
+			},
+		},
+	},
 };
 
 module.exports = SchoolsResolvers;

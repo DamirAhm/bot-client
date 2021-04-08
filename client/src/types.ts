@@ -136,7 +136,16 @@ export const isOptionType = (option: ValueType<optionType, false>): option is op
 
 export type School = {
 	classes: Class[];
+	callSchedule: callSchedule;
 } & schoolPreview;
+export type callSchedule = {
+	defaultSchedule: lessonCalls[];
+	exceptions: lessonCalls[][];
+};
+export type lessonCalls = {
+	start: string;
+	end: string;
+};
 export type schoolPreview = {
 	_id: string;
 	name: string;

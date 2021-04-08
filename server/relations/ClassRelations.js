@@ -1,6 +1,6 @@
 // @ts-check
 
-const { StudentTC } = require('../ModelTypeComposers');
+const { StudentTC, SchoolTC } = require('../ModelTypeComposers');
 
 const ClassRelations = {
 	students: {
@@ -9,6 +9,13 @@ const ClassRelations = {
 			_ids: (source) => source.students,
 		},
 		projection: { students: 1 },
+	},
+	school: {
+		resolver: () => SchoolTC.getResolver('findByName'),
+		prepareArgs: {
+			schoolName: (source) => source.schoolName,
+		},
+		projection: { schoolName: 1 },
 	},
 };
 

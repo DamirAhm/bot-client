@@ -1,0 +1,17 @@
+.container {
+	font-size: 1.6rem;
+}
+
+.lesson {
+	display: flex;
+	justify-content: space-between;
+	width: min(100%, 130px);
+}
+.lesson:not(:last-of-type) {
+	margin-bottom: 5px;
+}
+
+.current {
+	color: var(--positive);
+	font-weight: bold;
+}

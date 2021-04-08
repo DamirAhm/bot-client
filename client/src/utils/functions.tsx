@@ -1,6 +1,14 @@
 import React from 'react';
 import { RoleNames } from '../components/Content/StudentPage/StudentInfo/StudentInfo';
-import { attachment, content, StudentInfoType, vkPhoto, WithTypename } from '../types';
+import {
+	attachment,
+	callSchedule,
+	content,
+	lessonCalls,
+	StudentInfoType,
+	vkPhoto,
+	WithTypename,
+} from '../types';
 import { parseDate, months } from './date';
 
 type c = content;
@@ -119,9 +127,9 @@ export const replaceHrefsByAnchors = (
 	}
 };
 
-export const parseContentByDate = <T extends content>(
+export function parseContentByDate<T extends content>(
 	content: T[],
-): [{ [day: string]: T[] }, { [day: string]: T[] }] => {
+): [{ [day: string]: T[] }, { [day: string]: T[] }] {
 	const parsedFutureCont: { [day: string]: T[] } = {};
 	const parsedPastCont: { [day: string]: T[] } = {};
 
@@ -148,24 +156,24 @@ export const parseContentByDate = <T extends content>(
 	}
 
 	return [parsedPastCont, parsedFutureCont];
-};
-export const getPinnedContent = <T extends content>(content: T[]) => {
+}
+export function getPinnedContent<T extends content>(content: T[]) {
 	return content.filter(({ pinned }) => pinned);
-};
-export const objectForEach = <T extends { [key: string]: ValueType }, ValueType, Output>(
+}
+export function objectForEach<T extends { [key: string]: ValueType }, ValueType, Output>(
 	object: T,
 	fn: (value: ValueType) => Output,
-): { [key: string]: Output } => {
+): { [key: string]: Output } {
 	const entries: [keyof T, ValueType][] = Object.entries(object);
 	const mappedEntries = entries.map(([key, value]) => [key, fn(value)]);
 
 	return Object.fromEntries(mappedEntries);
-};
-export const concatObjects = <T extends object>(objects: T[]) => {
+}
+export function concatObjects<T extends object>(objects: T[]) {
 	return objects.reduce((acc, c) => Object.assign(acc, c), {});
-};
+}
 
-export const getDateStrFromDayMonthStr = (dayMonthStr: string): string => {
+export function getDateStrFromDayMonthStr(dayMonthStr: string): string {
 	if (dayMonthStr.toLowerCase() === 'завтра') {
 		return new Date(new Date().setDate(new Date().getDate() + 1)).toISOString();
 	} else if (dayMonthStr.toLowerCase() === 'послезавтра') {
@@ -181,7 +189,7 @@ export const getDateStrFromDayMonthStr = (dayMonthStr: string): string => {
 		}
 	}
 	return '';
-};
+}
 
 export function isToday(date: Date) {
 	const deltaIsLessThanDay =
@@ -400,15 +408,16 @@ export function capitalize(word: string) {
 	return word[0].toUpperCase() + word.slice(1);
 }
 
-export const parseAttachment = (photo: vkPhoto) => {
+export function parseAttachment(photo: vkPhoto) {
 	return `photo${photo.owner_id}_${photo.id}`;
-};
-export const findMaxPhotoResolution = (photo: vkPhoto) =>
-	photo.sizes.reduce<{ url: string; height: number }>(
+}
+export function findMaxPhotoResolution(photo: vkPhoto) {
+	return photo.sizes.reduce<{ url: string; height: number }>(
 		(acc, c) => (c.height > acc.height ? c : acc),
 		{ height: 0, url: '' },
 	).url;
-export const getPhotoUploadURL = () => {
+}
+export function getPhotoUploadURL() {
 	if (document.location.hostname === 'localhost') {
 		return 'http://localhost:8080/saveAttachment';
 	} else if (document.location.origin.endsWith('/')) {
@@ -416,8 +425,8 @@ export const getPhotoUploadURL = () => {
 	} else {
 		return document.location.origin + `/saveAttachment`;
 	}
-};
-export const uploadPhoto = async (files: any) => {
+}
+export async function uploadPhoto(files: any) {
 	try {
 		if (files) {
 			const fd = new FormData();
@@ -448,7 +457,7 @@ export const uploadPhoto = async (files: any) => {
 		console.error(e);
 		return null;
 	}
-};
+}
 
 export function findContentById<T extends content, ContentMap extends Record<string, T[]>>(
 	content: ContentMap,
@@ -457,4 +466,67 @@ export function findContentById<T extends content, ContentMap extends Record<str
 	const contentArray: T[] = Object.values(content).flat();
 
 	return contentArray.find((content) => content._id === id) || null;
+}
+
+export function inRange(number: number, min: number, max: number) {
+	if (min === undefined && min > number) {
+		return false;
+	}
+
+	if (max === undefined && max < number) {
+		return false;
+	}
+
+	return true;
+}
+
+export function getCallCheduleForDay(callSchedule: callSchedule, dayIndex: number) {
+	if (inRange(dayIndex, 1, 7)) {
+		const { exceptions, defaultSchedule } = callSchedule;
+		if (exceptions[dayIndex - 1].length > 0 && dayIndex !== 7) {
+			return exceptions[dayIndex - 1];
+		} else {
+			return defaultSchedule;
+		}
+	} else {
+		throw new Error('Day index must be in range 1 to 7, got: ' + dayIndex);
+	}
+}
+
+export const timeRegExp = /([0-9]{2}):([0-9]{2})/;
+export function checkValidTime(str: string) {
+	if (timeRegExp.test(str)) {
+		//@ts-ignore
+		const [hours, minutes] = str
+			.match(timeRegExp)
+			.slice(1)
+			.map((n) => parseInt(n));
+		if (!isNaN(hours) && !isNaN(minutes) && inRange(hours, 0, 23) && inRange(minutes, 0, 59)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+export function compareTimes(a: string, b: string) {
+	if (checkValidTime(a) && checkValidTime(b)) {
+		return a > b;
+	} else {
+		throw new Error('Times should be in format 00:00, got: ' + `${a} and ${b}`);
+	}
+}
+export function getTimeFromDate(date: Date) {
+	const hours = String(date.getHours()).padStart(2, '0');
+	const minutes = String(date.getMinutes()).padStart(2, '0');
+	return `${hours}:${minutes}`;
+}
+export function getLessonAtSpecificTime(callSchedule: lessonCalls[], date: Date) {
+	const lessonEnds = callSchedule.map(({ end }) => end);
+	const time = getTimeFromDate(date);
+
+	let index = 0;
+
+	while (compareTimes(time, lessonEnds[index]) && index < lessonEnds.length - 1) index++;
+
+	return index;
 }
