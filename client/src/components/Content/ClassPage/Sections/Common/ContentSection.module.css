@@ -60,12 +60,17 @@
 .sectionHeader .addContent {
 	visibility: hidden;
 }
-.sectionHeader .addContent:hover {
+.sectionHeader svg:hover {
 	fill: var(--positive-darken);
 }
 :global(accordion) > .sectionHeader .addContent,
 .sectionHeader:hover .addContent {
 	visibility: visible;
+}
+
+.headerButtons {
+	display: flex;
+	align-items: center;
 }
 
 .contentHeader .addContent {

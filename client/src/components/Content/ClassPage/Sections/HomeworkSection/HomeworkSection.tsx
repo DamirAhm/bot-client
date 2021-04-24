@@ -1,20 +1,27 @@
-import styles from '../Common/ContentSection.module.css';
+import styles from "../Common/ContentSection.module.css";
 import {
 	attachment,
 	WithTypename,
 	homework,
 	redactorOptions,
 	changeTypes,
-	userPreferences,
-	changableInHomework,
-} from '../../../../../types';
+	changeableInHomework,
+} from "../../../../../types";
 
-import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
-import { gql, useSubscription } from '@apollo/client';
-import { useQuery, useMutation } from '@apollo/client';
-import { GoTriangleRight } from 'react-icons/go';
-import { useParams } from 'react-router-dom';
+import React, {
+	Dispatch,
+	MouseEventHandler,
+	SetStateAction,
+	useContext,
+	useEffect,
+	useState,
+} from "react";
+import ReactDOM from "react-dom";
+import { gql, useSubscription } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
+import { GoTriangleRight } from "react-icons/go";
+import { AiOutlineReload } from "react-icons/ai";
+import { useParams } from "react-router-dom";
 
 import {
 	parseContentByDate,
@@ -23,24 +30,24 @@ import {
 	getPinnedContent,
 	concatObjects,
 	findContentById,
-} from '../../../../../utils/functions';
+} from "../../../../../utils/functions";
 
-import Options from '../../../../Common/Options/Options';
-import ChangeHomework from '../../../../Common/ChangeContent/ChangeHomework';
-import ContentElement from '../../../../Common/ContentElement';
-import Accordion from '../../../../Common/Accordion/Accordion';
-import Suspender from '../../../../Common/Suspender/Suspender';
-import InfoSection from '../../InfoSection/InfoSection';
+import Options from "../../../../Common/Options/Options";
+import ChangeHomework from "../../../../Common/ChangeContent/ChangeHomework";
+import ContentElement from "../../../../Common/ContentElement";
+import Accordion from "../../../../Common/Accordion/Accordion";
+import Suspender from "../../../../Common/Suspender/Suspender";
+import InfoSection from "../../InfoSection/InfoSection";
 
-import { UserContext } from '../../../../../App';
+import { UserContext } from "../../../../../App";
 import ChangePreferences, {
-	ChangePreferencesProps,
-} from '../../../../Common/ChangeContent/ChangePreferences';
-import usePolling from '../../../../../hooks/usePolling';
-import Modal from '../../../../Common/Modal';
-import { stateType } from '../../../../../utils/createContentChanger/createContentChanger';
+	ChangePreferencesPropsType,
+} from "../../../../Common/ChangeContent/ChangePreferences";
+import usePolling from "../../../../../hooks/usePolling";
+import Modal from "../../../../Common/Modal";
+import { stateType } from "../../../../../utils/createContentChanger/createContentChanger";
 
-const changeContentModalRoot = document.getElementById('changeContentModal');
+const changeContentModalRoot = document.getElementById("changeContentModal");
 
 const FIVE_MINS = 1000 * 60 * 5;
 
@@ -72,8 +79,16 @@ const Queries = {
 };
 const Mutations = {
 	REMOVE_TASK: gql`
-		mutation RemoveTask($className: String!, $homeworkId: String!, $schoolName: String!) {
-			removeHomework(homeworkId: $homeworkId, className: $className, schoolName: $schoolName)
+		mutation RemoveTask(
+			$className: String!
+			$homeworkId: String!
+			$schoolName: String!
+		) {
+			removeHomework(
+				homeworkId: $homeworkId
+				className: $className
+				schoolName: $schoolName
+			)
 		}
 	`,
 	CHANGE_HOMEWORK: gql`
@@ -158,7 +173,11 @@ const Mutations = {
 			$schoolName: String!
 			$homeworkId: String!
 		) {
-			pinHomework(className: $className, schoolName: $schoolName, homeworkId: $homeworkId) {
+			pinHomework(
+				className: $className
+				schoolName: $schoolName
+				homeworkId: $homeworkId
+			) {
 				_id
 				pinned
 			}
@@ -191,7 +210,10 @@ const Subscriptions = {
 		}
 	`,
 	ON_HOMEWORK_CONFIRMED: gql`
-		subscription OnHomeworkConfirmed($className: String!, $schoolName: String!) {
+		subscription OnHomeworkConfirmed(
+			$className: String!
+			$schoolName: String!
+		) {
 			onHomeworkConfirmed(className: $className, schoolName: $schoolName) {
 				stabId
 				actualId
@@ -225,13 +247,16 @@ const Subscriptions = {
 };
 
 const HomeworkSection: React.FC<{}> = ({}) => {
-	const { schoolName, className } = useParams<{ schoolName: string; className: string }>();
+	const { schoolName, className } = useParams<{
+		schoolName: string;
+		className: string;
+	}>();
 	const { uid } = useContext(UserContext);
 	const [homeworkCreating, setHomeworkCreating] = useState(
-		Boolean(localStorage.getItem('homeworkCreating')),
+		Boolean(localStorage.getItem("homeworkCreating"))
 	);
 	const [initContent, setInitHomeworkContent] = useState<Partial<homework>>(
-		JSON.parse(localStorage.getItem('initHomeworkContent') ?? '{}'),
+		JSON.parse(localStorage.getItem("initHomeworkContent") ?? "{}")
 	);
 
 	const homeworkQuery = useQuery<
@@ -240,56 +265,61 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 	>(Queries.GET_HOMEWORK, {
 		variables: { className, schoolName, vkId: uid },
 	});
-	useSubscription<{ onHomeworkAdded: homework | null }>(Subscriptions.ON_HOMEWORK_ADDED, {
-		variables: { className, schoolName },
-		onSubscriptionData: ({ subscriptionData }) => {
-			const newHomework = subscriptionData.data?.onHomeworkAdded;
-			if (newHomework) {
-				homeworkQuery.updateQuery((prev) => {
-					return {
-						homework: prev.homework.concat([newHomework]),
-					};
-				});
-			}
-		},
-	});
-	useSubscription<{ onHomeworkConfirmed: { stabId: string; actualId: string } | null }>(
-		Subscriptions.ON_HOMEWORK_CONFIRMED,
+	useSubscription<{ onHomeworkAdded: homework | null }>(
+		Subscriptions.ON_HOMEWORK_ADDED,
 		{
 			variables: { className, schoolName },
 			onSubscriptionData: ({ subscriptionData }) => {
-				const confirmation = subscriptionData.data?.onHomeworkConfirmed;
-
-				if (confirmation) {
-					homeworkQuery.updateQuery((prev) => {
+				const newHomework = subscriptionData.data?.onHomeworkAdded;
+				if (newHomework) {
+					homeworkQuery.updateQuery(prev => {
 						return {
-							homework: prev.homework.map(({ _id, ...homework }) =>
-								_id === confirmation.stabId
-									? { _id: confirmation.actualId, ...homework }
-									: { _id, ...homework },
-							),
+							homework: prev.homework.concat([newHomework]),
 						};
 					});
 				}
 			},
-		},
+		}
 	);
-	useSubscription<{ onHomeworksRemoved: string[] | null }>(Subscriptions.ON_HOMEWORKS_REMOVED, {
+	useSubscription<{
+		onHomeworkConfirmed: { stabId: string; actualId: string } | null;
+	}>(Subscriptions.ON_HOMEWORK_CONFIRMED, {
 		variables: { className, schoolName },
 		onSubscriptionData: ({ subscriptionData }) => {
-			const removedHomeworksIds = subscriptionData.data?.onHomeworksRemoved;
+			const confirmation = subscriptionData.data?.onHomeworkConfirmed;
 
-			if (removedHomeworksIds) {
-				homeworkQuery.updateQuery((prev) => {
+			if (confirmation) {
+				homeworkQuery.updateQuery(prev => {
 					return {
-						homework: prev.homework.filter(
-							({ _id }) => !removedHomeworksIds.includes(_id as string),
+						homework: prev.homework.map(({ _id, ...homework }) =>
+							_id === confirmation.stabId
+								? { _id: confirmation.actualId, ...homework }
+								: { _id, ...homework }
 						),
 					};
 				});
 			}
 		},
 	});
+	useSubscription<{ onHomeworksRemoved: string[] | null }>(
+		Subscriptions.ON_HOMEWORKS_REMOVED,
+		{
+			variables: { className, schoolName },
+			onSubscriptionData: ({ subscriptionData }) => {
+				const removedHomeworksIds = subscriptionData.data?.onHomeworksRemoved;
+
+				if (removedHomeworksIds) {
+					homeworkQuery.updateQuery(prev => {
+						return {
+							homework: prev.homework.filter(
+								({ _id }) => !removedHomeworksIds.includes(_id as string)
+							),
+						};
+					});
+				}
+			},
+		}
+	);
 	useSubscription<{ onHomeworkChanged: Partial<homework> | null }>(
 		Subscriptions.ON_HOMEWORK_CHANGED,
 		{
@@ -298,18 +328,23 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 				const updates = subscriptionData.data?.onHomeworkChanged;
 
 				if (updates) {
-					homeworkQuery.updateQuery((prev) => {
+					homeworkQuery.updateQuery(prev => {
 						let homeworkToUpdate = {
-							...homeworkQuery.data?.homework.find(({ _id }) => updates._id === _id),
+							...homeworkQuery.data?.homework.find(
+								({ _id }) => updates._id === _id
+							),
 						};
 
-						if (homeworkToUpdate !== undefined && homeworkQuery.data !== undefined) {
+						if (
+							homeworkToUpdate !== undefined &&
+							homeworkQuery.data !== undefined
+						) {
 							for (let updateKey in updates) {
 								if (
 									updates.hasOwnProperty(updateKey) &&
 									//@ts-ignore
 									updates[updateKey] != undefined &&
-									!['_id', '__typename'].includes(updateKey)
+									!["_id", "__typename"].includes(updateKey)
 								) {
 									//@ts-ignore
 									homeworkToUpdate[updateKey] = updates[updateKey];
@@ -317,10 +352,11 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 							}
 
 							return {
-								homework: homeworkQuery.data.homework.map(({ _id, ...homework }) =>
-									_id === updates._id
-										? (homeworkToUpdate as homework)
-										: { ...homework, _id },
+								homework: homeworkQuery.data.homework.map(
+									({ _id, ...homework }) =>
+										_id === updates._id
+											? (homeworkToUpdate as homework)
+											: { ...homework, _id }
 								),
 							};
 						}
@@ -329,7 +365,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 					});
 				}
 			},
-		},
+		}
 	);
 	usePolling(homeworkQuery, FIVE_MINS);
 
@@ -337,18 +373,18 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 		setHomeworkCreating(val);
 
 		if (val) {
-			localStorage.setItem('homeworkCreating', val.toString());
+			localStorage.setItem("homeworkCreating", val.toString());
 		} else {
-			localStorage.removeItem('homeworkCreating');
+			localStorage.removeItem("homeworkCreating");
 		}
 	};
 	const setInitContent = (
-		val: Partial<homework> | ((prev: Partial<homework>) => Partial<homework>),
+		val: Partial<homework> | ((prev: Partial<homework>) => Partial<homework>)
 	) => {
-		const resumedValue = typeof val === 'function' ? val(initContent) : val;
+		const resumedValue = typeof val === "function" ? val(initContent) : val;
 
 		setInitHomeworkContent(val);
-		localStorage.setItem('initHomeworkContent', JSON.stringify(resumedValue));
+		localStorage.setItem("initHomeworkContent", JSON.stringify(resumedValue));
 	};
 
 	const [removeOldHomework] = useMutation<
@@ -359,7 +395,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 		optimisticResponse: {
 			removeOldHomework:
 				homeworkQuery.data?.homework.filter(
-					({ to }) => Date.now() - Date.parse(to) <= 24 * 60 * 60 * 1000,
+					({ to }) => Date.now() - Date.parse(to) <= 24 * 60 * 60 * 1000
 				) || [],
 		},
 		update: (proxy, mutation) => {
@@ -382,11 +418,11 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 		{
 			className: string;
 			schoolName: string;
-			content: changableInHomework;
+			content: changeableInHomework;
 			student_id: number;
 		}
 	>(Mutations.ADD_HOMEWORK);
-	const add = (homeworkData: changableInHomework) => {
+	const add = (homeworkData: changeableInHomework) => {
 		addHomework({
 			variables: {
 				content: homeworkData,
@@ -395,13 +431,13 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 				student_id: uid,
 			},
 			optimisticResponse: {
-				__typename: 'Mutation',
+				__typename: "Mutation",
 				addHomework: {
 					...homeworkData,
 					pinned: false,
 					userPreferences: {},
 					_id: Date.now().toString(),
-					__typename: 'ClassHomework',
+					__typename: "ClassHomework",
 				},
 			},
 			refetchQueries: [
@@ -414,13 +450,21 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 		setInitContent({});
 	};
 
+	const refetch: MouseEventHandler = e => {
+		e.stopPropagation();
+		homeworkQuery.refetch();
+	};
+
 	return (
 		<>
 			<InfoSection
 				isOpened={
-					!!(homeworkQuery?.data?.homework && homeworkQuery?.data?.homework.length > 0)
+					!!(
+						homeworkQuery?.data?.homework &&
+						homeworkQuery?.data?.homework.length > 0
+					)
 				}
-				name='Домашняя работа'
+				name="Домашняя работа"
 				Header={({ opened, onClick }) => (
 					<div
 						className={`${styles.sectionHeader} ${styles.contentHeader}`}
@@ -429,16 +473,20 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 						<div className={styles.title}>
 							Домашняя работа
 							<GoTriangleRight
-								className={opened ? styles.triangle_opened : ''}
+								className={opened ? styles.triangle_opened : ""}
 								size={15}
 							/>
 						</div>
-						<Add
-							onClick={(e) => {
-								e.stopPropagation();
-								setCreating(true);
-							}}
-						/>
+
+						<div className={styles.headerButtons}>
+							<AiOutlineReload size={23} onClick={refetch} />
+							<Add
+								onClick={e => {
+									e.stopPropagation();
+									setCreating(true);
+								}}
+							/>
+						</div>
 					</div>
 				)}
 			>
@@ -446,14 +494,14 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 					{(data: { homework: homework[] }) => {
 						const [oldHw, newHw] = parseContentByDate(data.homework);
 						const pinnedHw = concatObjects(
-							parseContentByDate(getPinnedContent(data.homework)),
+							parseContentByDate(getPinnedContent(data.homework))
 						);
 
 						return (
 							<div className={styles.content}>
 								{Object.keys(pinnedHw).length > 0 && (
 									<Accordion
-										accordionId='pinnedHomework'
+										accordionId="pinnedHomework"
 										initiallyOpened={false}
 										Head={({ opened }) => (
 											<div className={styles.oldContentHeader}>
@@ -461,9 +509,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 													Закрепленное дз
 													<GoTriangleRight
 														size={15}
-														className={
-															opened ? styles.triangle_opened : ''
-														}
+														className={opened ? styles.triangle_opened : ""}
 													/>
 												</p>
 
@@ -491,7 +537,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 								)}
 								{Object.keys(oldHw).length > 0 && (
 									<Accordion
-										accordionId='oldHomework'
+										accordionId="oldHomework"
 										initiallyOpened={false}
 										Head={({ opened }) => (
 											<div className={styles.oldContentHeader}>
@@ -499,9 +545,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 													Старое дз
 													<GoTriangleRight
 														size={15}
-														className={
-															opened ? styles.triangle_opened : ''
-														}
+														className={opened ? styles.triangle_opened : ""}
 													/>
 												</p>
 
@@ -548,7 +592,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 						}}
 						initContent={initContent}
 					/>,
-					changeContentModalRoot,
+					changeContentModalRoot
 				)}
 		</>
 	);
@@ -561,302 +605,326 @@ const HomeworkLayout: React.FC<{
 	initiallyOpened?: boolean;
 	setHomeworkCreating: (state: boolean) => void;
 	setInitContent: Dispatch<SetStateAction<Partial<homework>>>;
-}> = React.memo(({ homework, setHomeworkCreating, setInitContent, initiallyOpened = true }) => {
-	const { schoolName, className } = useParams<{ schoolName: string; className: string }>();
-	const { uid: userVkId, settings } = useContext(UserContext);
-
-	const [changingInfo, setChangingInfo] = useState<{
-		_id: string;
-		changeType: changeTypes;
-	} | null>(JSON.parse(localStorage.getItem('homeworkChangingInfo') ?? 'null'));
-	const changingHomework = changingInfo ? findContentById(homework, changingInfo._id) : null;
-	const [
-		changeHomeworkInitState,
-		setChangeHomeworkInitState,
-	] = useState<Partial<homework> | null>(
-		JSON.parse(localStorage.getItem('initHomeworkContent') ?? 'null') ?? changingHomework,
-	);
-
-	const [removeHomework] = useMutation<
-		WithTypename<{
-			removeHomework: string;
-		}>,
-		{
-			className: string;
-			homeworkId: string;
+}> = React.memo(
+	({
+		homework,
+		setHomeworkCreating,
+		setInitContent,
+		initiallyOpened = true,
+	}) => {
+		const { schoolName, className } = useParams<{
 			schoolName: string;
-		}
-	>(Mutations.REMOVE_TASK);
-	const remove = (homeworkId: string | undefined) => {
-		if (homeworkId) {
-			removeHomework({
-				variables: { className, homeworkId, schoolName },
-				optimisticResponse: {
-					__typename: 'Mutation',
-					removeHomework: homeworkId,
-				},
-				update: (proxy, res) => {
-					const data = proxy.readQuery<{ homework: homework[] }>({
-						query: Queries.GET_HOMEWORK,
-						variables: { className, schoolName, vkId: userVkId },
-					});
+			className: string;
+		}>();
+		const { uid: userVkId, settings } = useContext(UserContext);
 
-					if (res?.data) {
-						proxy.writeQuery({
+		const [changingInfo, setChangingInfo] = useState<{
+			_id: string;
+			changeType: changeTypes;
+		} | null>(
+			JSON.parse(localStorage.getItem("homeworkChangingInfo") ?? "null")
+		);
+		const changingHomework = changingInfo
+			? findContentById(homework, changingInfo._id)
+			: null;
+		const [
+			changeHomeworkInitState,
+			setChangeHomeworkInitState,
+		] = useState<Partial<homework> | null>(
+			JSON.parse(localStorage.getItem("initHomeworkContent") ?? "null") ??
+				changingHomework
+		);
+
+		const [removeHomework] = useMutation<
+			WithTypename<{
+				removeHomework: string;
+			}>,
+			{
+				className: string;
+				homeworkId: string;
+				schoolName: string;
+			}
+		>(Mutations.REMOVE_TASK);
+		const remove = (homeworkId: string | undefined) => {
+			if (homeworkId) {
+				removeHomework({
+					variables: { className, homeworkId, schoolName },
+					optimisticResponse: {
+						__typename: "Mutation",
+						removeHomework: homeworkId,
+					},
+					update: (proxy, res) => {
+						const data = proxy.readQuery<{ homework: homework[] }>({
 							query: Queries.GET_HOMEWORK,
 							variables: { className, schoolName, vkId: userVkId },
-							data: {
-								homework:
-									data?.homework.filter((hw) => hw._id !== homeworkId) || [],
-							},
 						});
-					}
-				},
-			});
-		}
-	};
 
-	const [updateHomework] = useMutation<
-		WithTypename<{
-			updateHomework: WithTypename<Partial<homework>> | null;
-		}>,
-		{
-			className: string;
-			schoolName: string;
-			homeworkId: string;
-			updates: Partial<Omit<homework, 'attachments'> & { attachments: attachment[] }>;
-		}
-	>(Mutations.CHANGE_HOMEWORK);
-	const update = (homeworkId: string | undefined, updates: Partial<WithTypename<homework>>) => {
-		const { __typename, ...updatesWithoutTypename } = updates;
-
-		if (homeworkId) {
-			updateHomework({
-				variables: {
-					className,
-					schoolName,
-					homeworkId,
-					updates: {
-						...updatesWithoutTypename,
-						attachments: updates.attachments?.map(({ __typename, ...att }) => att),
+						if (res?.data) {
+							proxy.writeQuery({
+								query: Queries.GET_HOMEWORK,
+								variables: { className, schoolName, vkId: userVkId },
+								data: {
+									homework:
+										data?.homework.filter(hw => hw._id !== homeworkId) || [],
+								},
+							});
+						}
 					},
-				},
-				optimisticResponse: {
-					__typename: 'Mutation',
-					updateHomework: {
-						__typename: 'ClassHomework',
-						_id: homeworkId,
-						...Object.values(homework)
-							.flat()
-							.find((hw) => hw._id === homeworkId),
-						...updates,
-					},
-				},
-				update: (proxy, res) => {
-					const data = proxy.readQuery<{ homework: homework[] }>({
-						query: Queries.GET_HOMEWORK,
-						variables: { className, schoolName, vkId: userVkId },
-					});
+				});
+			}
+		};
 
-					if (res.data && res.data.updateHomework !== null) {
-						proxy.writeQuery({
+		const [updateHomework] = useMutation<
+			WithTypename<{
+				updateHomework: WithTypename<Partial<homework>> | null;
+			}>,
+			{
+				className: string;
+				schoolName: string;
+				homeworkId: string;
+				updates: Partial<
+					Omit<homework, "attachments"> & { attachments: attachment[] }
+				>;
+			}
+		>(Mutations.CHANGE_HOMEWORK);
+		const update = (
+			homeworkId: string | undefined,
+			updates: Partial<WithTypename<homework>>
+		) => {
+			const { __typename, ...updatesWithoutTypename } = updates;
+
+			if (homeworkId) {
+				updateHomework({
+					variables: {
+						className,
+						schoolName,
+						homeworkId,
+						updates: {
+							...updatesWithoutTypename,
+							attachments: updates.attachments?.map(
+								({ __typename, ...att }) => att
+							),
+						},
+					},
+					optimisticResponse: {
+						__typename: "Mutation",
+						updateHomework: {
+							__typename: "ClassHomework",
+							_id: homeworkId,
+							...Object.values(homework)
+								.flat()
+								.find(hw => hw._id === homeworkId),
+							...updates,
+						},
+					},
+					update: (proxy, res) => {
+						const data = proxy.readQuery<{ homework: homework[] }>({
 							query: Queries.GET_HOMEWORK,
 							variables: { className, schoolName, vkId: userVkId },
-							data: {
-								homework:
-									data?.homework.map((hw) =>
-										hw._id === homeworkId ? res.data?.updateHomework : hw,
-									) || [],
-							},
 						});
-					}
-				},
-			});
-		}
-	};
 
-	const [pinHomework] = useMutation<
-		{ pinHomework: { _id: string; pinned: boolean } },
-		{ schoolName: string; className: string; homeworkId: string }
-	>(Mutations.TOGGLE_PIN_HOMEWORK);
-	const pin = (homeworkId: string) => {
-		const hw = Object.values(homework)
-			.flat()
-			.find((hw) => hw._id === homeworkId);
-
-		if (hw) {
-			pinHomework({
-				optimisticResponse: {
-					pinHomework: {
-						_id: homeworkId,
-						pinned: !hw.pinned,
+						if (res.data && res.data.updateHomework !== null) {
+							proxy.writeQuery({
+								query: Queries.GET_HOMEWORK,
+								variables: { className, schoolName, vkId: userVkId },
+								data: {
+									homework:
+										data?.homework.map(hw =>
+											hw._id === homeworkId ? res.data?.updateHomework : hw
+										) || [],
+								},
+							});
+						}
 					},
-				},
-				variables: {
-					className,
-					schoolName,
-					homeworkId,
-				},
-			});
-		}
-	};
+				});
+			}
+		};
 
-	// const [unpinAll] = useMutation<
-	// 	{ unpinAllHomework: boolean },
-	// 	{ className: string; schoolName: string }
-	// >(Mutations.UNPIN_ALL_HOMEWORK, {
-	// 	variables: {
-	// 		className,
-	// 		schoolName,
-	// 	},
-	// });
+		const [pinHomework] = useMutation<
+			{ pinHomework: { _id: string; pinned: boolean } },
+			{ schoolName: string; className: string; homeworkId: string }
+		>(Mutations.TOGGLE_PIN_HOMEWORK);
+		const pin = (homeworkId: string) => {
+			const hw = Object.values(homework)
+				.flat()
+				.find(hw => hw._id === homeworkId);
 
-	useEffect(() => {
-		if (changingHomework === null && changingInfo !== null) {
-			setChangingInfo(null);
-		}
-	}, [changingHomework]);
+			if (hw) {
+				pinHomework({
+					optimisticResponse: {
+						pinHomework: {
+							_id: homeworkId,
+							pinned: !hw.pinned,
+						},
+					},
+					variables: {
+						className,
+						schoolName,
+						homeworkId,
+					},
+				});
+			}
+		};
 
-	const setChanging = (newInfo: { _id: string; changeType: changeTypes } | null) => {
-		setChangingInfo(newInfo);
+		// const [unpinAll] = useMutation<
+		// 	{ unpinAllHomework: boolean },
+		// 	{ className: string; schoolName: string }
+		// >(Mutations.UNPIN_ALL_HOMEWORK, {
+		// 	variables: {
+		// 		className,
+		// 		schoolName,
+		// 	},
+		// });
 
-		localStorage.setItem('homeworkChangingInfo', JSON.stringify(newInfo));
+		useEffect(() => {
+			if (changingHomework === null && changingInfo !== null) {
+				setChangingInfo(null);
+			}
+		}, [changingHomework]);
 
-		if (newInfo) {
-			setChangeHomeworkInitState(findContentById(homework, newInfo._id));
-			localStorage.setItem(
-				'initHomeworkContent',
-				JSON.stringify(findContentById(homework, newInfo._id)),
-			);
-		} else {
-			setChangeHomeworkInitState(null);
-			localStorage.removeItem('initHomeworkContent');
-		}
-	};
+		const setChanging = (
+			newInfo: { _id: string; changeType: changeTypes } | null
+		) => {
+			setChangingInfo(newInfo);
 
-	const parsedHomework = objectForEach(homework, parseHomeworkByLesson);
+			localStorage.setItem("homeworkChangingInfo", JSON.stringify(newInfo));
 
-	return (
-		<>
-			{Object.keys(parsedHomework).map((hwDate) => (
-				<Accordion
-					accordionId={`homework${hwDate}`}
-					key={hwDate}
-					initiallyOpened={initiallyOpened}
-					Head={({ opened }) => (
-						<div className={styles.sectionHeader}>
-							<div className={`${styles.date} ${styles.accordion}`}>
-								{hwDate}
-								<GoTriangleRight
-									className={opened ? styles.triangle_opened : ''}
-									size={15}
-								/>
+			if (newInfo) {
+				setChangeHomeworkInitState(findContentById(homework, newInfo._id));
+				localStorage.setItem(
+					"initHomeworkContent",
+					JSON.stringify(findContentById(homework, newInfo._id))
+				);
+			} else {
+				setChangeHomeworkInitState(null);
+				localStorage.removeItem("initHomeworkContent");
+			}
+		};
+
+		const parsedHomework = objectForEach(homework, parseHomeworkByLesson);
+
+		return (
+			<>
+				{Object.keys(parsedHomework).map(hwDate => (
+					<Accordion
+						accordionId={`homework${hwDate}`}
+						key={hwDate}
+						initiallyOpened={initiallyOpened}
+						Head={({ opened }) => (
+							<div className={styles.sectionHeader}>
+								<div className={`${styles.date} ${styles.accordion}`}>
+									{hwDate}
+									<GoTriangleRight
+										className={opened ? styles.triangle_opened : ""}
+										size={15}
+									/>
+								</div>
+								{new Date(hwDate) > new Date() && (
+									<Add
+										onClick={e => {
+											e.stopPropagation();
+											setHomeworkCreating(true);
+											setInitContent(prev => ({
+												...prev,
+												to: getDateStrFromDayMonthStr(hwDate),
+											}));
+										}}
+									/>
+								)}
 							</div>
-							{new Date(hwDate) > new Date() && (
-								<Add
-									onClick={(e) => {
-										e.stopPropagation();
-										setHomeworkCreating(true);
-										setInitContent((prev) => ({
-											...prev,
-											to: getDateStrFromDayMonthStr(hwDate),
-										}));
-									}}
-								/>
-							)}
-						</div>
-					)}
-				>
-					<>
-						{Object.keys(parsedHomework[hwDate]).map((lesson) => (
-							<Accordion
-								accordionId={`homework${hwDate}${lesson}`}
-								className={styles.offseted}
-								key={hwDate + lesson}
-								Head={({ opened }) => (
-									<div className={styles.sectionHeader}>
-										<div className={`${styles.lesson} ${styles.accordion}`}>
-											{lesson}
-											<GoTriangleRight
-												className={opened ? styles.triangle_opened : ''}
-												size={15}
+						)}
+					>
+						<>
+							{Object.keys(parsedHomework[hwDate]).map(lesson => (
+								<Accordion
+									accordionId={`homework${hwDate}${lesson}`}
+									className={styles.offseted}
+									key={hwDate + lesson}
+									Head={({ opened }) => (
+										<div className={styles.sectionHeader}>
+											<div className={`${styles.lesson} ${styles.accordion}`}>
+												{lesson}
+												<GoTriangleRight
+													className={opened ? styles.triangle_opened : ""}
+													size={15}
+												/>
+											</div>
+											<Add
+												onClick={e => {
+													e.stopPropagation();
+													setHomeworkCreating(true);
+													setInitContent(prev => ({
+														...prev,
+														to: getDateStrFromDayMonthStr(hwDate),
+														lesson,
+													}));
+												}}
 											/>
 										</div>
-										<Add
-											onClick={(e) => {
-												e.stopPropagation();
-												setHomeworkCreating(true);
-												setInitContent((prev) => ({
-													...prev,
-													to: getDateStrFromDayMonthStr(hwDate),
-													lesson,
-												}));
-											}}
-										/>
+									)}
+								>
+									<div className={`${styles.elements} ${styles.offseted}`}>
+										{parsedHomework[hwDate][lesson].map(hw => (
+											<ContentElement
+												pin={pin}
+												setChanging={(_id, changeType) =>
+													setChanging({ _id, changeType })
+												}
+												key={hw._id}
+												removeContent={remove}
+												content={hw}
+												withUserPreferences
+											/>
+										))}
 									</div>
-								)}
-							>
-								<div className={`${styles.elements} ${styles.offseted}`}>
-									{parsedHomework[hwDate][lesson].map((hw) => (
-										<ContentElement
-											pin={pin}
-											setChanging={(_id, changeType) =>
-												setChanging({ _id, changeType })
-											}
-											key={hw._id}
-											removeContent={remove}
-											content={hw}
-											withUserPreferences
-										/>
-									))}
-								</div>
-							</Accordion>
-						))}
-					</>
-				</Accordion>
-			))}
-			{changingInfo && changeHomeworkInitState && changeContentModalRoot && (
-				<>
-					{changingInfo.changeType === changeTypes.content && (
-						<ChangeHomeworkModal
-							changeType={changeTypes.content}
-							initState={changeHomeworkInitState}
-							close={() => setChanging(null)}
-							update={update}
-							changingHomeworkId={changingInfo._id}
-						/>
-					)}
-					{changingInfo.changeType === changeTypes.userPreferences &&
-						ReactDOM.createPortal(
+								</Accordion>
+							))}
+						</>
+					</Accordion>
+				))}
+				{changingInfo && changeHomeworkInitState && changeContentModalRoot && (
+					<>
+						{changingInfo.changeType === changeTypes.content && (
 							<ChangeHomeworkModal
-								changeType={changeTypes.userPreferences}
-								initState={{
-									daysForNotification:
-										changeHomeworkInitState.userPreferences?.[
-											userVkId
-										]?.daysForNotification?.join(', ') ??
-										settings.daysForNotification,
-									notificationTime:
-										changeHomeworkInitState.userPreferences?.[userVkId]
-											?.notificationTime ?? settings.notificationTime,
-									notificationEnabled:
-										changeHomeworkInitState.userPreferences?.[userVkId]
-											?.notificationEnabled ?? settings.notificationsEnabled,
-								}}
+								changeType={changeTypes.content}
+								initState={changeHomeworkInitState}
 								close={() => setChanging(null)}
 								update={update}
 								changingHomeworkId={changingInfo._id}
-							/>,
-							changeContentModalRoot,
+							/>
 						)}
-				</>
-			)}
-		</>
-	);
-});
+						{changingInfo.changeType === changeTypes.userPreferences &&
+							ReactDOM.createPortal(
+								<ChangeHomeworkModal
+									changeType={changeTypes.userPreferences}
+									initState={{
+										daysForNotification:
+											changeHomeworkInitState.userPreferences?.[
+												userVkId
+											]?.daysForNotification?.join(", ") ??
+											settings.daysForNotification,
+										notificationTime:
+											changeHomeworkInitState.userPreferences?.[userVkId]
+												?.notificationTime ?? settings.notificationTime,
+										notificationEnabled:
+											changeHomeworkInitState.userPreferences?.[userVkId]
+												?.notificationEnabled ?? settings.notificationsEnabled,
+									}}
+									close={() => setChanging(null)}
+									update={update}
+									changingHomeworkId={changingInfo._id}
+								/>,
+								changeContentModalRoot
+							)}
+					</>
+				)}
+			</>
+		);
+	}
+);
 
 type CreateHomeworkModalProps = {
-	returnHomework: (hw: changableInHomework) => void;
+	returnHomework: (hw: changeableInHomework) => void;
 	close: () => void;
 	initContent?: Partial<homework>;
 };
@@ -870,7 +938,7 @@ const CreateHomeworkModal: React.FC<CreateHomeworkModalProps> = ({
 			<Modal onClose={close} rootElement={changeContentModalRoot}>
 				<ChangeHomework
 					initState={initContent}
-					confirm={(homework) => {
+					confirm={homework => {
 						returnHomework(homework);
 						close();
 					}}
@@ -887,17 +955,17 @@ type ChangeHomeworkModalProps =
 			initState: Partial<homework>;
 			update: (
 				homeworkId: string | undefined,
-				updates: Partial<WithTypename<homework>>,
+				updates: Partial<WithTypename<homework>>
 			) => void;
 			changingHomeworkId: string;
 			changeType: changeTypes.content;
 	  }
 	| {
 			close: () => void;
-			initState: Partial<stateType<ChangePreferencesProps>>;
+			initState: Partial<stateType<ChangePreferencesPropsType>>;
 			update: (
 				homeworkId: string | undefined,
-				updates: Partial<WithTypename<homework>>,
+				updates: Partial<WithTypename<homework>>
 			) => void;
 			changingHomeworkId: string;
 			changeType: changeTypes.userPreferences;
@@ -919,7 +987,7 @@ const ChangeHomeworkModal: React.FC<ChangeHomeworkModalProps> = ({
 					<Modal onClose={close} rootElement={changeContentModalRoot}>
 						<ChangeHomework
 							initState={initState as Partial<homework>}
-							confirm={(newContent) => {
+							confirm={newContent => {
 								update(changingHomeworkId, newContent);
 							}}
 							final={close}
@@ -934,12 +1002,14 @@ const ChangeHomeworkModal: React.FC<ChangeHomeworkModalProps> = ({
 				{changeContentModalRoot && (
 					<Modal onClose={close} rootElement={changeContentModalRoot}>
 						<ChangePreferences
-							initState={initState as Partial<stateType<ChangePreferencesProps>>}
-							confirm={(newPreferences) => {
+							initState={
+								initState as Partial<stateType<ChangePreferencesPropsType>>
+							}
+							confirm={newPreferences => {
 								const daysForNotification = newPreferences.daysForNotification
-									.split(',')
-									.map((s) => +s.trim())
-									.filter((n) => !isNaN(n));
+									.split(",")
+									.map(s => +s.trim())
+									.filter(n => !isNaN(n));
 
 								update(changingHomeworkId, {
 									userPreferences: {
@@ -961,9 +1031,9 @@ const ChangeHomeworkModal: React.FC<ChangeHomeworkModalProps> = ({
 	return null;
 };
 
-const Add: React.FC<{ onClick: (e: React.MouseEvent<SVGElement, MouseEvent>) => void }> = ({
-	onClick,
-}) => {
+const Add: React.FC<{
+	onClick: (e: React.MouseEvent<SVGElement, MouseEvent>) => void;
+}> = ({ onClick }) => {
 	return (
 		<Options
 			include={redactorOptions.add}
@@ -977,7 +1047,9 @@ const Add: React.FC<{ onClick: (e: React.MouseEvent<SVGElement, MouseEvent>) => 
 	);
 };
 
-const parseHomeworkByLesson = (homework: homework[]): { [lesson: string]: homework[] } => {
+const parseHomeworkByLesson = (
+	homework: homework[]
+): { [lesson: string]: homework[] } => {
 	const parsedHomework = {} as { [lesson: string]: homework[] } & object;
 
 	for (let hw of homework) {

@@ -1,24 +1,25 @@
-import React from 'react';
-import { RoleNames } from '../components/Content/StudentPage/StudentInfo/StudentInfo';
+import React from "react";
+import { RoleNames } from "../components/Content/StudentPage/StudentInfo/StudentInfo";
 import {
 	attachment,
 	callSchedule,
 	content,
 	lessonCalls,
 	StudentInfoType,
+	studentSettings,
 	vkPhoto,
 	WithTypename,
-} from '../types';
-import { parseDate, months } from './date';
+} from "../types";
+import { parseDate, months } from "./date";
 
 type c = content;
 
 export const highlightSearch = (
 	str: string,
 	searchString: string,
-	highlightClass = 'highlight',
+	highlightClass = "highlight"
 ): JSX.Element => {
-	if (searchString.trim() !== '') {
+	if (searchString.trim() !== "") {
 		const string = str.toLowerCase();
 		searchString = searchString.toLowerCase();
 		const ind = string.search(searchString);
@@ -29,17 +30,22 @@ export const highlightSearch = (
 					<span className={highlightClass}>
 						{str.slice(ind, ind + searchString.length)}
 					</span>
-					{str.slice(ind + searchString.length, str.length - ind + searchString.length)}
+					{str.slice(
+						ind + searchString.length,
+						str.length - ind + searchString.length
+					)}
 				</span>
 			);
 		} else if (
-			searchString.split(' ').length > 1 &&
-			searchString.split(' ').some((substr) => string.search(substr) !== -1)
+			searchString.split(" ").length > 1 &&
+			searchString.split(" ").some(substr => string.search(substr) !== -1)
 		) {
 			return highlightSearch(
 				string,
-				searchString.split(' ').find((substr) => string.search(substr) !== -1) as string,
-				highlightClass,
+				searchString
+					.split(" ")
+					.find(substr => string.search(substr) !== -1) as string,
+				highlightClass
 			);
 		}
 	}
@@ -52,19 +58,19 @@ const emailRegExp = /(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+")
 const fullEmailRegExp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/gi;
 export const replaceHrefsByAnchors = (
 	text: string,
-	styles: { [key: string]: string },
+	styles: { [key: string]: string }
 ): JSX.Element => {
 	const siteMatch = text.match(siteRegExp);
 
 	if (siteMatch) {
-		const slices = text.split(new RegExp(siteMatch.join('|'))).filter(Boolean);
+		const slices = text.split(new RegExp(siteMatch.join("|"))).filter(Boolean);
 
 		for (let i = 0; i < siteMatch.length; i++) {
 			slices.splice(i * 2 + 1, 0, siteMatch[i]);
 		}
 
 		for (let i = 0; i < slices.length - 1; i++) {
-			if (slices[i].charAt(slices[i].length - 1) === '@') {
+			if (slices[i].charAt(slices[i].length - 1) === "@") {
 				slices[i] += slices[i + 1];
 				slices.splice(i + 1, 1);
 			}
@@ -76,7 +82,7 @@ export const replaceHrefsByAnchors = (
 			if (slice.match(fullSiteRegExp)) {
 				const element = (
 					<React.Fragment key={slice}>
-						{typeof res[res.length - 1] === 'string' && <br />}
+						{typeof res[res.length - 1] === "string" && <br />}
 						<a href={slice} className={styles.hyperlink}>
 							{slice}
 						</a>
@@ -90,8 +96,8 @@ export const replaceHrefsByAnchors = (
 
 				if (emailMatch) {
 					let emailSlices = slice
-						.split(new RegExp(emailMatch.join('|')))
-						.filter((str) => Boolean(str.trim()));
+						.split(new RegExp(emailMatch.join("|")))
+						.filter(str => Boolean(str.trim()));
 
 					for (let i = 0; i < emailMatch.length; i++) {
 						emailSlices.splice(i * 2 + 1, 0, emailMatch[i]);
@@ -102,7 +108,7 @@ export const replaceHrefsByAnchors = (
 						if (emailSlice.match(fullEmailRegExp)) {
 							const element = (
 								<React.Fragment key={emailSlice}>
-									{typeof res[res.length - 1] === 'string' && <br />}
+									{typeof res[res.length - 1] === "string" && <br />}
 									<a href={`mailto:${emailSlice}`} className={styles.hyperlink}>
 										{emailSlice}
 									</a>
@@ -128,28 +134,36 @@ export const replaceHrefsByAnchors = (
 };
 
 export function parseContentByDate<T extends content>(
-	content: T[],
+	content: T[]
 ): [{ [day: string]: T[] }, { [day: string]: T[] }] {
 	const parsedFutureCont: { [day: string]: T[] } = {};
 	const parsedPastCont: { [day: string]: T[] } = {};
 
-	content = content.slice(0).sort((a, b) => Date.parse(a.to) - Date.parse(b.to));
+	content = content
+		.slice(0)
+		.sort((a, b) => Date.parse(a.to) - Date.parse(b.to));
 
 	for (let cont of content) {
 		let contDate;
 
 		if (isToday(new Date(cont.to))) {
-			contDate = 'Сегодня';
+			contDate = "Сегодня";
 		} else if (isDateWithOffset(new Date(cont.to), 1)) {
-			contDate = 'Завтра';
+			contDate = "Завтра";
 		} else if (isDateWithOffset(new Date(cont.to), 2)) {
-			contDate = 'Послезавтра';
+			contDate = "Послезавтра";
 		} else {
-			contDate = parseDate(cont.to, 'd MM');
+			contDate = parseDate(cont.to, "d MM");
 		}
 
-		if (Date.parse(cont.to) >= Date.now() || isToday(new Date(Date.parse(cont.to)))) {
-			parsedFutureCont[contDate] = [...(parsedFutureCont[contDate] || []), cont];
+		if (
+			Date.parse(cont.to) >= Date.now() ||
+			isToday(new Date(Date.parse(cont.to)))
+		) {
+			parsedFutureCont[contDate] = [
+				...(parsedFutureCont[contDate] || []),
+				cont,
+			];
 		} else {
 			parsedPastCont[contDate] = [...(parsedPastCont[contDate] || []), cont];
 		}
@@ -160,10 +174,11 @@ export function parseContentByDate<T extends content>(
 export function getPinnedContent<T extends content>(content: T[]) {
 	return content.filter(({ pinned }) => pinned);
 }
-export function objectForEach<T extends { [key: string]: ValueType }, ValueType, Output>(
-	object: T,
-	fn: (value: ValueType) => Output,
-): { [key: string]: Output } {
+export function objectForEach<
+	T extends { [key: string]: ValueType },
+	ValueType,
+	Output
+>(object: T, fn: (value: ValueType) => Output): { [key: string]: Output } {
 	const entries: [keyof T, ValueType][] = Object.entries(object);
 	const mappedEntries = entries.map(([key, value]) => [key, fn(value)]);
 
@@ -174,12 +189,16 @@ export function concatObjects<T extends object>(objects: T[]) {
 }
 
 export function getDateStrFromDayMonthStr(dayMonthStr: string): string {
-	if (dayMonthStr.toLowerCase() === 'завтра') {
+	if (dayMonthStr.toLowerCase() === "завтра") {
 		return new Date(new Date().setDate(new Date().getDate() + 1)).toISOString();
-	} else if (dayMonthStr.toLowerCase() === 'послезавтра') {
+	} else if (dayMonthStr.toLowerCase() === "послезавтра") {
 		return new Date(new Date().setDate(new Date().getDate() + 2)).toISOString();
-	} else if (new RegExp(`\\d\\s(${Object.values(months).join('|')})`, 'i').test(dayMonthStr)) {
-		const [day, month] = dayMonthStr.split(' ');
+	} else if (
+		new RegExp(`\\d\\s(${Object.values(months).join("|")})`, "i").test(
+			dayMonthStr
+		)
+	) {
+		const [day, month] = dayMonthStr.split(" ");
 		if (months.indexOf(month) !== -1 && !isNaN(Number(day))) {
 			const monthIndex = months.indexOf(month);
 
@@ -188,7 +207,7 @@ export function getDateStrFromDayMonthStr(dayMonthStr: string): string {
 			return date.toISOString();
 		}
 	}
-	return '';
+	return "";
 }
 
 export function isToday(date: Date) {
@@ -199,10 +218,13 @@ export function isToday(date: Date) {
 }
 export function isDateWithOffset(date: Date, offset: number = 0) {
 	const deltaIsLessThanDay =
-		Math.abs(date.getTime() - new Date().setDate(new Date().getDate() + offset)) <=
+		Math.abs(
+			date.getTime() - new Date().setDate(new Date().getDate() + offset)
+		) <=
 		24 * 60 * 60 * 1000;
 	const datesAreSame =
-		date.getDate() === new Date(new Date().setDate(new Date().getDate() + offset)).getDate();
+		date.getDate() ===
+		new Date(new Date().setDate(new Date().getDate() + offset)).getDate();
 	return deltaIsLessThanDay && datesAreSame;
 }
 
@@ -222,48 +244,55 @@ export function parseSchoolName(schoolName: string): [string, number] | null {
 
 export function convertStudentInfoValue(
 	value: string | boolean | object | Date | number | null | undefined,
-	name: keyof StudentInfoType | keyof StudentInfoType['settings'],
+	name: keyof StudentInfoType | keyof StudentInfoType["settings"]
 ): string {
 	switch (name) {
-		case 'className': {
-			if (typeof value === 'string') {
+		case "className": {
+			if (typeof value === "string") {
 				return value;
 			}
-			return 'Нету';
+			return "Нету";
 		}
-		case 'lastHomeworkCheck': {
-			if (typeof value === 'string') {
-				return parseDate(new Date(value), 'dd MM YYYY hh:mm');
+		case "lastHomeworkCheck": {
+			if (typeof value === "string") {
+				return parseDate(new Date(value), "dd MM YYYY hh:mm");
 			}
+			return "Нету";
 		}
-		case 'role': {
-			if (typeof value === 'string') {
+		case "role": {
+			if (typeof value === "string") {
 				return RoleNames[value] ?? value;
 			}
+			return "Нету";
 		}
-		case 'schoolName': {
-			if (typeof value === 'string') {
-				return String(parseSchoolName(value)?.[1] ?? 'Нету');
+		case "schoolName": {
+			if (typeof value === "string") {
+				return String(parseSchoolName(value)?.[1] ?? "Нету");
 			}
+			return "Нету";
 		}
 	}
 
-	if (typeof value === 'boolean') return value ? 'Да' : 'Нет';
+	if (typeof value === "boolean") return value ? "Да" : "Нет";
 	else if (value instanceof Date)
-		return value.toISOString() === '1970-01-01T00:00:00.000Z'
-			? 'Никогда'
-			: parseDate(value.toISOString(), 'YYYY.MMn.dd hh:mm');
-	else if (Array.isArray(value)) return value.join(', ');
+		return value.toISOString() === "1970-01-01T00:00:00.000Z"
+			? "Никогда"
+			: parseDate(value.toISOString(), "YYYY.MMn.dd hh:mm");
+	else if (Array.isArray(value)) return value.join(", ");
 
-	if (value === undefined || value === null) return 'Не указано';
+	if (value === undefined || value === null) return "Не указано";
 
-	return typeof value === 'string' ? value : JSON.stringify(value);
+	return typeof value === "string" ? value : JSON.stringify(value);
 }
 export function getPrettyName(name: string, shortenName: boolean = false) {
-	if (!name) return 'Error empty name';
+	if (!name) return "Error empty name";
 
-	if (shortenName) return name.split(' ')[0][0].toUpperCase() + ' ' + name.split(' ')[1];
-	else return name.split(' ')[0] + ' ' + (name.split(' ')[1][0].toUpperCase() || '');
+	if (shortenName)
+		return name.split(" ")[0][0].toUpperCase() + " " + name.split(" ")[1];
+	else
+		return (
+			name.split(" ")[0] + " " + (name.split(" ")[1][0].toUpperCase() || "")
+		);
 }
 
 export function memoize(fn: (...props: any) => any) {
@@ -286,85 +315,85 @@ export function changeTitle(newTitle: string): void {
 }
 
 const ruToEngTranslits: { [key: string]: string } = {
-	а: 'a',
-	б: 'b',
-	в: 'v',
-	г: 'g',
-	д: 'd',
-	е: 'e',
-	ё: 'yo',
-	ж: 'zh',
-	з: 'z',
-	и: 'i',
-	й: 'y',
-	к: 'k',
-	л: 'l',
-	м: 'm',
-	н: 'n',
-	о: 'o',
-	п: 'p',
-	р: 'r',
-	с: 's',
-	т: 't',
-	у: 'u',
-	ф: 'f',
-	х: 'h',
-	ц: 'c',
-	ч: 'ch',
-	ш: 'sh',
-	щ: 'shch',
-	ъ: '^',
-	ы: 'i^',
-	ь: '$',
-	э: 'e',
-	ю: 'yu',
-	я: 'ya',
-	дж: 'j',
+	а: "a",
+	б: "b",
+	в: "v",
+	г: "g",
+	д: "d",
+	е: "e",
+	ё: "yo",
+	ж: "zh",
+	з: "z",
+	и: "i",
+	й: "y",
+	к: "k",
+	л: "l",
+	м: "m",
+	н: "n",
+	о: "o",
+	п: "p",
+	р: "r",
+	с: "s",
+	т: "t",
+	у: "u",
+	ф: "f",
+	х: "h",
+	ц: "c",
+	ч: "ch",
+	ш: "sh",
+	щ: "shch",
+	ъ: "^",
+	ы: "i^",
+	ь: "$",
+	э: "e",
+	ю: "yu",
+	я: "ya",
+	дж: "j",
 };
 const engToRuTranslits: { [key: string]: string } = {
-	a: 'а',
-	b: 'б',
-	v: 'в',
-	g: 'г',
-	d: 'д',
-	e: 'е',
-	z: 'з',
-	i: 'и',
-	y: 'й',
-	k: 'к',
-	l: 'л',
-	m: 'м',
-	n: 'н',
-	o: 'о',
-	p: 'п',
-	r: 'р',
-	s: 'с',
-	t: 'т',
-	u: 'у',
-	f: 'ф',
-	h: 'х',
-	c: 'ц',
-	j: 'дж',
-	q: 'к',
-	x: 'кс',
-	yo: 'ё',
-	zh: 'ж',
-	'i^': 'ы',
-	ch: 'ч',
-	sh: 'ш',
-	shch: 'щ',
-	oo: 'у',
-	ee: 'и',
-	yu: 'ю',
-	ya: 'я',
-	$: 'ь',
-	'^': 'ъ',
+	a: "а",
+	b: "б",
+	v: "в",
+	g: "г",
+	d: "д",
+	e: "е",
+	z: "з",
+	i: "и",
+	y: "й",
+	k: "к",
+	l: "л",
+	m: "м",
+	n: "н",
+	o: "о",
+	p: "п",
+	r: "р",
+	s: "с",
+	t: "т",
+	u: "у",
+	f: "ф",
+	h: "х",
+	c: "ц",
+	j: "дж",
+	q: "к",
+	x: "кс",
+	yo: "ё",
+	zh: "ж",
+	"i^": "ы",
+	ch: "ч",
+	sh: "ш",
+	shch: "щ",
+	oo: "у",
+	ee: "и",
+	yu: "ю",
+	ya: "я",
+	$: "ь",
+	"^": "ъ",
 };
 export function translit(rusWord: string): string {
-	const specialCharacters = ['дж'];
+	const specialCharacters = ["дж"];
 
-	if (rusWord && typeof rusWord === 'string') {
-		if (new RegExp(specialCharacters.join('|'), 'i').test(rusWord)) {
+	if (rusWord && typeof rusWord === "string") {
+		if (new RegExp(specialCharacters.join("|"), "i").test(rusWord)) {
 			for (const i of specialCharacters) {
 				while (rusWord.indexOf(i) !== -1) {
 					rusWord = rusWord.replace(i, ruToEngTranslits[i]);
@@ -379,14 +408,25 @@ export function translit(rusWord: string): string {
 
 		return rusWord;
 	} else {
-		return '';
+		return "";
 	}
 }
 export function retranslit(engWord: string) {
-	const specialCharacters = ['shch', 'ch', 'sh', 'zh', 'yo', 'yu', 'ya', 'oo', 'ee', 'i^'];
+	const specialCharacters = [
+		"shch",
+		"ch",
+		"sh",
+		"zh",
+		"yo",
+		"yu",
+		"ya",
+		"oo",
+		"ee",
+		"i^",
+	];
 
-	if (engWord && typeof engWord === 'string') {
-		if (new RegExp(specialCharacters.join('|'), 'i').test(engWord)) {
+	if (engWord && typeof engWord === "string") {
+		if (new RegExp(specialCharacters.join("|"), "i").test(engWord)) {
 			for (const i of specialCharacters) {
 				while (engWord.indexOf(i) !== -1) {
 					engWord = engWord.replace(i, engToRuTranslits[i]);
@@ -401,7 +441,7 @@ export function retranslit(engWord: string) {
 
 		return engWord;
 	} else {
-		return '';
+		return "";
 	}
 }
 export function capitalize(word: string) {
@@ -414,13 +454,13 @@ export function parseAttachment(photo: vkPhoto) {
 export function findMaxPhotoResolution(photo: vkPhoto) {
 	return photo.sizes.reduce<{ url: string; height: number }>(
 		(acc, c) => (c.height > acc.height ? c : acc),
-		{ height: 0, url: '' },
+		{ height: 0, url: "" }
 	).url;
 }
 export function getPhotoUploadURL() {
-	if (document.location.hostname === 'localhost') {
-		return 'http://localhost:8080/saveAttachment';
-	} else if (document.location.origin.endsWith('/')) {
+	if (document.location.hostname === "localhost") {
+		return "http://localhost:8080/saveAttachment";
+	} else if (document.location.origin.endsWith("/")) {
 		return document.location.origin + `saveAttachment`;
 	} else {
 		return document.location.origin + `/saveAttachment`;
@@ -431,23 +471,28 @@ export async function uploadPhoto(files: any) {
 		if (files) {
 			const fd = new FormData();
 			for (let i = 0; i < files.length; i++) {
-				fd.append('newAttachment', files[i]);
+				fd.append("newAttachment", files[i]);
 			}
 
-			const { photos }: { photos: vkPhoto[] } = await fetch(getPhotoUploadURL(), {
-				method: 'POST',
-				body: fd,
-				headers: {
-					accepts: 'application/json',
-				},
-			}).then((res) => res.json());
+			const { photos }: { photos: vkPhoto[] } = await fetch(
+				getPhotoUploadURL(),
+				{
+					method: "POST",
+					body: fd,
+					headers: {
+						accepts: "application/json",
+					},
+				}
+			).then(res => res.json());
 
-			const newAttachments: WithTypename<attachment>[] = photos.map((photo, i) => ({
-				url: findMaxPhotoResolution(photo),
-				value: parseAttachment(photo),
-				_id: i + Date.now().toString(),
-				__typename: 'ClassHomeworkAttachment',
-			}));
+			const newAttachments: WithTypename<attachment>[] = photos.map(
+				(photo, i) => ({
+					url: findMaxPhotoResolution(photo),
+					value: parseAttachment(photo),
+					_id: i + Date.now().toString(),
+					__typename: "ClassHomeworkAttachment",
+				})
+			);
 
 			return newAttachments;
 		} else {
@@ -459,13 +504,13 @@ export async function uploadPhoto(files: any) {
 	}
 }
 
-export function findContentById<T extends content, ContentMap extends Record<string, T[]>>(
-	content: ContentMap,
-	id: string,
-): T | null {
+export function findContentById<
+	T extends content,
+	ContentMap extends Record<string, T[]>
+>(content: ContentMap, id: string): T | null {
 	const contentArray: T[] = Object.values(content).flat();
 
-	return contentArray.find((content) => content._id === id) || null;
+	return contentArray.find(content => content._id === id) || null;
 }
 
 export function inRange(number: number, min: number, max: number) {
@@ -480,7 +525,10 @@ export function inRange(number: number, min: number, max: number) {
 	return true;
 }
 
-export function getCallCheduleForDay(callSchedule: callSchedule, dayIndex: number) {
+export function getCallCheduleForDay(
+	callSchedule: callSchedule,
+	dayIndex: number
+) {
 	if (inRange(dayIndex, 1, 7)) {
 		const { exceptions, defaultSchedule } = callSchedule;
 		if (exceptions[dayIndex - 1].length > 0 && dayIndex !== 7) {
@@ -489,19 +537,24 @@ export function getCallCheduleForDay(callSchedule: callSchedule, dayIndex: numbe
 			return defaultSchedule;
 		}
 	} else {
-		throw new Error('Day index must be in range 1 to 7, got: ' + dayIndex);
+		throw new Error("Day index must be in range 1 to 7, got: " + dayIndex);
 	}
 }
 
-export const timeRegExp = /([0-9]{2}):([0-9]{2})/;
+export const timeRegExp = /([0-9]{1,2}):([0-9]{2})/;
 export function checkValidTime(str: string) {
 	if (timeRegExp.test(str)) {
 		//@ts-ignore
 		const [hours, minutes] = str
 			.match(timeRegExp)
 			.slice(1)
-			.map((n) => parseInt(n));
-		if (!isNaN(hours) && !isNaN(minutes) && inRange(hours, 0, 23) && inRange(minutes, 0, 59)) {
+			.map(n => parseInt(n));
+		if (
+			!isNaN(hours) &&
+			!isNaN(minutes) &&
+			inRange(hours, 0, 23) &&
+			inRange(minutes, 0, 59)
+		) {
 			return true;
 		}
 	}
@@ -512,21 +565,25 @@ export function compareTimes(a: string, b: string) {
 	if (checkValidTime(a) && checkValidTime(b)) {
 		return a > b;
 	} else {
-		throw new Error('Times should be in format 00:00, got: ' + `${a} and ${b}`);
+		throw new Error("Times should be in format 00:00, got: " + `${a} and ${b}`);
 	}
 }
 export function getTimeFromDate(date: Date) {
-	const hours = String(date.getHours()).padStart(2, '0');
-	const minutes = String(date.getMinutes()).padStart(2, '0');
+	const hours = String(date.getHours()).padStart(2, "0");
+	const minutes = String(date.getMinutes()).padStart(2, "0");
 	return `${hours}:${minutes}`;
 }
-export function getLessonAtSpecificTime(callSchedule: lessonCalls[], date: Date) {
+export function getLessonAtSpecificTime(
+	callSchedule: lessonCalls[],
+	date: Date
+) {
 	const lessonEnds = callSchedule.map(({ end }) => end);
 	const time = getTimeFromDate(date);
 
 	let index = 0;
 
-	while (compareTimes(time, lessonEnds[index]) && index < lessonEnds.length - 1) index++;
+	while (compareTimes(time, lessonEnds[index]) && index < lessonEnds.length - 1)
+		index++;
 
 	return index;
 }

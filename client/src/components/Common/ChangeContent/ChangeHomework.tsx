@@ -1,66 +1,85 @@
 import {
 	attachment,
-	changableInHomework,
+	changeableInHomework,
 	homework,
 	isOptionType,
 	optionType,
 	redactorOptions,
-} from '../../../types';
+} from "../../../types";
 
-import React, { ChangeEvent, useEffect, useState } from 'react';
-import 'react-datepicker/dist/react-datepicker.css';
-import DatePicker from 'react-datepicker';
-import { useQuery } from '@apollo/client';
-import { useParams } from 'react-router-dom';
-import Select, { StylesConfig, ValueType } from 'react-select';
+import React, { ChangeEvent, useEffect, useState } from "react";
+import "react-datepicker/dist/react-datepicker.css";
+import DatePicker from "react-datepicker";
+import { useQuery } from "@apollo/client";
+import { useParams } from "react-router-dom";
+import Select, { StylesConfig, ValueType } from "react-select";
 
-import styles from './ChangeContent.module.css';
+import styles from "./ChangeContent.module.css";
 import createContentFiller, {
 	ContentSectionProps,
-} from '../../../utils/createContentChanger/createContentChanger';
-import Suspender from '../Suspender/Suspender';
+} from "../../../utils/createContentChanger/createContentChanger";
+import Suspender from "../Suspender/Suspender";
 import {
 	GET_SCHEDULE,
 	getSelectTheme,
-} from '../../Content/ClassPage/Sections/ScheduleSection/ScheduleSection';
-import { memoize } from '../../../utils/functions';
-import { createContentPropsChanger } from './ChangeContent';
+} from "../../Content/ClassPage/Sections/ScheduleSection/ScheduleSection";
+import { memoize } from "../../../utils/functions";
+import { createContentPropsChanger } from "./ChangeContent";
 
-const DEFAULT_LESSON = 'Выберите предмет';
+const DEFAULT_LESSON = "Выберите предмет";
 
 type persistentState = {
 	placeholdersCount: number;
 };
 type ChangeHomeworkProps = {
-	[K in keyof changableInHomework]: ContentSectionProps<changableInHomework[K], persistentState>;
+	[K in keyof changeableInHomework]: ContentSectionProps<
+		changeableInHomework[K],
+		persistentState
+	>;
 };
 
-const findWeekDaysWithLesson = memoize((schedule: string[][], lesson: string): number[] => {
-	return schedule.reduce((acc, c, i) => {
-		if (c.includes(lesson)) {
-			acc.push(i + 1);
-		}
-		return acc;
-	}, [] as number[]);
-});
-const shouldBeOutlined = memoize((schedule: string[][], lesson: string, weekDay: number) => {
-	return findWeekDaysWithLesson(schedule, lesson).includes(weekDay);
-});
+const findWeekDaysWithLesson = memoize(
+	(schedule: string[][], lesson: string): number[] => {
+		return schedule.reduce((acc, c, i) => {
+			if (c.includes(lesson)) {
+				acc.push(i + 1);
+			}
+			return acc;
+		}, [] as number[]);
+	}
+);
+const shouldBeOutlined = memoize(
+	(schedule: string[][], lesson: string, weekDay: number) => {
+		return findWeekDaysWithLesson(schedule, lesson).includes(weekDay);
+	}
+);
 
-const findNextDayWithLesson = (schedule: string[][], lesson: string, currentWeekDay: number) => {
+const findNextDayWithLesson = (
+	schedule: string[][],
+	lesson: string,
+	currentWeekDay: number
+) => {
 	let lastIndex = -1;
-	if (schedule.slice(currentWeekDay).find((e) => e.includes(lesson))) {
+	if (schedule.slice(currentWeekDay).find(e => e.includes(lesson))) {
 		lastIndex =
-			schedule.slice(currentWeekDay).findIndex((e) => e.includes(lesson)) +
+			schedule.slice(currentWeekDay).findIndex(e => e.includes(lesson)) +
 			currentWeekDay +
 			1;
-	} else if (schedule.find((e) => e.includes(lesson))) {
-		lastIndex = schedule.findIndex((e) => e.includes(lesson)) + 1;
+	} else if (schedule.find(e => e.includes(lesson))) {
+		lastIndex = schedule.findIndex(e => e.includes(lesson)) + 1;
 	}
 	return lastIndex;
 };
-const findNextLessonDate = (schedule: string[][], lesson: string, initDate = new Date()) => {
-	const nextLessonWeekDay = findNextDayWithLesson(schedule, lesson, initDate.getDay());
+const findNextLessonDate = (
+	schedule: string[][],
+	lesson: string,
+	initDate = new Date()
+) => {
+	const nextLessonWeekDay = findNextDayWithLesson(
+		schedule,
+		lesson,
+		initDate.getDay()
+	);
 
 	if (nextLessonWeekDay <= 7 && nextLessonWeekDay !== -1) {
 		const weekDay = initDate.getDay() || 7; //Чтобы воскресенье было 7 днем недели
@@ -73,21 +92,24 @@ const findNextLessonDate = (schedule: string[][], lesson: string, initDate = new
 	} else if (nextLessonWeekDay === -1) {
 		return null;
 	} else {
-		throw new TypeError('Week day must be less or equal to 7');
+		throw new TypeError("Week day must be less or equal to 7");
 	}
 };
 
 const selectStyles: StylesConfig<optionType, false> = {
-	container: (provided) => ({
+	container: provided => ({
 		...provided,
-		fontSize: '1.6rem',
+		fontSize: "1.6rem",
 	}),
 };
 
-const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>(
+const ChangeHomework = createContentFiller<
+	persistentState,
+	ChangeHomeworkProps
+>(
 	{
 		lesson: {
-			title: 'Урок',
+			title: "Урок",
 			ContentComponent: ({ value, changeHandler }) => {
 				const { className, schoolName } = useParams<{
 					className: string;
@@ -102,11 +124,14 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 						changeHandler(newLessonOption.value);
 
 						const prevSavedValue = JSON.parse(
-							localStorage.getItem('initHomeworkContent') ?? '{}',
+							localStorage.getItem("initHomeworkContent") ?? "{}"
 						);
 						localStorage.setItem(
-							'initHomeworkContent',
-							JSON.stringify({ ...prevSavedValue, lesson: newLessonOption.value }),
+							"initHomeworkContent",
+							JSON.stringify({
+								...prevSavedValue,
+								lesson: newLessonOption.value,
+							})
 						);
 					}
 				};
@@ -114,14 +139,14 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 					<Suspender queries={[scheduleQuery]}>
 						{({ schedule }: { schedule: string[][] }) => {
 							const possibleLessons = [...new Set(schedule.flat(2))].sort();
-							const lessonOptions = possibleLessons.map((les) => ({
+							const lessonOptions = possibleLessons.map(les => ({
 								value: les,
 								label: les,
 							}));
 
 							return (
 								<Select
-									placeholder={'Выберите предмет'}
+									placeholder={"Выберите предмет"}
 									defaultInputValue={value}
 									options={lessonOptions}
 									styles={selectStyles}
@@ -133,13 +158,13 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 					</Suspender>
 				);
 			},
-			validator: (lesson) => {
-				if (lesson === '' || lesson === DEFAULT_LESSON) return 'Выберите урок';
+			validator: lesson => {
+				if (lesson === "" || lesson === DEFAULT_LESSON) return "Выберите урок";
 			},
 		},
-		...createContentPropsChanger('initHomeworkContent'),
+		...createContentPropsChanger("initHomeworkContent"),
 		to: {
-			title: 'Дата',
+			title: "Дата",
 			ContentComponent: ({ changeHandler, value, state: { lesson } }) => {
 				const { className, schoolName } = useParams<{
 					className: string;
@@ -155,11 +180,11 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 					changeHandler(newDate);
 
 					const prevSavedValue = JSON.parse(
-						localStorage.getItem('initHomeworkContent') ?? '{}',
+						localStorage.getItem("initHomeworkContent") ?? "{}"
 					);
 					localStorage.setItem(
-						'initHomeworkContent',
-						JSON.stringify({ ...prevSavedValue, to: newDate }),
+						"initHomeworkContent",
+						JSON.stringify({ ...prevSavedValue, to: newDate })
 					);
 				};
 
@@ -186,14 +211,14 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 												outlined={shouldBeOutlined(
 													schedule,
 													lesson,
-													date.getDay(),
+													date.getDay()
 												)}
 											/>
 										)}
 										nextLessonDate={findNextLessonDate(
 											schedule,
 											lesson,
-											new Date(value),
+											new Date(value)
 										)}
 									/>
 								)}
@@ -203,24 +228,27 @@ const ChangeHomework = createContentFiller<persistentState, ChangeHomeworkProps>
 				}
 			},
 			defaultValue: new Date().toISOString(),
-			validator: (date) => {
+			validator: date => {
 				if (+date >= Date.now())
-					return 'Дата на которую задано задание должно быть в будущем';
+					return "Дата на которую задано задание должно быть в будущем";
 			},
 		},
 	},
 	{
 		placeholdersCount: 0,
 	},
-	(state) => {
-		if (state.text.trim() === '' && state.attachments.length === 0) {
-			return 'Задание должно содержать текст или фотографии';
+	state => {
+		if (state.text.trim() === "" && state.attachments.length === 0) {
+			return "Задание должно содержать текст или фотографии";
 		}
-	},
+	}
 );
 
-const OutlinedDay: React.FC<{ outlined: boolean; date?: number }> = ({ outlined, date }) => {
-	return <span className={outlined ? styles.outlined : ''}>{date}</span>;
+const OutlinedDay: React.FC<{ outlined: boolean; date?: number }> = ({
+	outlined,
+	date,
+}) => {
+	return <span className={outlined ? styles.outlined : ""}>{date}</span>;
 };
 const ToSection: React.FC<{
 	value: string;
@@ -232,13 +260,15 @@ const ToSection: React.FC<{
 		<div className={styles.toSection}>
 			<DatePicker
 				selected={new Date(value)}
-				onChange={(date) => {
-					if (date !== null) {
+				onChange={date => {
+					if (date instanceof Date) {
 						changeHandler(date.toISOString());
+					} else {
+						throw new Error("Wrong date format, expected Date, got: " + date);
 					}
 				}}
 				minDate={new Date()}
-				dateFormat={'dd/MM/yyyy'}
+				dateFormat={"dd/MM/yyyy"}
 				className={styles.datePickerInput}
 				showPopperArrow={false}
 				calendarClassName={styles.datePickerCalendar}

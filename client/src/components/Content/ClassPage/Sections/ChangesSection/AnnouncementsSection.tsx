@@ -1,4 +1,4 @@
-import styles from '../Common/ContentSection.module.css';
+import styles from "../Common/ContentSection.module.css";
 
 import {
 	attachment,
@@ -6,14 +6,21 @@ import {
 	announcement,
 	redactorOptions,
 	changableInAnnouncement,
-} from '../../../../../types';
+} from "../../../../../types";
 
-import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
-import { gql, useSubscription } from '@apollo/client';
-import { useQuery, useMutation } from '@apollo/client';
-import { GoTriangleRight } from 'react-icons/go';
-import { useParams } from 'react-router-dom';
+import React, {
+	Dispatch,
+	MouseEventHandler,
+	SetStateAction,
+	useContext,
+	useEffect,
+	useState,
+} from "react";
+import ReactDOM from "react-dom";
+import { gql, useSubscription } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
+import { GoTriangleRight } from "react-icons/go";
+import { useParams } from "react-router-dom";
 
 import {
 	parseContentByDate,
@@ -21,29 +28,36 @@ import {
 	concatObjects,
 	getPinnedContent,
 	findContentById,
-} from '../../../../../utils/functions';
+} from "../../../../../utils/functions";
 
-import Accordion from '../../../../Common/Accordion/Accordion';
-import Suspender from '../../../../Common/Suspender/Suspender';
+import Accordion from "../../../../Common/Accordion/Accordion";
+import Suspender from "../../../../Common/Suspender/Suspender";
 import ChangeContent, {
 	ChangeContentPropsType,
-} from '../../../../Common/ChangeContent/ChangeContent';
-import Options from '../../../../Common/Options/Options';
-import InfoSection from '../../InfoSection/InfoSection';
-import ContentElement from '../../../../Common/ContentElement';
+} from "../../../../Common/ChangeContent/ChangeContent";
+import Options from "../../../../Common/Options/Options";
+import InfoSection from "../../InfoSection/InfoSection";
+import ContentElement from "../../../../Common/ContentElement";
 
-import { UserContext } from '../../../../../App';
-import usePolling from '../../../../../hooks/usePolling';
-import Modal from '../../../../Common/Modal';
-import { stateType } from '../../../../../utils/createContentChanger/createContentChanger';
+import { UserContext } from "../../../../../App";
+import usePolling from "../../../../../hooks/usePolling";
+import Modal from "../../../../Common/Modal";
+import { stateType } from "../../../../../utils/createContentChanger/createContentChanger";
+import { AiOutlineReload } from "react-icons/ai";
 
-const announcementContentModalRoot = document.getElementById('changeContentModal');
+const announcementContentModalRoot = document.getElementById(
+	"changeContentModal"
+);
 
 const FIVE_MINS = 1000 * 60 * 5;
 
 const Queries = {
 	GET_ANNOUNCEMENTS: gql`
-		query GetAnnouncements($className: String!, $schoolName: String!, $vkId: Int!) {
+		query GetAnnouncements(
+			$className: String!
+			$schoolName: String!
+			$vkId: Int!
+		) {
 			announcements: getAnnouncements(
 				className: $className
 				schoolName: $schoolName
@@ -168,7 +182,10 @@ const Mutations = {
 };
 const Subscriptions = {
 	ON_ANNOUNCEMENT_ADDED: gql`
-		subscription OnAnnouncementAdded($className: String!, $schoolName: String!) {
+		subscription OnAnnouncementAdded(
+			$className: String!
+			$schoolName: String!
+		) {
 			onAnnouncementAdded(className: $className, schoolName: $schoolName) {
 				_id
 				text
@@ -185,7 +202,10 @@ const Subscriptions = {
 		}
 	`,
 	ON_ANNOUNCEMENT_CONFIRMED: gql`
-		subscription OnAnnouncementConfirmed($className: String!, $schoolName: String!) {
+		subscription OnAnnouncementConfirmed(
+			$className: String!
+			$schoolName: String!
+		) {
 			onAnnouncementConfirmed(className: $className, schoolName: $schoolName) {
 				stabId
 				actualId
@@ -193,12 +213,18 @@ const Subscriptions = {
 		}
 	`,
 	ON_ANNOUNCEMENTS_REMOVED: gql`
-		subscription OnAnnouncementsRemoved($className: String!, $schoolName: String!) {
+		subscription OnAnnouncementsRemoved(
+			$className: String!
+			$schoolName: String!
+		) {
 			onAnnouncementsRemoved(className: $className, schoolName: $schoolName)
 		}
 	`,
 	ON_ANNOUNCEMENT_CHANGED: gql`
-		subscription OnAnnouncementChanged($className: String!, $schoolName: String!) {
+		subscription OnAnnouncementChanged(
+			$className: String!
+			$schoolName: String!
+		) {
 			onAnnouncementChanged(className: $className, schoolName: $schoolName) {
 				_id
 				text
@@ -217,14 +243,17 @@ const Subscriptions = {
 };
 
 const AnnouncementsSection: React.FC<{}> = ({}) => {
-	const { className, schoolName } = useParams<{ className: string; schoolName: string }>();
+	const { className, schoolName } = useParams<{
+		className: string;
+		schoolName: string;
+	}>();
 	const { uid } = useContext(UserContext);
 	const [announcementCreating, setAnnouncementCreating] = useState(
-		Boolean(localStorage.getItem('announcementCreating')),
+		Boolean(localStorage.getItem("announcementCreating"))
 	);
-	const [initContent, setInitAnnouncementContent] = useState<Partial<announcement>>(
-		JSON.parse(localStorage.getItem('initAnnouncementContent') ?? '{}'),
-	);
+	const [initContent, setInitAnnouncementContent] = useState<
+		Partial<announcement>
+	>(JSON.parse(localStorage.getItem("initAnnouncementContent") ?? "{}"));
 
 	const announcementsQuery = useQuery<
 		{ announcements: announcement[] },
@@ -239,54 +268,54 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 			onSubscriptionData: ({ subscriptionData }) => {
 				const newAnnouncement = subscriptionData.data?.onAnnouncementAdded;
 				if (newAnnouncement) {
-					announcementsQuery.updateQuery((prev) => {
+					announcementsQuery.updateQuery(prev => {
 						return {
 							announcements: prev.announcements.concat([newAnnouncement]),
 						};
 					});
 				}
 			},
-		},
+		}
 	);
-	useSubscription<{ onAnnouncementConfirmed: { stabId: string; actualId: string } | null }>(
-		Subscriptions.ON_ANNOUNCEMENT_CONFIRMED,
-		{
-			variables: { className, schoolName },
-			onSubscriptionData: ({ subscriptionData }) => {
-				const confirmation = subscriptionData.data?.onAnnouncementConfirmed;
+	useSubscription<{
+		onAnnouncementConfirmed: { stabId: string; actualId: string } | null;
+	}>(Subscriptions.ON_ANNOUNCEMENT_CONFIRMED, {
+		variables: { className, schoolName },
+		onSubscriptionData: ({ subscriptionData }) => {
+			const confirmation = subscriptionData.data?.onAnnouncementConfirmed;
 
-				if (confirmation) {
-					announcementsQuery.updateQuery((prev) => {
-						return {
-							announcements: prev.announcements.map(({ _id, ...announcement }) =>
-								_id === confirmation.stabId
-									? { _id: confirmation.actualId, ...announcement }
-									: { _id, ...announcement },
-							),
-						};
-					});
-				}
-			},
+			if (confirmation) {
+				announcementsQuery.updateQuery(prev => {
+					return {
+						announcements: prev.announcements.map(({ _id, ...announcement }) =>
+							_id === confirmation.stabId
+								? { _id: confirmation.actualId, ...announcement }
+								: { _id, ...announcement }
+						),
+					};
+				});
+			}
 		},
-	);
+	});
 	useSubscription<{ onAnnouncementsRemoved: string[] | null }>(
 		Subscriptions.ON_ANNOUNCEMENTS_REMOVED,
 		{
 			variables: { className, schoolName },
 			onSubscriptionData: ({ subscriptionData }) => {
-				const removedAnnouncementsIds = subscriptionData.data?.onAnnouncementsRemoved;
+				const removedAnnouncementsIds =
+					subscriptionData.data?.onAnnouncementsRemoved;
 
 				if (removedAnnouncementsIds) {
-					announcementsQuery.updateQuery((prev) => {
+					announcementsQuery.updateQuery(prev => {
 						return {
 							announcements: prev.announcements.filter(
-								({ _id }) => !removedAnnouncementsIds.includes(_id as string),
+								({ _id }) => !removedAnnouncementsIds.includes(_id as string)
 							),
 						};
 					});
 				}
 			},
-		},
+		}
 	);
 	useSubscription<{ onAnnouncementChanged: Partial<announcement> | null }>(
 		Subscriptions.ON_ANNOUNCEMENT_CHANGED,
@@ -296,10 +325,10 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 				const updates = subscriptionData.data?.onAnnouncementChanged;
 
 				if (updates) {
-					announcementsQuery.updateQuery((prev) => {
+					announcementsQuery.updateQuery(prev => {
 						let announcementToUpdate = {
 							...announcementsQuery.data?.announcements.find(
-								({ _id }) => updates._id === _id,
+								({ _id }) => updates._id === _id
 							),
 						};
 
@@ -312,7 +341,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 									updates.hasOwnProperty(updateKey) &&
 									//@ts-ignore
 									updates[updateKey] != undefined &&
-									!['_id', '__typename'].includes(updateKey)
+									!["_id", "__typename"].includes(updateKey)
 								) {
 									//@ts-ignore
 									announcementToUpdate[updateKey] = updates[updateKey];
@@ -324,7 +353,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 									({ _id, ...announcement }) =>
 										_id === updates._id
 											? (announcementToUpdate as announcement)
-											: { ...announcement, _id },
+											: { ...announcement, _id }
 								),
 							};
 						}
@@ -333,7 +362,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 					});
 				}
 			},
-		},
+		}
 	);
 	usePolling(announcementsQuery, FIVE_MINS);
 
@@ -341,18 +370,23 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 		setAnnouncementCreating(val);
 
 		if (val) {
-			localStorage.setItem('announcementCreating', val.toString());
+			localStorage.setItem("announcementCreating", val.toString());
 		} else {
-			localStorage.removeItem('announcementCreating');
+			localStorage.removeItem("announcementCreating");
 		}
 	};
 	const setInitContent = (
-		val: Partial<announcement> | ((prev: Partial<announcement>) => Partial<announcement>),
+		val:
+			| Partial<announcement>
+			| ((prev: Partial<announcement>) => Partial<announcement>)
 	) => {
-		const resumedValue = typeof val === 'function' ? val(initContent) : val;
+		const resumedValue = typeof val === "function" ? val(initContent) : val;
 
 		setInitAnnouncementContent(val);
-		localStorage.setItem('initAnnouncementContent', JSON.stringify(resumedValue));
+		localStorage.setItem(
+			"initAnnouncementContent",
+			JSON.stringify(resumedValue)
+		);
 	};
 
 	const [removeOldAnnouncements] = useMutation<
@@ -363,7 +397,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 		optimisticResponse: {
 			removeOldAnnouncements:
 				announcementsQuery.data?.announcements?.filter(
-					({ to }) => Date.now() - Date.parse(to) <= 24 * 60 * 60 * 1000,
+					({ to }) => Date.now() - Date.parse(to) <= 24 * 60 * 60 * 1000
 				) || [],
 		},
 		update: (proxy, mutation) => {
@@ -399,12 +433,12 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 				student_id: uid,
 			},
 			optimisticResponse: {
-				__typename: 'Mutation',
+				__typename: "Mutation",
 				addAnnouncement: {
 					...announcementData,
 					pinned: false,
 					_id: Date.now().toString(),
-					__typename: 'ClassAnnouncement',
+					__typename: "ClassAnnouncement",
 				},
 			},
 			refetchQueries: [
@@ -416,6 +450,12 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 		});
 	};
 
+	const refetch: MouseEventHandler = e => {
+		e.stopPropagation();
+
+		announcementsQuery.refetch();
+	};
+
 	return (
 		<>
 			<InfoSection
@@ -425,7 +465,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 						announcementsQuery?.data?.announcements.length > 0
 					)
 				}
-				name='Обьявления'
+				name="Обьявления"
 				Header={({ opened, onClick }) => (
 					<div
 						className={`${styles.sectionHeader} ${styles.contentHeader}`}
@@ -434,48 +474,52 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 						<div className={styles.title}>
 							Обьявления
 							<GoTriangleRight
-								className={opened ? styles.triangle_opened : ''}
+								className={opened ? styles.triangle_opened : ""}
 								size={15}
 							/>
 						</div>
 
-						<Add
-							onClick={(e) => {
-								e.stopPropagation();
-								setCreating(true);
-							}}
-						/>
+						<div className={styles.headerButtons}>
+							<AiOutlineReload size={23} onClick={refetch} />
+							<Add
+								onClick={e => {
+									e.stopPropagation();
+									setCreating(true);
+								}}
+							/>
+						</div>
 					</div>
 				)}
 			>
 				<Suspender query={announcementsQuery}>
-					{({ announcements }: { announcements?: WithTypename<announcement>[] }) => {
+					{({
+						announcements,
+					}: {
+						announcements?: WithTypename<announcement>[];
+					}) => {
 						if (announcements) {
-							const [oldAnnouncements, actualAnnouncements] = parseContentByDate(
-								announcements,
-							);
+							const [
+								oldAnnouncements,
+								actualAnnouncements,
+							] = parseContentByDate(announcements);
 
 							const pinnedAnnouncements = concatObjects(
-								parseContentByDate(getPinnedContent(announcements)),
+								parseContentByDate(getPinnedContent(announcements))
 							);
 
 							return (
 								<div className={styles.content}>
 									{Object.keys(pinnedAnnouncements).length > 0 && (
 										<Accordion
-											accordionId='pinnedAnnouncements'
+											accordionId="pinnedAnnouncements"
 											initiallyOpened={false}
 											Head={({ opened }) => (
 												<div className={styles.oldContentHeader}>
-													<p
-														className={`${styles.date} ${styles.accordion}`}
-													>
+													<p className={`${styles.date} ${styles.accordion}`}>
 														Закрепленные обьявления
 														<GoTriangleRight
 															size={15}
-															className={
-																opened ? styles.triangle_opened : ''
-															}
+															className={opened ? styles.triangle_opened : ""}
 														/>
 													</p>
 
@@ -503,19 +547,15 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 									)}
 									{Object.keys(oldAnnouncements).length > 0 && (
 										<Accordion
-											accordionId='oldAnnouncements'
+											accordionId="oldAnnouncements"
 											initiallyOpened={false}
 											Head={({ opened }) => (
 												<div className={styles.oldContentHeader}>
-													<p
-														className={`${styles.date} ${styles.accordion}`}
-													>
+													<p className={`${styles.date} ${styles.accordion}`}>
 														Старые обьявления
 														<GoTriangleRight
 															size={15}
-															className={
-																opened ? styles.triangle_opened : ''
-															}
+															className={opened ? styles.triangle_opened : ""}
 														/>
 													</p>
 
@@ -562,7 +602,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 						close={() => setCreating(false)}
 						initContent={initContent}
 					/>,
-					announcementContentModalRoot,
+					announcementContentModalRoot
 				)}
 		</>
 	);
@@ -577,13 +617,23 @@ type AnnouncementLayoutProps = {
 	setInitContent: Dispatch<SetStateAction<Partial<announcement>>>;
 };
 const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
-	({ announcements, setAnnouncementCreating, setInitContent, initiallyOpened = true }) => {
+	({
+		announcements,
+		setAnnouncementCreating,
+		setInitContent,
+		initiallyOpened = true,
+	}) => {
 		const { uid } = useContext(UserContext);
-		const { schoolName, className } = useParams<{ className: string; schoolName: string }>();
+		const { schoolName, className } = useParams<{
+			className: string;
+			schoolName: string;
+		}>();
 
 		const [changingInfo, setChangingInfo] = useState<{
 			_id: string;
-		} | null>(JSON.parse(localStorage.getItem('announcementChangingInfo') ?? 'null'));
+		} | null>(
+			JSON.parse(localStorage.getItem("announcementChangingInfo") ?? "null")
+		);
 		const changingAnnouncementNew = changingInfo
 			? findContentById(announcements, changingInfo._id)
 			: null;
@@ -591,8 +641,8 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 			changingAnnouncementInitState,
 			setChangeAnnouncementInitState,
 		] = useState<Partial<announcement> | null>(
-			JSON.parse(localStorage.getItem('initAnnouncementContent') ?? 'null') ??
-				changingAnnouncementNew,
+			JSON.parse(localStorage.getItem("initAnnouncementContent") ?? "null") ??
+				changingAnnouncementNew
 		);
 
 		const [removeAnnouncement] = useMutation<
@@ -610,7 +660,7 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 				removeAnnouncement({
 					variables: { className, announcementId, schoolName },
 					optimisticResponse: {
-						__typename: 'Mutation',
+						__typename: "Mutation",
 						removeAnnouncement: announcementId,
 					},
 					update: (proxy, res) => {
@@ -626,7 +676,7 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 								data: {
 									announcements:
 										data?.announcements.filter(
-											(chng) => chng._id !== announcementId,
+											chng => chng._id !== announcementId
 										) || [],
 								},
 							});
@@ -644,12 +694,14 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 				className: string;
 				schoolName: string;
 				announcementId: string;
-				updates: Partial<Omit<announcement, 'attachments'> & { attachments: attachment[] }>;
+				updates: Partial<
+					Omit<announcement, "attachments"> & { attachments: attachment[] }
+				>;
 			}
 		>(Mutations.UPDATE_ANNOUNCEMENT);
 		const update = (
 			announcementId: string | undefined,
-			updates: Partial<WithTypename<announcement>>,
+			updates: Partial<WithTypename<announcement>>
 		) => {
 			const { __typename, ...announcementWithoutTypename } = updates;
 
@@ -661,17 +713,19 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 						announcementId,
 						updates: {
 							...announcementWithoutTypename,
-							attachments: updates.attachments?.map(({ __typename, ...att }) => att),
+							attachments: updates.attachments?.map(
+								({ __typename, ...att }) => att
+							),
 						},
 					},
 					optimisticResponse: {
-						__typename: 'Mutation',
+						__typename: "Mutation",
 						updateAnnouncement: {
-							__typename: 'ClassAnnouncement',
+							__typename: "ClassAnnouncement",
 							_id: announcementId,
 							...Object.values(announcements)
 								.flat()
-								.find((hw) => hw._id === announcementId),
+								.find(hw => hw._id === announcementId),
 							...updates,
 						},
 					},
@@ -687,10 +741,10 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 								variables: { className, schoolName, vkId: uid },
 								data: {
 									announcements:
-										data?.announcements.map((chng) =>
+										data?.announcements.map(chng =>
 											chng._id === announcementId
 												? res.data?.updateAnnouncement
-												: chng,
+												: chng
 										) || [],
 								},
 							});
@@ -707,7 +761,7 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 		const pin = (announcementId: string) => {
 			const announcement = Object.values(announcements)
 				.flat()
-				.find((annnouncement) => annnouncement._id === announcementId);
+				.find(annnouncement => annnouncement._id === announcementId);
 
 			if (announcement) {
 				pinAnnouncement({
@@ -739,17 +793,19 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 		const setChanging = (newInfo: { _id: string } | null) => {
 			setChangingInfo(newInfo);
 
-			localStorage.setItem('announcementChangingInfo', JSON.stringify(newInfo));
+			localStorage.setItem("announcementChangingInfo", JSON.stringify(newInfo));
 
 			if (newInfo) {
-				setChangeAnnouncementInitState(findContentById(announcements, newInfo._id));
+				setChangeAnnouncementInitState(
+					findContentById(announcements, newInfo._id)
+				);
 				localStorage.setItem(
-					'initAnnouncementContent',
-					JSON.stringify(findContentById(announcements, newInfo._id)),
+					"initAnnouncementContent",
+					JSON.stringify(findContentById(announcements, newInfo._id))
 				);
 			} else {
 				setChangeAnnouncementInitState(null);
-				localStorage.removeItem('initAnnouncementContent');
+				localStorage.removeItem("initAnnouncementContent");
 			}
 		};
 
@@ -761,7 +817,7 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 
 		return (
 			<>
-				{Object.keys(announcements).map((announcementDate) => (
+				{Object.keys(announcements).map(announcementDate => (
 					<Accordion
 						accordionId={`announcements${announcementDate}`}
 						initiallyOpened={initiallyOpened}
@@ -771,16 +827,16 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 								<div className={styles.title}>
 									{announcementDate}
 									<GoTriangleRight
-										className={opened ? styles.triangle_opened : ''}
+										className={opened ? styles.triangle_opened : ""}
 										size={15}
 									/>
 								</div>
 								{new Date(announcementDate) > new Date() && (
 									<Add
-										onClick={(e) => {
+										onClick={e => {
 											e.stopPropagation();
 											setAnnouncementCreating(true);
-											setInitContent((prev) => ({
+											setInitContent(prev => ({
 												...prev,
 												to: getDateStrFromDayMonthStr(announcementDate),
 											}));
@@ -795,7 +851,7 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 								{announcements[announcementDate].map((announcement, i) => (
 									<ContentElement
 										pin={pin}
-										setChanging={(_id) => {
+										setChanging={_id => {
 											setChanging({ _id });
 										}}
 										key={announcement._id}
@@ -808,17 +864,18 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 					</Accordion>
 				))}
 
-				{changingInfo?._id !== undefined && changingAnnouncementInitState !== null && (
-					<ChangeAnnouncementModal
-						initState={changingAnnouncementInitState}
-						update={update}
-						close={() => setChanging(null)}
-						changingAnnouncementId={changingInfo._id}
-					/>
-				)}
+				{changingInfo?._id !== undefined &&
+					changingAnnouncementInitState !== null && (
+						<ChangeAnnouncementModal
+							initState={changingAnnouncementInitState}
+							update={update}
+							close={() => setChanging(null)}
+							changingAnnouncementId={changingInfo._id}
+						/>
+					)}
 			</>
 		);
-	},
+	}
 );
 
 type CreateAnnouncementModalProps = {
@@ -836,7 +893,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
 			<Modal onClose={close} rootElement={announcementContentModalRoot}>
 				<ChangeContent
 					initState={initContent}
-					confirm={(content) => {
+					confirm={content => {
 						returnAnnouncement(content);
 						close();
 					}}
@@ -851,7 +908,7 @@ type ChangeAnnouncementModalProps = {
 	initState: Partial<stateType<ChangeContentPropsType>>;
 	update: (
 		announcementId: string,
-		changedAnnouncement: Partial<stateType<ChangeContentPropsType>>,
+		changedAnnouncement: Partial<stateType<ChangeContentPropsType>>
 	) => void;
 	close: () => void;
 	changingAnnouncementId: string;
@@ -867,7 +924,7 @@ const ChangeAnnouncementModal: React.FC<ChangeAnnouncementModalProps> = ({
 			<Modal rootElement={announcementContentModalRoot} onClose={close}>
 				<ChangeContent
 					initState={initState}
-					confirm={(newContent) => {
+					confirm={newContent => {
 						update(changingAnnouncementId, newContent);
 					}}
 					final={close}
@@ -879,9 +936,9 @@ const ChangeAnnouncementModal: React.FC<ChangeAnnouncementModalProps> = ({
 	}
 };
 
-const Add: React.FC<{ onClick: (e: React.MouseEvent<SVGElement, MouseEvent>) => void }> = ({
-	onClick,
-}) => {
+const Add: React.FC<{
+	onClick: (e: React.MouseEvent<SVGElement, MouseEvent>) => void;
+}> = ({ onClick }) => {
 	return (
 		<Options
 			include={redactorOptions.add}
