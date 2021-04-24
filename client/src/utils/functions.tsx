@@ -562,6 +562,7 @@ export function checkValidTime(str: string) {
 	return false;
 }
 export function compareTimes(a: string, b: string) {
+	console.log(a, b);
 	if (checkValidTime(a) && checkValidTime(b)) {
 		return a > b;
 	} else {
