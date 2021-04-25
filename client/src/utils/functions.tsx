@@ -529,6 +529,8 @@ export function getCallCheduleForDay(
 	callSchedule: callSchedule,
 	dayIndex: number
 ) {
+	console.log(callSchedule, dayIndex);
+
 	if (inRange(dayIndex, 1, 7)) {
 		const { exceptions, defaultSchedule } = callSchedule;
 		if (exceptions[dayIndex - 1].length > 0 && dayIndex !== 7) {

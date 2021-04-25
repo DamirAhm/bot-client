@@ -1,5 +1,5 @@
 import React, { Dispatch, lazy, SetStateAction, Suspense } from 'react';
-import { Redirect, Route, Switch } from 'react-router';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import { roles, setStateProp, User } from './types';
 import withRedirect from './HOCs/withAuth';
 import useAuth from './hooks/useAuth';

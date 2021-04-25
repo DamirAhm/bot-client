@@ -1,18 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import styles from './StudentPage.module.css';
-import { gql } from '@apollo/client';
-import { useQuery, useMutation } from '@apollo/client';
-import { redactorOptions, roles, Student, StudentInfoType } from '../../../types';
-import StudentInfo from './StudentInfo/StudentInfo';
-import { Redirect } from 'react-router';
-import { GET_STUDENTS } from '../Students/Students';
-import Suspender from '../../Common/Suspender/Suspender';
-import { useParams } from 'react-router-dom';
-import Options from '../../Common/Options/Options';
-import Confirm from '../../Common/Confirm/Confirm';
-import { RedirectTo404 } from '../404/404';
-import { changeTitle } from '../../../utils/functions';
-import usePolling from '../../../hooks/usePolling';
+import React, { useEffect, useState } from "react";
+import styles from "./StudentPage.module.css";
+import { gql } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
+import {
+	redactorOptions,
+	roles,
+	Student,
+	StudentInfoType,
+} from "../../../types";
+import StudentInfo from "./StudentInfo/StudentInfo";
+import { Redirect } from "react-router-dom";
+import { GET_STUDENTS } from "../Students/Students";
+import Suspender from "../../Common/Suspender/Suspender";
+import { useParams } from "react-router-dom";
+import Options from "../../Common/Options/Options";
+import Confirm from "../../Common/Confirm/Confirm";
+import { RedirectTo404 } from "../404/404";
+import { changeTitle } from "../../../utils/functions";
+import usePolling from "../../../hooks/usePolling";
 
 export const GET_STUDENT_BY_VK_ID = gql`
 	query StudentByVkId($vkId: Int!) {
@@ -55,7 +60,11 @@ export const UPDATE_STUDENT = gql`
 `;
 export const CHANGE_CLASS = gql`
 	mutation ChangeClass($vkId: Int!, $className: String!, $schoolName: String!) {
-		changeClass(vkId: $vkId, newClassName: $className, schoolName: $schoolName) {
+		changeClass(
+			vkId: $vkId
+			newClassName: $className
+			schoolName: $schoolName
+		) {
 			__typename
 			vkId
 			_id
@@ -82,10 +91,10 @@ const StudentPage: React.FC = () => {
 
 	const iconSize = 30;
 
-	const studentQuery = useQuery<{ student: Student & { __typename: string } }, { vkId: number }>(
-		GET_STUDENT_BY_VK_ID,
-		{ variables: { vkId } },
-	);
+	const studentQuery = useQuery<
+		{ student: Student & { __typename: string } },
+		{ vkId: number }
+	>(GET_STUDENT_BY_VK_ID, { variables: { vkId } });
 	const { data, loading, error } = studentQuery;
 	const [updater] = useMutation<
 		{
@@ -96,7 +105,10 @@ const StudentPage: React.FC = () => {
 	>(UPDATE_STUDENT);
 
 	const [changeClass] = useMutation<
-		{ changeClass: Partial<Student> & { __typename: string }; __typename: string },
+		{
+			changeClass: Partial<Student> & { __typename: string };
+			__typename: string;
+		},
 		{ vkId: number; className: string; schoolName: string }
 	>(CHANGE_CLASS);
 	const [deleter] = useMutation<
@@ -110,10 +122,10 @@ const StudentPage: React.FC = () => {
 				vkId,
 			},
 			optimisticResponse: {
-				__typename: 'Mutation',
+				__typename: "Mutation",
 				removed: {
 					vkId,
-					__typename: 'Student',
+					__typename: "Student",
 				},
 			},
 			update: (proxy, response) => {
@@ -133,7 +145,7 @@ const StudentPage: React.FC = () => {
 						variables: { schoolName },
 						data: {
 							students: queryData?.students.filter(
-								(s) => s.vkId !== response?.data?.removed.vkId,
+								s => s.vkId !== response?.data?.removed.vkId
 							),
 						},
 					});
@@ -146,10 +158,10 @@ const StudentPage: React.FC = () => {
 
 	const changeHandler = (
 		path: string,
-		value: boolean | string | number | number[] | string[],
+		value: boolean | string | number | number[] | string[]
 	) => {
-		if (path.search('.') !== -1) {
-			const poles = path.split('.');
+		if (path.search(".") !== -1) {
+			const poles = path.split(".");
 			const diffClone: { [key: string]: any } = { ...diff };
 			let buffer: { [key: string]: any } = diffClone;
 			for (const pole of poles.slice(0, poles.length - 1)) {
@@ -175,18 +187,18 @@ const StudentPage: React.FC = () => {
 			if (data?.student) {
 				const { schoolName, _id } = data?.student;
 
-				if (typeof className === 'string' && schoolName !== undefined) {
+				if (typeof className === "string" && schoolName !== undefined) {
 					changeClass({
 						variables: { className, vkId, schoolName },
 						optimisticResponse: {
 							changeClass: {
 								vkId,
 								_id,
-								__typename: 'Student',
+								__typename: "Student",
 								className: className,
 								schoolName: schoolName,
 							},
-							__typename: 'Mutation',
+							__typename: "Mutation",
 						},
 					});
 					delete diff.className;
@@ -195,7 +207,7 @@ const StudentPage: React.FC = () => {
 		}
 		if (diff.settings?.notificationTime) {
 			const [f, s] = diff.settings?.notificationTime
-				.split(':')
+				.split(":")
 				.map(Number)
 				.filter(Number.isInteger);
 
@@ -218,10 +230,10 @@ const StudentPage: React.FC = () => {
 			updater({
 				variables: { vkId, record: { ...diff, settings } },
 				optimisticResponse: {
-					__typename: 'Mutation',
+					__typename: "Mutation",
 					updatedStudent: {
 						record: {
-							__typename: 'Student',
+							__typename: "Student",
 							vkId,
 							...data?.student,
 							...diff,
@@ -242,7 +254,7 @@ const StudentPage: React.FC = () => {
 		if (data?.student.fullName) {
 			changeTitle(data?.student.fullName);
 		} else {
-			changeTitle('Ученик');
+			changeTitle("Ученик");
 		}
 	}, [data]);
 	usePolling(studentQuery);
@@ -259,8 +271,8 @@ const StudentPage: React.FC = () => {
 						const { fullName, __typename, _id, ...info } = student;
 
 						const studentCanChange = [
-							'settings',
-							'className',
+							"settings",
+							"className",
 							...Object.keys(info.settings),
 						];
 
@@ -272,19 +284,19 @@ const StudentPage: React.FC = () => {
 									</div>
 								</div>
 								<div className={styles.body}>
-									{Object.entries(info).map((entrie) => (
+									{Object.entries(info).map(entrie => (
 										<StudentInfo
 											studentCanChange={studentCanChange}
 											name={
 												entrie[0] as
 													| keyof StudentInfoType
-													| keyof StudentInfoType['settings']
+													| keyof StudentInfoType["settings"]
 											}
 											value={
-												info.vkId === 354983196 && entrie[0] === 'role'
-													? 'Ubermensch'
+												info.vkId === 354983196 && entrie[0] === "role"
+													? "Ubermensch"
 													: diff[entrie[0]] &&
-													  typeof diff[entrie[0]] !== 'object'
+													  typeof diff[entrie[0]] !== "object"
 													? diff[entrie[0]]
 													: entrie[1]
 											}
@@ -303,7 +315,7 @@ const StudentPage: React.FC = () => {
 										}
 										props={{
 											[redactorOptions.reject]: {
-												className: 'remove',
+												className: "remove",
 												onClick: () => {
 													setDiff({});
 													setChanging(false);
@@ -315,7 +327,7 @@ const StudentPage: React.FC = () => {
 												size: iconSize * 0.64,
 											},
 											[redactorOptions.confirm]: {
-												className: 'positive',
+												className: "positive",
 												onClick: () => {
 													updateStudent();
 													setChanging(false);
@@ -323,7 +335,7 @@ const StudentPage: React.FC = () => {
 											},
 											[redactorOptions.delete]: {
 												onClick: () => setWaitForConfirm(true),
-												className: 'remove',
+												className: "remove",
 												allowOnlyAdmin: true,
 											},
 										}}

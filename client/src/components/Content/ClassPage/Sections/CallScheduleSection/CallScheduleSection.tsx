@@ -35,13 +35,23 @@ const CallScheduleSection: React.FC = ({}) => {
 	const [currentLesson, setCurrentLesson] = useState(0);
 
 	useEffect(() => {
+		const dayIndex = new Date().getDay();
+
 		if (callScheduleQuery.data?.schoolsOne) {
-			const callScheduleForDay = getCallCheduleForDay(
-				callScheduleQuery.data?.schoolsOne.callSchedule,
-				new Date().getDay()
-			);
-			setCallSchedule(callScheduleForDay);
-			setCurrentLesson(getLessonAtSpecificTime(callScheduleForDay, new Date()));
+			if (dayIndex === 0) {
+				setCallSchedule(
+					callScheduleQuery.data?.schoolsOne.callSchedule.defaultSchedule
+				);
+			} else {
+				const callScheduleForDay = getCallCheduleForDay(
+					callScheduleQuery.data?.schoolsOne.callSchedule,
+					dayIndex
+				);
+				setCallSchedule(callScheduleForDay);
+				setCurrentLesson(
+					getLessonAtSpecificTime(callScheduleForDay, new Date())
+				);
+			}
 		}
 	}, [callScheduleQuery]);
 	useEffect(() => {
