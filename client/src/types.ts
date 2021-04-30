@@ -1,42 +1,42 @@
-import { ValueType } from 'react-select';
+import { ValueType } from "react-select";
 
 export enum roles {
-	student = 'STUDENT',
-	admin = 'ADMIN',
-	contributor = 'CONTRIBUTOR',
+	student = "STUDENT",
+	admin = "ADMIN",
+	contributor = "CONTRIBUTOR",
 }
 export enum redactorOptions {
-	delete = 'DELETE',
-	change = 'CHANGE',
-	confirm = 'CONFIRM',
-	reject = 'REJECT',
-	add = 'ADD',
-	exit = 'EXIT',
-	pin = 'PIN',
-	settings = 'SETTINGS',
-	upload = 'UPLOAD',
+	delete = "DELETE",
+	change = "CHANGE",
+	confirm = "CONFIRM",
+	reject = "REJECT",
+	add = "ADD",
+	exit = "EXIT",
+	pin = "PIN",
+	settings = "SETTINGS",
+	upload = "UPLOAD",
 }
 
 export enum changeTypes {
-	content = 'CONTENT',
-	userPreferences = 'USER_PREFERENCES',
+	content = "CONTENT",
+	userPreferences = "USER_PREFERENCES",
 }
 
 export const lessons = [
-	'Математика',
-	'Английский',
-	'Русский',
-	'Экономика',
-	'География',
-	'Физика',
-	'Алгебра',
-	'Геометрия',
-	'Литература',
-	'История',
-	'Обществознание',
-	'Астрономия',
-	'ОБЖ',
-	'Информатика',
+	"Математика",
+	"Английский",
+	"Русский",
+	"Экономика",
+	"География",
+	"Физика",
+	"Алгебра",
+	"Геометрия",
+	"Литература",
+	"История",
+	"Обществознание",
+	"Астрономия",
+	"ОБЖ",
+	"Информатика",
 ];
 
 export type Student = {
@@ -90,7 +90,7 @@ export type vkPhoto = {
 };
 
 export type content = {
-	attachments: WithTypename<attachment>[];
+	attachments: attachment[];
 	text: string;
 	_id?: string;
 	to: string;
@@ -98,7 +98,10 @@ export type content = {
 	pinned: boolean;
 	onlyFor: number[];
 };
-export type changeableInContent = Pick<content, 'text' | 'attachments' | 'to' | 'onlyFor'>;
+export type changeableInContent = Pick<
+	content,
+	"text" | "attachments" | "to" | "onlyFor"
+>;
 
 export type userPreferences = {
 	notificationTime: string | null;
@@ -113,7 +116,7 @@ export type homework = {
 } & content;
 export type changeableInHomework = Pick<
 	homework,
-	'lesson' | 'text' | 'attachments' | 'to' | 'onlyFor'
+	"lesson" | "text" | "attachments" | "to" | "onlyFor"
 >;
 
 export type Class = {
@@ -130,8 +133,10 @@ export type optionType<Value = string> = {
 	label: string;
 };
 
-export const isOptionType = (option: ValueType<optionType, false>): option is optionType => {
-	return !!(option && 'value' in option && option.value);
+export const isOptionType = (
+	option: ValueType<optionType, false>
+): option is optionType => {
+	return !!(option && "value" in option && option.value);
 };
 
 export type School = {

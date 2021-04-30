@@ -133,15 +133,25 @@ export const replaceHrefsByAnchors = (
 	}
 };
 
-export function parseContentByDate<T extends content>(
-	content: T[]
-): [{ [day: string]: T[] }, { [day: string]: T[] }] {
-	const parsedFutureCont: { [day: string]: T[] } = {};
-	const parsedPastCont: { [day: string]: T[] } = {};
+export function separateContentByDate<T extends content>(content: T[]) {
+	const futureContent: T[] = [];
+	const pastContent: T[] = [];
 
-	content = content
-		.slice(0)
-		.sort((a, b) => Date.parse(a.to) - Date.parse(b.to));
+	for (let cont of content) {
+		if (
+			Date.parse(cont.to) >= Date.now() ||
+			isToday(new Date(Date.parse(cont.to)))
+		) {
+			futureContent.push(cont);
+		} else {
+			pastContent.push(cont);
+		}
+	}
+
+	return { futureContent, pastContent };
+}
+export function parseContentByDate<T extends content>(content: T[]) {
+	const parsedCont: { [day: string]: T[] } = {};
 
 	for (let cont of content) {
 		let contDate;
@@ -156,20 +166,10 @@ export function parseContentByDate<T extends content>(
 			contDate = parseDate(cont.to, "d MM");
 		}
 
-		if (
-			Date.parse(cont.to) >= Date.now() ||
-			isToday(new Date(Date.parse(cont.to)))
-		) {
-			parsedFutureCont[contDate] = [
-				...(parsedFutureCont[contDate] || []),
-				cont,
-			];
-		} else {
-			parsedPastCont[contDate] = [...(parsedPastCont[contDate] || []), cont];
-		}
+		parsedCont[contDate] = [...(parsedCont[contDate] || []), cont];
 	}
 
-	return [parsedPastCont, parsedFutureCont];
+	return parsedCont;
 }
 export function getPinnedContent<T extends content>(content: T[]) {
 	return content.filter(({ pinned }) => pinned);

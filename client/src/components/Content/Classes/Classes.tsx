@@ -31,7 +31,7 @@ export type classesData = {
 export type classPreview = {
 	studentsCount: number;
 	name: string;
-	schoolName?: string;
+	schoolName: string;
 	_id: string;
 };
 

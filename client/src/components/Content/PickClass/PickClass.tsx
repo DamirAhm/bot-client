@@ -1,28 +1,35 @@
-import { useMutation, useQuery } from '@apollo/client';
-import React, { useContext, useEffect, useState } from 'react';
-import { Link, useHistory, useParams } from 'react-router-dom';
-import { UserContext } from '../../../App';
-import useList from '../../../hooks/useList';
-import usePolling from '../../../hooks/usePolling';
-import { Student, User } from '../../../types';
-import { capitalize, changeTitle, highlightSearch, retranslit } from '../../../utils/functions';
-import Suspender from '../../Common/Suspender/Suspender';
-import Filters from '../../Filters/Filters';
-import { classPreview, GET_CLASSES } from '../Classes/Classes';
-import ClassCreator from '../Classes/ClassPreview/ClassCreator';
-import { GET_STUDENTS_FOR_CLASS } from '../ClassPage/Sections/StudentSection/StudentsSection';
-import { CHANGE_CLASS, GET_STUDENT_BY_VK_ID } from '../StudentPage/StudentPage';
-import styles from './PickClass.module.css';
+import { useMutation, useQuery } from "@apollo/client";
+import React, { useContext, useEffect, useState } from "react";
+import { Link, useHistory, useParams } from "react-router-dom";
+import { UserContext } from "../../../App";
+import useList from "../../../hooks/useList";
+import usePolling from "../../../hooks/usePolling";
+import { Student, User } from "../../../types";
+import {
+	capitalize,
+	changeTitle,
+	highlightSearch,
+	retranslit,
+} from "../../../utils/functions";
+import Suspender from "../../Common/Suspender/Suspender";
+import Filters from "../../Filters/Filters";
+import { classPreview, GET_CLASSES } from "../Classes/Classes";
+import ClassCreator from "../Classes/ClassPreview/ClassCreator";
+import { GET_STUDENTS_FOR_CLASS } from "../ClassPage/Sections/StudentSection/StudentsSection";
+import { CHANGE_CLASS, GET_STUDENT_BY_VK_ID } from "../StudentPage/StudentPage";
+import styles from "./PickClass.module.css";
 
 type fn<T> = (value: T) => T;
 
-const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUser }) => {
+const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({
+	setUser,
+}) => {
 	const { schoolName } = useParams<{ schoolName: string }>();
 	const { uid } = useContext(UserContext);
 	const { setFilter, items, setItems } = useList<[string, classPreview[]]>([]);
 	const history = useHistory();
 
-	const [searchText, setText] = useState('');
+	const [searchText, setText] = useState("");
 
 	const setSearchText = (str: string) => {
 		str = str.toLowerCase().trim();
@@ -30,24 +37,27 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 		const isMatch = (c: [string, classPreview[]], str: string): boolean => {
 			return (
 				retranslit(c[0]).search(str) !== -1 ||
-				c[1].some((classPreview) => classPreview.name.toLowerCase().search(str) !== -1) ||
-				(str.split(' ').length > 1 && str.split(' ').every((str) => isMatch(c, str)))
+				c[1].some(
+					classPreview => classPreview.name.toLowerCase().search(str) !== -1
+				) ||
+				(str.split(" ").length > 1 &&
+					str.split(" ").every(str => isMatch(c, str)))
 			);
 		};
 
 		setText(str);
-		setFilter((c) => isMatch(c, str));
+		setFilter(c => isMatch(c, str));
 	};
 	const highlighter = (str: string) => {
 		return highlightSearch(str, searchText);
 	};
 
-	const classesQuery = useQuery<{ classes: classPreview[] }, { schoolName: string }>(
-		GET_CLASSES,
-		{
-			variables: { schoolName },
-		},
-	);
+	const classesQuery = useQuery<
+		{ classes: classPreview[] },
+		{ schoolName: string }
+	>(GET_CLASSES, {
+		variables: { schoolName },
+	});
 	const [changeClass] = useMutation<
 		{
 			changeClass: Partial<Student> & { __typename: string };
@@ -66,10 +76,10 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 			optimisticResponse: {
 				changeClass: {
 					vkId: uid,
-					__typename: 'Student',
+					__typename: "Student",
 					className: className,
 				},
-				__typename: 'Mutation',
+				__typename: "Mutation",
 			},
 			refetchQueries: [
 				{
@@ -92,8 +102,8 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 						const { __typename, ...student } = changeClass;
 
 						if (student) {
-							setUser((user) =>
-								user ? { ...user, ...student, schoolName, className } : null,
+							setUser(user =>
+								user ? { ...user, ...student, schoolName, className } : null
 							);
 							history.push(`/${schoolName}/classes/${className}`);
 						}
@@ -105,13 +115,15 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 
 	useEffect(() => {
 		if (classesQuery.data?.classes) {
-			const parsedClassesBySchool = parseClassesBySchool(classesQuery.data.classes);
+			const parsedClassesBySchool = parseClassesBySchool(
+				classesQuery.data.classes
+			);
 
 			setItems([...parsedClassesBySchool]);
 		}
 	}, [classesQuery]);
 	useEffect(() => {
-		changeTitle('Выберите класс');
+		changeTitle("Выберите класс");
 	});
 
 	usePolling(classesQuery);
@@ -124,7 +136,9 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 				<div className="centerer">
 					<Suspender query={classesQuery}>
 						<div className={styles.container}>
-							<span className={styles.title}>В каком классе вы учитесь? 📚</span>
+							<span className={styles.title}>
+								В каком классе вы учитесь? 📚
+							</span>
 							<Filters
 								inputProps={{ className: styles.filterInput }}
 								className={styles.filters}
@@ -133,18 +147,16 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 							<ClassCreator schoolName={schoolName} />
 							<div className={styles.classes}>
 								{classes.map(
-									(Class) =>
+									Class =>
 										Class && (
 											<div
-												onClick={() =>
-													onClick(Class.name, Class.schoolName)
-												}
+												onClick={() => onClick(Class.name, Class.schoolName)}
 												className={styles.class}
-												key={Class.schoolName + ' ' + Class.name}
+												key={Class.schoolName + " " + Class.name}
 											>
 												{highlighter(Class.name)}
 											</div>
-										),
+										)
 								)}
 							</div>
 						</div>
@@ -172,15 +184,17 @@ const PickClass: React.FC<{ setUser: (fn: fn<User | null>) => void }> = ({ setUs
 						{items.map(([school, classes]) => (
 							<div className={styles.citySchools} key={school}>
 								<div className={styles.city}>
-									<span>{capitalize(retranslit(school.replace(':', ' ')))} </span>
+									<span>
+										{capitalize(retranslit(school.replace(":", " ")))}{" "}
+									</span>
 								</div>
 								<ClassCreator schoolName={school} />
 								<div className={styles.classes}>
-									{classes.map((Class) => (
+									{classes.map(Class => (
 										<div
 											onClick={() => onClick(Class.name, Class.schoolName)}
 											className={styles.class}
-											key={Class.schoolName + ' ' + Class.name}
+											key={Class.schoolName + " " + Class.name}
 										>
 											{highlighter(Class.name)}
 										</div>

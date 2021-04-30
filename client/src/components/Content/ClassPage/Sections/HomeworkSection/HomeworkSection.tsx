@@ -30,6 +30,7 @@ import {
 	getPinnedContent,
 	concatObjects,
 	findContentById,
+	separateContentByDate,
 } from "../../../../../utils/functions";
 
 import Options from "../../../../Common/Options/Options";
@@ -495,14 +496,14 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 			>
 				<Suspender query={homeworkQuery}>
 					{(data: { homework: homework[] }) => {
-						const [oldHw, newHw] = parseContentByDate(data.homework);
-						const pinnedHw = concatObjects(
-							parseContentByDate(getPinnedContent(data.homework))
+						const { pastContent, futureContent } = separateContentByDate(
+							data.homework
 						);
+						const pinnedHw = getPinnedContent(data.homework);
 
 						return (
 							<div className={styles.content}>
-								{Object.keys(pinnedHw).length > 0 && (
+								{pinnedHw.length > 0 && (
 									<Accordion
 										accordionId="pinnedHomework"
 										initiallyOpened={false}
@@ -515,16 +516,6 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 														className={opened ? styles.triangle_opened : ""}
 													/>
 												</p>
-
-												<Options
-													include={redactorOptions.delete}
-													props={{
-														allowOnlyRedactor: true,
-														className: `remove ${styles.removeOldContent}`,
-														size: 20,
-														onClick: () => removeOldHomework(),
-													}}
-												/>
 											</div>
 										)}
 									>
@@ -538,7 +529,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 										</div>
 									</Accordion>
 								)}
-								{Object.keys(oldHw).length > 0 && (
+								{pastContent.length > 0 && (
 									<Accordion
 										accordionId="oldHomework"
 										initiallyOpened={false}
@@ -566,7 +557,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 									>
 										<div className={styles.offseted}>
 											<HomeworkLayout
-												homework={oldHw}
+												homework={pastContent}
 												initiallyOpened={false}
 												setHomeworkCreating={setCreating}
 												setInitContent={setInitContent}
@@ -575,7 +566,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 									</Accordion>
 								)}
 								<HomeworkLayout
-									homework={newHw}
+									homework={futureContent}
 									setHomeworkCreating={setCreating}
 									setInitContent={setInitContent}
 								/>
@@ -602,9 +593,7 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 };
 
 const HomeworkLayout: React.FC<{
-	homework: {
-		[day: string]: homework[];
-	};
+	homework: homework[];
 	initiallyOpened?: boolean;
 	setHomeworkCreating: (state: boolean) => void;
 	setInitContent: Dispatch<SetStateAction<Partial<homework>>>;
@@ -615,6 +604,11 @@ const HomeworkLayout: React.FC<{
 		setInitContent,
 		initiallyOpened = true,
 	}) => {
+		const parsedHomework = objectForEach(
+			parseContentByDate(homework),
+			parseHomeworkByLesson
+		);
+
 		const { schoolName, className } = useParams<{
 			schoolName: string;
 			className: string;
@@ -628,7 +622,7 @@ const HomeworkLayout: React.FC<{
 			JSON.parse(localStorage.getItem("homeworkChangingInfo") ?? "null")
 		);
 		const changingHomework = changingInfo
-			? findContentById(homework, changingInfo._id)
+			? homework.find(({ _id }) => _id === changingInfo._id)
 			: null;
 		const [
 			changeHomeworkInitState,
@@ -665,16 +659,14 @@ const HomeworkLayout: React.FC<{
 							variables: { className, schoolName, vkId: userVkId },
 						});
 
-						if (res?.data) {
+						if (res?.data && data) {
 							proxy.writeQuery<
 								{ homework: homework[] },
 								{ className: string; schoolName: string; vkId: number }
 							>({
 								query: Queries.GET_HOMEWORK,
-								variables: { className, schoolName, vkId: userVkId },
 								data: {
-									homework:
-										data?.homework.filter(hw => hw._id !== homeworkId) || [],
+									homework: data?.homework.filter(hw => hw._id !== homeworkId),
 								},
 							});
 						}
@@ -691,9 +683,7 @@ const HomeworkLayout: React.FC<{
 				className: string;
 				schoolName: string;
 				homeworkId: string;
-				updates: Partial<
-					Omit<homework, "attachments"> & { attachments: attachment[] }
-				>;
+				updates: Partial<homework>;
 			}
 		>(Mutations.CHANGE_HOMEWORK);
 		const update = (
@@ -713,9 +703,7 @@ const HomeworkLayout: React.FC<{
 						updateHomework: {
 							__typename: "ClassHomework",
 							_id: homeworkId,
-							...Object.values(homework)
-								.flat()
-								.find(hw => hw._id === homeworkId),
+							...homework.find(hw => hw._id === homeworkId),
 							...updates,
 						},
 					},
@@ -728,7 +716,7 @@ const HomeworkLayout: React.FC<{
 							variables: { className, schoolName, vkId: userVkId },
 						});
 
-						if (res.data && res.data.updateHomework !== null) {
+						if (res.data && res.data.updateHomework !== null && data) {
 							proxy.writeQuery<
 								{ homework: homework[] },
 								{ className: string; schoolName: string; vkId: number }
@@ -736,12 +724,11 @@ const HomeworkLayout: React.FC<{
 								query: Queries.GET_HOMEWORK,
 								variables: { className, schoolName, vkId: userVkId },
 								data: {
-									homework:
-										data?.homework.map(hw =>
-											hw._id === homeworkId
-												? { ...hw, ...res.data?.updateHomework }
-												: hw
-										) || [],
+									homework: data?.homework.map(hw =>
+										hw._id === homeworkId
+											? { ...hw, ...res.data?.updateHomework }
+											: hw
+									),
 								},
 							});
 						}
@@ -755,9 +742,7 @@ const HomeworkLayout: React.FC<{
 			{ schoolName: string; className: string; homeworkId: string }
 		>(Mutations.TOGGLE_PIN_HOMEWORK);
 		const pin = (homeworkId: string) => {
-			const hw = Object.values(homework)
-				.flat()
-				.find(hw => hw._id === homeworkId);
+			const hw = homework.find(hw => hw._id === homeworkId);
 
 			if (hw) {
 				pinHomework({
@@ -800,18 +785,20 @@ const HomeworkLayout: React.FC<{
 			localStorage.setItem("homeworkChangingInfo", JSON.stringify(newInfo));
 
 			if (newInfo) {
-				setChangeHomeworkInitState(findContentById(homework, newInfo._id));
+				setChangeHomeworkInitState(
+					homework.find(({ _id }) => _id === newInfo._id) || null
+				);
 				localStorage.setItem(
 					"initHomeworkContent",
-					JSON.stringify(findContentById(homework, newInfo._id))
+					JSON.stringify(
+						homework.find(({ _id }) => _id === newInfo._id) || null
+					)
 				);
 			} else {
 				setChangeHomeworkInitState(null);
 				localStorage.removeItem("initHomeworkContent");
 			}
 		};
-
-		const parsedHomework = objectForEach(homework, parseHomeworkByLesson);
 
 		return (
 			<>
@@ -997,7 +984,8 @@ const ChangeHomeworkModal: React.FC<ChangeHomeworkModalProps> = ({
 					<Modal onClose={close} rootElement={changeContentModalRoot}>
 						<ChangeHomework
 							initState={initState as Partial<homework>}
-							confirm={newContent => {
+							//@ts-ignore
+							confirm={({ __typename, ...newContent }) => {
 								update(changingHomeworkId, newContent);
 							}}
 							final={close}

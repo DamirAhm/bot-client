@@ -28,6 +28,7 @@ import {
 	concatObjects,
 	getPinnedContent,
 	findContentById,
+	separateContentByDate,
 } from "../../../../../utils/functions";
 
 import Accordion from "../../../../Common/Accordion/Accordion";
@@ -73,7 +74,7 @@ const Queries = {
 				}
 				_id
 				onlyFor
-				__typename
+				pinned
 			}
 		}
 	`,
@@ -100,6 +101,7 @@ const Mutations = {
 					value
 				}
 				onlyFor
+				pinned
 				__typename
 			}
 		}
@@ -139,6 +141,7 @@ const Mutations = {
 				}
 				to
 				onlyFor
+				pinned
 			}
 		}
 	`,
@@ -285,7 +288,8 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 			const confirmation = subscriptionData.data?.onAnnouncementConfirmed;
 
 			if (confirmation) {
-				announcementsQuery.updateQuery(prev => {
+				const { updateQuery } = announcementsQuery;
+				updateQuery(prev => {
 					return {
 						announcements: prev.announcements.map(({ _id, ...announcement }) =>
 							_id === confirmation.stabId
@@ -501,18 +505,17 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 						announcements?: WithTypename<announcement>[];
 					}) => {
 						if (announcements) {
-							const [
-								oldAnnouncements,
-								actualAnnouncements,
-							] = parseContentByDate(announcements);
-
-							const pinnedAnnouncements = concatObjects(
-								parseContentByDate(getPinnedContent(announcements))
+							const { pastContent, futureContent } = separateContentByDate(
+								announcements
 							);
 
+							const pinnedAnnouncements = getPinnedContent(announcements);
+							console.log({ pinnedAnnouncements, announcements });
+
+							//TODO Add unpin all button
 							return (
 								<div className={styles.content}>
-									{Object.keys(pinnedAnnouncements).length > 0 && (
+									{pinnedAnnouncements.length > 0 && (
 										<Accordion
 											accordionId="pinnedAnnouncements"
 											initiallyOpened={false}
@@ -525,22 +528,12 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 															className={opened ? styles.triangle_opened : ""}
 														/>
 													</p>
-
-													<Options
-														include={redactorOptions.delete}
-														props={{
-															allowOnlyRedactor: true,
-															className: `remove ${styles.removeOldContent}`,
-															size: 20,
-															onClick: () => removeOldAnnouncements(),
-														}}
-													/>
 												</div>
 											)}
 										>
 											<div className={styles.offseted}>
 												<AnnouncementLayout
-													announcements={oldAnnouncements}
+													announcements={pinnedAnnouncements}
 													initiallyOpened={false}
 													setAnnouncementCreating={setCreating}
 													setInitContent={setInitContent}
@@ -548,7 +541,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 											</div>
 										</Accordion>
 									)}
-									{Object.keys(oldAnnouncements).length > 0 && (
+									{pastContent.length > 0 && (
 										<Accordion
 											accordionId="oldAnnouncements"
 											initiallyOpened={false}
@@ -576,7 +569,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 										>
 											<div className={styles.offseted}>
 												<AnnouncementLayout
-													announcements={oldAnnouncements}
+													announcements={pastContent}
 													initiallyOpened={false}
 													setAnnouncementCreating={setCreating}
 													setInitContent={setInitContent}
@@ -585,7 +578,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 										</Accordion>
 									)}
 									<AnnouncementLayout
-										announcements={actualAnnouncements}
+										announcements={futureContent}
 										setAnnouncementCreating={setCreating}
 										setInitContent={setInitContent}
 									/>
@@ -612,9 +605,7 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 };
 
 type AnnouncementLayoutProps = {
-	announcements: {
-		[day: string]: announcement[];
-	};
+	announcements: announcement[];
 	initiallyOpened?: boolean;
 	setAnnouncementCreating: (state: boolean) => void;
 	setInitContent: Dispatch<SetStateAction<Partial<announcement>>>;
@@ -626,6 +617,8 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 		setInitContent,
 		initiallyOpened = true,
 	}) => {
+		const parsedAnnouncements = parseContentByDate(announcements);
+
 		const { uid } = useContext(UserContext);
 		const { schoolName, className } = useParams<{
 			className: string;
@@ -638,7 +631,7 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 			JSON.parse(localStorage.getItem("announcementChangingInfo") ?? "null")
 		);
 		const changingAnnouncementNew = changingInfo
-			? findContentById(announcements, changingInfo._id)
+			? announcements.find(({ _id }) => _id === changingInfo._id)
 			: null;
 		const [
 			changingAnnouncementInitState,
@@ -667,7 +660,10 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 						removeAnnouncement: announcementId,
 					},
 					update: (proxy, res) => {
-						const data = proxy.readQuery<{ announcements: announcement[] }>({
+						const data = proxy.readQuery<
+							{ announcements: announcement[] },
+							{ className: string; schoolName: string; vkId: number }
+						>({
 							query: Queries.GET_ANNOUNCEMENTS,
 							variables: { className, schoolName, vkId: uid },
 						});
@@ -693,9 +689,9 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 		};
 
 		const [updateAnnouncement] = useMutation<
-			WithTypename<{
+			{
 				updateAnnouncement: Partial<announcement>;
-			}>,
+			},
 			{
 				className: string;
 				schoolName: string;
@@ -716,22 +712,22 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 						updates,
 					},
 					optimisticResponse: {
-						__typename: "Mutation",
 						updateAnnouncement: {
 							_id: announcementId,
-							...Object.values(announcements)
-								.flat()
-								.find(hw => hw._id === announcementId),
+							...announcements.find(hw => hw._id === announcementId),
 							...updates,
 						},
 					},
 					update: (proxy, res) => {
-						const data = proxy.readQuery<{ announcements: announcement[] }>({
+						const data = proxy.readQuery<
+							{ announcements: announcement[] },
+							{ className: string; schoolName: string; vkId: number }
+						>({
 							query: Queries.GET_ANNOUNCEMENTS,
 							variables: { className, schoolName, vkId: uid },
 						});
 
-						if (res?.data) {
+						if (res?.data && data) {
 							proxy.writeQuery<
 								{ announcements: announcement[] },
 								{ className: string; schoolName: string; vkId: number }
@@ -739,12 +735,11 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 								query: Queries.GET_ANNOUNCEMENTS,
 								variables: { className, schoolName, vkId: uid },
 								data: {
-									announcements:
-										data?.announcements.map(announcement =>
-											announcement._id === announcementId
-												? { ...announcement, ...res.data?.updateAnnouncement }
-												: announcement
-										) || [],
+									announcements: data?.announcements.map(announcement =>
+										announcement._id === announcementId
+											? { ...announcement, ...res.data?.updateAnnouncement }
+											: announcement
+									),
 								},
 							});
 						}
@@ -758,9 +753,9 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 			{ schoolName: string; className: string; announcementId: string }
 		>(Mutations.TOGGLE_PIN_ANNOUNCEMENT);
 		const pin = (announcementId: string) => {
-			const announcement = Object.values(announcements)
-				.flat()
-				.find(annnouncement => annnouncement._id === announcementId);
+			const announcement = announcements.find(
+				announcement => announcement._id === announcementId
+			);
 
 			if (announcement) {
 				pinAnnouncement({
@@ -779,15 +774,15 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 			}
 		};
 
-		const [unpinAll] = useMutation<
-			{ unpinAllAnnouncements: boolean },
-			{ className: string; schoolName: string }
-		>(Mutations.UNPIN_ALL_ANNOUNCEMENTS, {
-			variables: {
-				className,
-				schoolName,
-			},
-		});
+		// const [unpinAll] = useMutation<
+		// 	{ unpinAllAnnouncements: boolean },
+		// 	{ className: string; schoolName: string }
+		// >(Mutations.UNPIN_ALL_ANNOUNCEMENTS, {
+		// 	variables: {
+		// 		className,
+		// 		schoolName,
+		// 	},
+		// });
 
 		const setChanging = (newInfo: { _id: string } | null) => {
 			setChangingInfo(newInfo);
@@ -796,11 +791,13 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 
 			if (newInfo) {
 				setChangeAnnouncementInitState(
-					findContentById(announcements, newInfo._id)
+					announcements.find(({ _id }) => _id === newInfo._id) || null
 				);
 				localStorage.setItem(
 					"initAnnouncementContent",
-					JSON.stringify(findContentById(announcements, newInfo._id))
+					JSON.stringify(
+						announcements.find(({ _id }) => _id === newInfo._id) || null
+					)
 				);
 			} else {
 				setChangeAnnouncementInitState(null);
@@ -816,10 +813,9 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 
 		return (
 			<>
-				{Object.keys(announcements).map(announcementDate => (
+				{Object.keys(parsedAnnouncements).map(announcementDate => (
 					<Accordion
 						accordionId={`announcements${announcementDate}`}
-						initiallyOpened={initiallyOpened}
 						key={announcementDate}
 						Head={({ opened }) => (
 							<div className={styles.sectionHeader}>
@@ -847,17 +843,19 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 					>
 						<>
 							<div className={`${styles.elements} ${styles.offseted}`}>
-								{announcements[announcementDate].map((announcement, i) => (
-									<ContentElement
-										pin={pin}
-										setChanging={_id => {
-											setChanging({ _id });
-										}}
-										key={announcement._id}
-										removeContent={remove}
-										content={announcement}
-									/>
-								))}
+								{parsedAnnouncements[announcementDate].map(
+									(announcement, i) => (
+										<ContentElement
+											pin={pin}
+											setChanging={_id => {
+												setChanging({ _id });
+											}}
+											key={announcement._id}
+											removeContent={remove}
+											content={announcement}
+										/>
+									)
+								)}
 							</div>
 						</>
 					</Accordion>
@@ -923,7 +921,8 @@ const ChangeAnnouncementModal: React.FC<ChangeAnnouncementModalProps> = ({
 			<Modal rootElement={announcementContentModalRoot} onClose={close}>
 				<ChangeContent
 					initState={initState}
-					confirm={newContent => {
+					//@ts-ignore
+					confirm={({ __typename, ...newContent }) => {
 						update(changingAnnouncementId, newContent);
 					}}
 					final={close}
