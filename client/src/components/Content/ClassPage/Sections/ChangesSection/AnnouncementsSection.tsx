@@ -402,7 +402,10 @@ const AnnouncementsSection: React.FC<{}> = ({}) => {
 		},
 		update: (proxy, mutation) => {
 			if (mutation && mutation.data?.removeOldAnnouncements) {
-				proxy.writeQuery({
+				proxy.writeQuery<
+					{ announcements: announcement[] },
+					{ className: string; schoolName: string; vkId: number }
+				>({
 					query: Queries.GET_ANNOUNCEMENTS,
 					variables: { className, schoolName, vkId: uid },
 					data: {
@@ -670,13 +673,16 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 						});
 
 						if (res?.data) {
-							proxy.writeQuery({
+							proxy.writeQuery<
+								{ announcements: announcement[] },
+								{ className: string; schoolName: string; vkId: number }
+							>({
 								query: Queries.GET_ANNOUNCEMENTS,
 								variables: { className, schoolName, vkId: uid },
 								data: {
 									announcements:
 										data?.announcements.filter(
-											chng => chng._id !== announcementId
+											announcement => announcement._id !== announcementId
 										) || [],
 								},
 							});
@@ -688,40 +694,30 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 
 		const [updateAnnouncement] = useMutation<
 			WithTypename<{
-				updateAnnouncement: WithTypename<Partial<announcement>>;
+				updateAnnouncement: Partial<announcement>;
 			}>,
 			{
 				className: string;
 				schoolName: string;
 				announcementId: string;
-				updates: Partial<
-					Omit<announcement, "attachments"> & { attachments: attachment[] }
-				>;
+				updates: Partial<announcement>;
 			}
 		>(Mutations.UPDATE_ANNOUNCEMENT);
 		const update = (
 			announcementId: string | undefined,
-			updates: Partial<WithTypename<announcement>>
+			updates: Partial<announcement>
 		) => {
-			const { __typename, ...announcementWithoutTypename } = updates;
-
 			if (announcementId) {
 				updateAnnouncement({
 					variables: {
 						className,
 						schoolName,
 						announcementId,
-						updates: {
-							...announcementWithoutTypename,
-							attachments: updates.attachments?.map(
-								({ __typename, ...att }) => att
-							),
-						},
+						updates,
 					},
 					optimisticResponse: {
 						__typename: "Mutation",
 						updateAnnouncement: {
-							__typename: "ClassAnnouncement",
 							_id: announcementId,
 							...Object.values(announcements)
 								.flat()
@@ -736,15 +732,18 @@ const AnnouncementLayout: React.FC<AnnouncementLayoutProps> = React.memo(
 						});
 
 						if (res?.data) {
-							proxy.writeQuery({
+							proxy.writeQuery<
+								{ announcements: announcement[] },
+								{ className: string; schoolName: string; vkId: number }
+							>({
 								query: Queries.GET_ANNOUNCEMENTS,
 								variables: { className, schoolName, vkId: uid },
 								data: {
 									announcements:
-										data?.announcements.map(chng =>
-											chng._id === announcementId
-												? res.data?.updateAnnouncement
-												: chng
+										data?.announcements.map(announcement =>
+											announcement._id === announcementId
+												? { ...announcement, ...res.data?.updateAnnouncement }
+												: announcement
 										) || [],
 								},
 							});

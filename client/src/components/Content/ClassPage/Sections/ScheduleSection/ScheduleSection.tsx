@@ -154,13 +154,19 @@ const ScheduleSection: React.FC<{}> = ({}) => {
 					changed: changes,
 				},
 				update: (proxy, { data }) => {
-					const query = proxy.readQuery<{ schedule: string[][] }>({
+					const query = proxy.readQuery<
+						{ schedule: string[][] },
+						{ className: string; schoolName: string }
+					>({
 						query: Queries.GET_SCHEDULE,
 						variables: { className, schoolName },
 					});
 
 					if (query?.schedule && data?.changed) {
-						proxy.writeQuery<{ schedule: string[][] }>({
+						proxy.writeQuery<
+							{ schedule: string[][] },
+							{ className: string; schoolName: string }
+						>({
 							query: Queries.GET_SCHEDULE,
 							variables: { className, schoolName },
 							data: {

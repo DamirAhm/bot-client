@@ -1,14 +1,13 @@
-import React, { MouseEvent, useState } from 'react';
-import styles from './ClassPreview.module.css';
-import { gql } from '@apollo/client';
-import { useMutation } from '@apollo/client';
-import { GET_CLASSES, classPreview } from '../Classes';
-import { redactorOptions, WithTypename } from '../../../../types';
-import Options from '../../../Common/Options/Options';
+import React, { MouseEvent, useState } from "react";
+import styles from "./ClassPreview.module.css";
+import { gql } from "@apollo/client";
+import { useMutation } from "@apollo/client";
+import { GET_CLASSES, classPreview } from "../Classes";
+import { redactorOptions, WithTypename } from "../../../../types";
+import Options from "../../../Common/Options/Options";
 
 export const CREATE_CLASS = gql`
 	mutation CreateClass($className: String!, $schoolName: String!) {
-		#    createClass(name: $name) @client
 		classCreateOne(className: $className, schoolName: $schoolName) {
 			name
 			schoolName
@@ -21,15 +20,15 @@ export const CREATE_CLASS = gql`
 
 const ClassCreator: React.FC<{ schoolName: string }> = ({ schoolName }) => {
 	const [creating, setCreating] = useState<boolean>(false);
-	const [name, setName] = useState('');
+	const [name, setName] = useState("");
 	const [error, setError] = useState<string | null>(null);
 
 	const [createClass] = useMutation<
-		{ classCreateOne: WithTypename<classPreview> },
+		{ classCreateOne: classPreview },
 		{ className: string; schoolName: string }
 	>(CREATE_CLASS, {
 		variables: {
-			className: name.toUpperCase().replace(/\s/g, ''),
+			className: name.toUpperCase().replace(/\s/g, ""),
 			schoolName,
 		},
 		optimisticResponse: {
@@ -38,23 +37,32 @@ const ClassCreator: React.FC<{ schoolName: string }> = ({ schoolName }) => {
 				studentsCount: 0,
 				schoolName,
 				_id: new Date().toISOString(),
-				__typename: 'Class',
 			},
 		},
 		update: (proxy, data) => {
 			if (data.data) {
-				proxy.writeQuery({
+				const classesQuery = proxy.readQuery<
+					{ classes: classPreview[] },
+					{ schoolName: string }
+				>({
 					query: GET_CLASSES,
 					variables: { schoolName },
-					data: {
-						classes: proxy
-							.readQuery<{ classes: WithTypename<classPreview>[] }>({
-								query: GET_CLASSES,
-								variables: { schoolName },
-							})
-							?.classes.concat([data.data?.classCreateOne]),
-					},
 				});
+
+				if (classesQuery) {
+					const { classes } = classesQuery;
+					const newClasses = [...classes, data.data?.classCreateOne];
+
+					proxy.writeQuery<{ classes: classPreview[] }, { schoolName: string }>(
+						{
+							query: GET_CLASSES,
+							variables: { schoolName },
+							data: {
+								classes: newClasses,
+							},
+						}
+					);
+				}
 			}
 		},
 	});
@@ -62,7 +70,7 @@ const ClassCreator: React.FC<{ schoolName: string }> = ({ schoolName }) => {
 	const clear = (e: MouseEvent) => {
 		e.stopPropagation();
 		setCreating(false);
-		setName('');
+		setName("");
 		setError(null);
 	};
 
@@ -71,18 +79,18 @@ const ClassCreator: React.FC<{ schoolName: string }> = ({ schoolName }) => {
 		if (matchClassName(name)) {
 			createClass();
 			setCreating(false);
-			setName('');
+			setName("");
 			setError(null);
 		} else {
-			setName('');
-			setError('Неверное имя класса');
+			setName("");
+			setError("Неверное имя класса");
 		}
 	};
 
 	return (
 		<div className={styles.wrapper}>
 			<div
-				className={`${styles.creator} ${!creating ? styles.creator_stab : ''} ${
+				className={`${styles.creator} ${!creating ? styles.creator_stab : ""} ${
 					styles.preview
 				}`}
 				onClick={() => setCreating(true)}
@@ -96,12 +104,12 @@ const ClassCreator: React.FC<{ schoolName: string }> = ({ schoolName }) => {
 							className={`reject ${styles.button}`}
 						/>
 						<input
-							onChange={(e) => setName(e.target.value)}
+							onChange={e => setName(e.target.value)}
 							value={name}
 							autoFocus={true}
 							type="text"
-							placeholder={error ?? 'Имя класса в формате цифра буква'}
-							className={`${error ? styles.with_error : ''} ${styles.input}`}
+							placeholder={error ?? "Имя класса в формате цифра буква"}
+							className={`${error ? styles.with_error : ""} ${styles.input}`}
 						/>
 						<Options
 							include={redactorOptions.confirm}
@@ -111,7 +119,7 @@ const ClassCreator: React.FC<{ schoolName: string }> = ({ schoolName }) => {
 						/>
 					</form>
 				) : (
-					'Создать класс'
+					"Создать класс"
 				)}
 			</div>
 		</div>

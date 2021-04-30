@@ -140,17 +140,19 @@ const StudentPage: React.FC = () => {
 						variables: { schoolName },
 					});
 
-					proxy.writeQuery({
-						query: GET_STUDENTS,
-						variables: { schoolName },
-						data: {
-							students: queryData?.students.filter(
-								s => s.vkId !== response?.data?.removed.vkId
-							),
-						},
-					});
-					//TODO почему появляются ошибки
-					setRemoved(true);
+					if (queryData) {
+						proxy.writeQuery<{ students: Student[] }, { schoolName: string }>({
+							query: GET_STUDENTS,
+							variables: { schoolName },
+							data: {
+								students: queryData?.students.filter(
+									s => s.vkId !== response?.data?.removed.vkId
+								),
+							},
+						});
+						//TODO почему появляются ошибки
+						setRemoved(true);
+					}
 				}
 			},
 		});

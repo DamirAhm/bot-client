@@ -400,7 +400,10 @@ const HomeworkSection: React.FC<{}> = ({}) => {
 		},
 		update: (proxy, mutation) => {
 			if (mutation && mutation.data?.removeOldHomework) {
-				proxy.writeQuery({
+				proxy.writeQuery<
+					{ homework: homework[] },
+					{ className: string; schoolName: string; vkId: number }
+				>({
 					query: Queries.GET_HOMEWORK,
 					variables: { className, schoolName, vkId: uid },
 					data: {
@@ -654,13 +657,19 @@ const HomeworkLayout: React.FC<{
 						removeHomework: homeworkId,
 					},
 					update: (proxy, res) => {
-						const data = proxy.readQuery<{ homework: homework[] }>({
+						const data = proxy.readQuery<
+							{ homework: homework[] },
+							{ className: string; schoolName: string; vkId: number }
+						>({
 							query: Queries.GET_HOMEWORK,
 							variables: { className, schoolName, vkId: userVkId },
 						});
 
 						if (res?.data) {
-							proxy.writeQuery({
+							proxy.writeQuery<
+								{ homework: homework[] },
+								{ className: string; schoolName: string; vkId: number }
+							>({
 								query: Queries.GET_HOMEWORK,
 								variables: { className, schoolName, vkId: userVkId },
 								data: {
@@ -689,22 +698,15 @@ const HomeworkLayout: React.FC<{
 		>(Mutations.CHANGE_HOMEWORK);
 		const update = (
 			homeworkId: string | undefined,
-			updates: Partial<WithTypename<homework>>
+			updates: Partial<homework>
 		) => {
-			const { __typename, ...updatesWithoutTypename } = updates;
-
 			if (homeworkId) {
 				updateHomework({
 					variables: {
 						className,
 						schoolName,
 						homeworkId,
-						updates: {
-							...updatesWithoutTypename,
-							attachments: updates.attachments?.map(
-								({ __typename, ...att }) => att
-							),
-						},
+						updates,
 					},
 					optimisticResponse: {
 						__typename: "Mutation",
@@ -718,19 +720,27 @@ const HomeworkLayout: React.FC<{
 						},
 					},
 					update: (proxy, res) => {
-						const data = proxy.readQuery<{ homework: homework[] }>({
+						const data = proxy.readQuery<
+							{ homework: homework[] },
+							{ className: string; schoolName: string; vkId: number }
+						>({
 							query: Queries.GET_HOMEWORK,
 							variables: { className, schoolName, vkId: userVkId },
 						});
 
 						if (res.data && res.data.updateHomework !== null) {
-							proxy.writeQuery({
+							proxy.writeQuery<
+								{ homework: homework[] },
+								{ className: string; schoolName: string; vkId: number }
+							>({
 								query: Queries.GET_HOMEWORK,
 								variables: { className, schoolName, vkId: userVkId },
 								data: {
 									homework:
 										data?.homework.map(hw =>
-											hw._id === homeworkId ? res.data?.updateHomework : hw
+											hw._id === homeworkId
+												? { ...hw, ...res.data?.updateHomework }
+												: hw
 										) || [],
 								},
 							});

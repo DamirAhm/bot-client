@@ -1,25 +1,34 @@
 // @format
-import { WebSocketLink } from '@apollo/client/link/ws';
-import { CachePersistor } from 'apollo3-cache-persist';
-import { HttpLink, split, InMemoryCache, ApolloClient, ApolloProvider, gql } from '@apollo/client';
+import { WebSocketLink } from "@apollo/client/link/ws";
+import { CachePersistor } from "apollo3-cache-persist";
+import {
+	HttpLink,
+	split,
+	InMemoryCache,
+	ApolloClient,
+	ApolloProvider,
+	gql,
+} from "@apollo/client";
 
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { BrowserRouter } from "react-router-dom";
 
-import { Class } from '../types';
-import Loader from './Common/Loader/Loader';
-import { GET_CLASSES } from './Content/Classes/Classes';
-import { getMainDefinition } from '@apollo/client/utilities';
-import { NormalizedCacheObject } from 'apollo-boost';
+import { Class } from "../types";
+import Loader from "./Common/Loader/Loader";
+import { classPreview, GET_CLASSES } from "./Content/Classes/Classes";
+import { getMainDefinition } from "@apollo/client/utilities";
+import { NormalizedCacheObject } from "apollo-boost";
 
 const API_HOST =
-	process.env.NODE_ENV === 'development' ? 'http://localhost:8080/graphql' : '/graphql';
+	process.env.NODE_ENV === "development"
+		? "http://localhost:8080/graphql"
+		: "/graphql";
 const WEB_SOCKET_HOST =
-	process.env.NODE_ENV === 'development'
-		? 'ws://localhost:8080/graphql'
+	process.env.NODE_ENV === "development"
+		? "ws://localhost:8080/graphql"
 		: `wss://${document.location.origin}/graphql`;
-const SCHEMA_VERSION = '1';
-const SCHEMA_VERSION_KEY = 'apollo-schema-version';
+const SCHEMA_VERSION = "1";
+const SCHEMA_VERSION_KEY = "apollo-schema-version";
 const currentVersion = window.localStorage.getItem(SCHEMA_VERSION_KEY);
 
 const httpLink = new HttpLink({
@@ -36,67 +45,40 @@ const splitLink = split(
 	({ query }) => {
 		const def = getMainDefinition(query);
 
-		return def.kind === 'OperationDefinition' && def.operation === 'subscription';
+		return (
+			def.kind === "OperationDefinition" && def.operation === "subscription"
+		);
 	},
 	websocketLink,
-	httpLink,
+	httpLink
 );
-
+//TODO чекнуть удаляет ли эта хуета вообще класс
 const resolvers = {
 	Mutation: {
 		deleteClass: (
 			_: any,
 			{ className, schoolName }: { className: string; schoolName: string },
-			{ cache }: { cache: InMemoryCache },
+			{ cache }: { cache: InMemoryCache }
 		) => {
-			const classes = cache.readQuery<{ classes: Class[] }>({
+			const classes = cache.readQuery<{ classes: classPreview[] }>({
 				query: GET_CLASSES,
 			});
 
 			const newClasses =
 				classes?.classes?.filter(
-					(c: Class) => !(c.name === className && c.schoolName === schoolName),
+					(c: classPreview) =>
+						!(c.name === className && c.schoolName === schoolName)
 				) || [];
 
-			cache.writeQuery({
+			cache.writeQuery<{ classes: classPreview[] }, { schoolName: string }>({
 				query: GET_CLASSES,
+				variables: { schoolName },
 				data: {
 					classes: newClasses,
 				},
 			});
 
 			return newClasses;
-		},
-		createClass: (_: any, { name }: { name: string }, { cache }: { cache: InMemoryCache }) => {
-			const data = cache.readQuery<{
-				classes: { name: string; studentsCount: number }[];
-			}>({ query: GET_CLASSES });
-
-			if (data !== null) {
-				const newClasses = [
-					...data.classes,
-					{
-						name,
-						studentsCount: 0,
-						__typename: 'Class',
-						_id: Date.now().toString(),
-					},
-				];
-				cache.writeQuery({
-					query: GET_CLASSES,
-					data: {
-						classes: newClasses,
-					},
-				});
-
-				return {
-					name,
-					studentsCount: 0,
-					__typename: 'Class',
-					_id: Date.now().toString(),
-				};
-			}
-			return null;
 		},
 	},
 };
@@ -111,6 +93,8 @@ const typeDefs = gql`
 	fragment ClassPreview on Class {
 		name
 		studentsCount
+		schoolName
+		_id
 	}
 	extend type Mutation {
 		deleteClass(className: String!, schoolName: String!): [Class]!
@@ -132,7 +116,7 @@ const Shell: React.FC<{ children: JSX.Element }> = ({ children }) => {
 			},
 		});
 
-		if (process.env.NODE_ENV === 'production') {
+		if (process.env.NODE_ENV === "production") {
 			const persistor = new CachePersistor({
 				cache,
 				storage: window.localStorage,
@@ -157,18 +141,18 @@ const Shell: React.FC<{ children: JSX.Element }> = ({ children }) => {
 
 		setClient(client);
 
-		if (process.env.NODE_ENV === 'production') {
+		if (process.env.NODE_ENV === "production") {
 			const blurHandler = createDocumentBlurHandler(client);
-			window.addEventListener('blur', blurHandler);
+			window.addEventListener("blur", blurHandler);
 			return () => {
-				window.removeEventListener('blur', blurHandler);
+				window.removeEventListener("blur", blurHandler);
 			};
 		}
 	}, []);
 
 	if (client === null) {
 		return (
-			<div className='wrapper app'>
+			<div className="wrapper app">
 				<Loader />
 			</div>
 		);
@@ -183,11 +167,12 @@ const Shell: React.FC<{ children: JSX.Element }> = ({ children }) => {
 
 export default Shell;
 function createDocumentBlurHandler(
-	client: ApolloClient<NormalizedCacheObject>,
+	client: ApolloClient<NormalizedCacheObject>
 ): (this: Window, ev: FocusEvent) => any {
 	return function onBlur() {
 		//@ts-ignore
-		if (client.queryManager.inFlightLinkObservables.size === 0) client.resetStore();
+		if (client.queryManager.inFlightLinkObservables.size === 0)
+			client.resetStore();
 		else
 			setTimeout(() => {
 				onBlur.bind(this)();
